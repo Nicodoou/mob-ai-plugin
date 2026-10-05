@@ -9,5 +9,9 @@ public final class MinecraftConstants {
 
   public static final double ARROW_SPEED_BLOCKS_PER_TICK = 1.6;
 
+  // Vanilla skeletons raise their aim by this fraction of the horizontal distance to make up for
+  // the arrow's drop.
+  public static final double ARROW_ARC_FACTOR = 0.2;
+
   private MinecraftConstants() {}
 }
