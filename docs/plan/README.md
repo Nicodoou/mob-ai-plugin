@@ -215,7 +215,8 @@ io.github.nicodoou.mobai
 ├── application     SettingsHolder, ActiveGroups, RecruitMob, RecruitRequest,
 │                   RecruitResult, RemovalOutcome, RemoveMember, DisbandGroup          WP-12
 │                   TickGroups, RecordOutcome, RecordDamageTaken, RecordPlayerDeath,
-│                   ClosePlan                                                          WP-13
+│                   ClosePlan, AttackResolution, DamageTaken, RemovalCause,
+│                   GroupEvents                                                        WP-13
 │                   StoredMemoriesMapper, SaveMemories, LoadMemories, ResetMemories,
 │                   DescribeGroup, GroupStatusView, DescribePlayerMemory,
 │                   PlayerMemoryView                                                   WP-15
@@ -360,6 +361,7 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D29. Rol de flanqueo y ataque** (CT-08, 5 de octubre). El zombie con rol `FLANK` usa siempre `zombie.flank_strike`; los tres golpes se eligen solo con rol `PRESS`.
 - **D30. Calibración** (CT-09, puerta E3, 5 de octubre). Velocidad de aprendizaje 1,0 y vida media 12.000 ticks.
 - **D31. Ids de grupo por puerto** (CT-10, WP-12). `GroupIdSource` da los ids de grupo nuevos, sin gastar tiradas de `RandomSource`.
+- **D32. Resultado del plan por evento** (CT-11, WP-13). Todo plan cerrado llega a la memoria por `PlanClosed` → `ClosePlan`; `RemoveMember` distingue muerte de despawn para la ventana de reagrupamiento.
 
 ## 8. Partes siguientes
 

@@ -13,6 +13,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-07](#ct-07--retirada-táctica-reagrupamiento-y-ventana-adaptativa) Retirada táctica, reagrupamiento y ventana adaptativa | 5 oct 2026 | Nico | Dominio aplicado (WP-08B, WP-10A, WP-10B); faltan WP-13, WP-14 y WP-22 |
 | [CT-09](#ct-09--velocidad-de-aprendizaje-10-calibrada-por-simulación) Velocidad de aprendizaje 1,0, calibrada por simulación | 5 oct 2026 | Nico (opción A) | Aplicado en el catálogo; WP-16 la pone en `config.yml` |
 | [CT-10](#ct-10--puerto-groupidsource) Puerto `GroupIdSource` | 5 oct 2026 | Opus (especificación del WP-12) | WP-12 crea el puerto y el fake; WP-16, la implementación real |
+| [CT-11](#ct-11--un-solo-camino-para-el-resultado-del-plan-y-causa-de-salida) Un solo camino para el resultado del plan y causa de salida | 5 oct 2026 | Opus (cierre del WP-12, especificación del WP-13) | WP-13 |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -146,3 +147,18 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 
 **Riesgos.** Ninguno conocido: el adaptador real es una línea.
 
+## CT-11 — Un solo camino para el resultado del plan y causa de salida
+
+**Qué cambia.**
+1. El resultado de todo plan cerrado llega a la memoria por un solo camino: el evento `PlanClosed`, publicado por `GroupEvents` y escuchado por `ClosePlan`. El adaptador no llama a `ClosePlan` con `BrainResult.closedPlan()`, que queda para las trazas.
+2. `TickGroups` decide de a un grupo por llamada, para que el adaptador aísle las fallas de cada grupo.
+3. `DisbandGroup` publica los eventos pendientes del grupo después de sacarlo de `ActiveGroups`.
+4. `RemoveMember` recibe la causa (`RemovalCause`: `DIED` o `DESPAWNED`). Si el último miembro muere mientras el grupo reagrupa, la ventana global baja (CT-07).
+
+**Por qué.** Salieron de la revisión del WP-12: al disolver un grupo se perdían sus eventos, y no había forma de saber si un grupo murió reagrupando (la ventana de CT-07 no aprendía de los fracasos). Con dos caminos para el resultado del plan (el evento y el resultado del cerebro), un plan se podía registrar dos veces.
+
+**Impacto.** Cambian las firmas de `RemoveMember` y `DisbandGroup` (WP-12, sin uso todavía fuera de las pruebas). El dominio no cambia.
+
+**Alternativas descartadas.** Llamar a `ClosePlan` directo desde `TickGroups` y desde `RecordPlayerDeath`: dos lugares que recordar, y los observadores de la fase 2 igual necesitan el evento. Contar también los despawns como fracaso: un despawn no dice nada del tiempo de reagrupamiento.
+
+**Riesgos.** El `LeaderDied` de un miembro que sale de un grupo vivo se publica en la próxima decisión (hasta 10 ticks tarde). Hoy nadie lo escucha en tiempo real.

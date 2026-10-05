@@ -459,6 +459,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Grupos activos e índice mob → grupo | `ActiveGroups` | Aplicación |
 | Configuración vigente | `SettingsHolder` | Aplicación |
 | Pedido y resultado de reclutar, resultado de sacar un miembro | `RecruitRequest`, `RecruitResult`, `RemovalOutcome` | Aplicación |
+| Resultado de un intento, daño recibido, causa de salida, publicador de eventos de un grupo | `AttackResolution`, `DamageTaken`, `RemovalCause`, `GroupEvents` | Aplicación |
 | Casos de uso nuevos | `RemoveMember`, `RecordDamageTaken`, `RecordPlayerDeath`, `ResetMemories`, `DescribeGroup`, `DescribePlayerMemory` | Aplicación |
 | Datos guardados | `StoredMemories`, `StoredGroup`, `StoredMember`, `StoredRecord` | Dominio (puerto) |
 | Scheduler de decisión, aplicador de decisiones | `DecisionScheduler`, `DecisionApplier` | Adaptadores |
