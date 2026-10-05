@@ -49,3 +49,10 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 ## Puerta E2
 
 146 pruebas en verde y cobertura del dominio del 96 % (459 de 478 líneas; el objetivo era 80 %). Las líneas sin cubrir son casos defensivos.
+
+## WP-06 — Fotos, amenaza y geometría
+
+- **PR:** [#7](https://github.com/Nicodoou/mob-ai-plugin/pull/7) · Sonnet · sin correcciones ni desvíos. 56 pruebas nuevas (202 en total); cobertura de los tres paquetes nuevos, 100 %.
+- **Qué hizo:** las fotos (`PlayerSnapshot`, `MobSnapshot`, `GroupSnapshot`), el registro de amenaza con ventana deslizante (`ThreatLedger`) y la geometría de combate (`PlayerPose`, `CombatGeometry`: arco del escudo, punto de flanqueo a 135°, punto de retirada y tiro anticipado con la fórmula del spike).
+- **Arquitectura:** las fotos son records inmutables con copias en orden determinista (`EnumMap`, `List.copyOf`) y solo búsquedas como métodos. La amenaza y el rol no viajan en las fotos: son estado del grupo. La geometría recibe vectores para que los goals la llamen con datos frescos en cada tick.
+- **Opinión:** bueno: el código es la especificación al pie de la letra, una tarea por función, sin bucles propios en el registro (`removeIf`), y las 5 roturas del WP más 4 propias (ángulo con altura, tiempo de vuelo multiplicado, lista sin copiar, tiro sin elevar) fueron detectadas. Flojo: `prune` recorre las colas dos veces (barrer y después borrar las vacías); es claro y el tamaño es chico, no vale la pena optimizarlo. Riesgos: los flanqueadores del mismo lado reciben el mismo punto (anotado para WP-22); el tiro anticipado supone movimiento recto y no recalcula el tiempo de vuelo con el punto predicho; la validación estricta de las fotos (vida mayor a la máxima, por ejemplo) va a lanzar excepciones si el adaptador del WP-17 lee mal un dato, lo que es bueno para encontrar el bug pero obliga a que ese WP las atrape y escriba el incidente.
