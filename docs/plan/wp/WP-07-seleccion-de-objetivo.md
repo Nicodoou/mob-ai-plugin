@@ -317,7 +317,7 @@ Mobs explícitos con `MobSnapshotBuilder`: «zombie a z» es `withId(new MobId(n
 | --- | --- |
 | En `pointsPerSecond`, quitar el `Math.min(level - 1, MAX_INTERVAL_SHIFT)` y usar `level - 1` | `veryHighEffectLevelsUseAOneTickInterval` |
 | En `armorFactor`, usar `ARMOR_TOUGHNESS_BASE` como divisor (sin la dureza) | `fullDiamondProtectionFourCutsZombieDamage` |
-| En `threat`, aplicar el piso después de la debilidad (`Math.max(baseThreat, rawThreat * multiplicador)`) | `weaknessHalvesThreatPerLevel` |
+| En `threat`, aplicar el piso después de la debilidad (`Math.max(baseThreat, rawThreat * multiplicador)`) | `weaknessAppliesToTheThreatFloorToo` (agregada por el implementador: con 8 de daño y Debilidad 2 las dos fórmulas dan 2; con 2 de daño, 0,5 contra 1) |
 | En `best`, `>=` en vez de `>` | `tiesGoToTheFirstPlayerInTheSnapshot` |
 | En `shouldSwitch`, quitar el `(1 + commitmentBonus)` | `keepsTheCurrentTargetWithinTheCommitmentMargin` |
 

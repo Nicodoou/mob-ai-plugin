@@ -13,9 +13,8 @@ public final class MinecraftConstants {
   // the arrow's drop.
   public static final double ARROW_ARC_FACTOR = 0.2;
 
-  // Damage per hit on normal difficulty. Zombie measured in the spike; spider and arrow (1.6 speed
-  // x
-  // 2.0 base damage, rounded up) are vanilla values.
+  // Damage per hit on normal difficulty. The zombie value was measured in the spike; spider and
+  // arrow are vanilla values (an arrow deals 1.6 speed times 2.0 base damage, rounded up).
   public static final double ZOMBIE_HIT_DAMAGE = 3.0;
   public static final double SPIDER_HIT_DAMAGE = 2.0;
   public static final double SKELETON_ARROW_DAMAGE = 4.0;

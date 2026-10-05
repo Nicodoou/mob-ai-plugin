@@ -36,6 +36,7 @@ Reglas que salieron de la experiencia:
 - **Valores de referencia de los documentos** (por ejemplo, 1 de 1 → 67 %) como pruebas con número exacto.
 - **Pruebas que muerden:** de 2 a 4 cambios temporales que tienen que hacer fallar una prueba concreta.
 - **Pruebas estadísticas con parámetros asimétricos:** un caso simétrico puede pasar aunque el algoritmo esté mal. En el WP-04, Beta(0,5; 0,5) daba media 0,5 incluso sin el boost para formas menores a 1.
+- **Cada rotura, calculada:** antes de escribir una prueba que muerde, calculá el valor que da el código roto con los números de la prueba. En el WP-07, 8 de daño con Debilidad 2 daba 2 con el piso antes o después de la debilidad, y la rotura no mordía.
 - **Contexto mínimo:** listá solo los archivos de código que el subagente necesita leer. Nunca le pidas leer `docs/` completo.
 - **Versiones:** si el WP agrega o cambia una dependencia, verificá que la combinación compile y funcione (no alcanza con que cada versión exista). En el WP-00, google-java-format 1.37.0 existía pero rompía Spotless.
 - **APIs de Paper:** consultá `hallazgos-api.md`; si el WP usa algo que el spike no verificó, verificalo antes (javap sobre el jar de paper-api en `~/.gradle/caches`, o el server).
