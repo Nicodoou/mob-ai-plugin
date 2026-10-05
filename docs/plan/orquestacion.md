@@ -83,7 +83,7 @@ cd "$TEMP/rvXX" && git log --format='%h %s' origin/main..HEAD && git diff --name
 ```
 
 1. **Archivos:** exactamente los de la tabla del WP.
-2. **Contenido:** firmas, nombres y mensajes contra el WP. Leé el código de producción completo; buscá nombres abreviados, comentarios que repiten el código, números mágicos, `TODO`, `System.out` y lógica de más.
+2. **Contenido:** firmas, nombres y mensajes contra el WP. Leé el código de producción completo; buscá nombres abreviados, comentarios que repiten el código, números mágicos, `TODO`, `System.out`, lógica de más, **funciones que hacen más de una tarea** (cada función, también las privadas) y **bucles sin límite de iteraciones**.
 3. **Pruebas:** que existan con su nombre exacto (contá las ejecuciones en `build/test-results/test/*.xml`).
 4. **Roturas propias:** hacé al menos dos cambios temporales **distintos** de los del WP y verificá que alguna prueba falle. Revertí con `git checkout`.
 5. **CI** en verde.

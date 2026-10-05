@@ -33,6 +33,8 @@ Cada función hace una sola cosa y cada clase tiene un solo motivo para cambiar;
 - **Sin parámetros booleanos que cambian el comportamiento:** `attack(true)` no dice nada; se separa en dos funciones con nombre propio.
 - **Retornos tempranos** en vez de `if` anidados: primero se descartan los casos que no aplican.
 - **Sin efectos ocultos:** una función que se llama `calculate...` no modifica estado.
+- **Una sola tarea, sin excepciones:** si una función hace dos cálculos distintos (por ejemplo, suma y saca el promedio), se divide aunque sea corta. Una función que solo coordina llamadas a otras cumple la regla.
+- **Bucles con límite:** todo bucle que se repite hasta que se cumpla una condición (reintentos, muestreo por rechazo) tiene un máximo de iteraciones con nombre y, al alcanzarlo, falla con un error claro. Un bucle infinito cuelga el server; un error queda registrado y se puede reproducir.
 
 **Clases**
 

@@ -1,10 +1,13 @@
 package io.github.nicodoou.mobai.domain.selection;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.memory.SuccessEstimate;
+import io.github.nicodoou.mobai.testsupport.ScriptedRandomSource;
 import io.github.nicodoou.mobai.testsupport.SeededRandomSource;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class BetaSamplerTest {
@@ -104,5 +107,31 @@ class BetaSamplerTest {
     double[] second = draw(9, estimate, 10);
 
     assertThat(first).containsExactly(second);
+  }
+
+  @Test
+  void proposalsThatNeverTurnPositiveFailInsteadOfLooping() {
+    double[] negativeGaussians = new double[1_000];
+    Arrays.fill(negativeGaussians, -10.0);
+    BetaSampler sampler =
+        new BetaSampler(new ScriptedRandomSource().withGaussians(negativeGaussians));
+
+    assertThatIllegalStateException()
+        .isThrownBy(() -> sampler.sample(new SuccessEstimate(1, 1, 0)))
+        .withMessageStartingWith("gamma sampler found no positive proposal in 1000 draws");
+  }
+
+  @Test
+  void proposalsThatAreAlwaysRejectedFailInsteadOfLooping() {
+    double[] gaussians = new double[1_000];
+    double[] units = new double[1_000];
+    Arrays.fill(gaussians, 2.0);
+    Arrays.fill(units, 0.99);
+    BetaSampler sampler =
+        new BetaSampler(new ScriptedRandomSource().withGaussians(gaussians).withUnits(units));
+
+    assertThatIllegalStateException()
+        .isThrownBy(() -> sampler.sample(new SuccessEstimate(1, 1, 0)))
+        .withMessage("gamma sampler rejected 1000 proposals for shape 1.0");
   }
 }

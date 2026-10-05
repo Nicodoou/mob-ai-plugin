@@ -65,15 +65,7 @@ public final class GroupMemory {
   }
 
   public SuccessEstimate kindEstimate(PlayerId player, MobKind kind, long tick) {
-    Map<Attack, AttackRecord> records = attackRecords.get(player);
-    double successes = 0;
-    double attempts = 0;
-    for (Attack attack : Attack.forKind(kind)) {
-      AttackRecord decayed = storedOrEmpty(records, attack, tick).decayedTo(tick, halfLifeTicks());
-      successes += decayed.successes();
-      attempts += decayed.attempts();
-    }
-    return priorFromSettings().estimate(new AttackRecord(successes, attempts, tick));
+    return priorFromSettings().estimate(combinedKindRecord(player, kind, tick));
   }
 
   public void clearPlayer(PlayerId player) {
@@ -92,6 +84,18 @@ public final class GroupMemory {
 
   public Map<PlayerId, Map<StrategyId, AttackRecord>> strategyRecords() {
     return immutableCopy(strategyRecords);
+  }
+
+  private AttackRecord combinedKindRecord(PlayerId player, MobKind kind, long tick) {
+    Map<Attack, AttackRecord> records = attackRecords.get(player);
+    double successes = 0;
+    double attempts = 0;
+    for (Attack attack : Attack.forKind(kind)) {
+      AttackRecord decayed = storedOrEmpty(records, attack, tick).decayedTo(tick, halfLifeTicks());
+      successes += decayed.successes();
+      attempts += decayed.attempts();
+    }
+    return new AttackRecord(successes, attempts, tick);
   }
 
   private <K> RecordChange applyObservation(
