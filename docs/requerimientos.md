@@ -196,6 +196,13 @@ Todo valor de balance va a un archivo de configuración y se recarga sin reinici
 
 El benchmark aplica a un grupo que no conoce al jugador; un grupo con memoria es más difícil, dentro del techo de RF-06.
 
+### Depurabilidad
+
+- Ante un bug, el modo debug dice dónde ocurrió (capa, clase, caso de uso), por qué camino pasaron los datos (IDs de grupo, plan e intento en cada paso) y cómo reproducirlo.
+- Cada error escribe un archivo de incidente con las entradas necesarias para repetir la decisión en una prueba automática (foto, estado del grupo, configuración y números al azar).
+- La caja negra de cada grupo está siempre activa; el detalle de trazas se prende por grupo, sin reiniciar.
+- Diseño en `arquitectura.md`, sección «Trazabilidad y depuración».
+
 ### Jugabilidad
 
 - Un grupo completo se reconoce de lejos (estandarte del capitán, tamaño o efecto visual).

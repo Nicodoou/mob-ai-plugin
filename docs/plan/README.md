@@ -96,8 +96,8 @@ Cada etapa arranca cuando la anterior pasó su puerta. Las excepciones son el sp
 | E1 Spike en el server | WP-01 | Nico corre el guion del spike; Opus revisa `hallazgos-api.md` y recién ahí escribe los WPs de adaptadores | S1, en paralelo con E2 |
 | E2 Dominio: aprendizaje | WP-02 a WP-05 | Valores de referencia en pruebas verdes: 1 de 1 → 67 %; 10 de 10 → 92 % con velocidad 1 y 58 % con velocidad 0; una vida media sin pelear → la mitad. Cobertura del dominio ≥ 80 % (Opus) | S1 |
 | E3 Dominio: grupo y cerebro | WP-06 a WP-11 | La simulación en Java puro cumple los criterios de aprendizaje del MVP con la configuración del catálogo, o se acuerdan valores nuevos de velocidad y vida media (Nico + Opus) | S2 |
-| E4 Aplicación y persistencia | WP-12 a WP-15 | Memoria de ida y vuelta por disco; todos los casos de uso probados con fakes (Opus) | S2 |
-| E5 Esqueleto vivo | WP-16 a WP-21 | Guion en el server: spawngroup, status, golpes frontales registrados en la memoria y un reinicio que conserva la memoria (Nico) | S3 |
+| E4 Aplicación y persistencia | WP-12 a WP-15 y WP-28 | Memoria de ida y vuelta por disco; todos los casos de uso probados con fakes; un incidente provocado a propósito se reproduce con `TraceReplay` (Opus) | S2 |
+| E5 Esqueleto vivo | WP-16 a WP-21 y WP-29 | Guion en el server: spawngroup, status, golpes frontales registrados en la memoria y un reinicio que conserva la memoria (Nico) | S3 |
 | E6 Comportamiento completo | WP-22 a WP-26 | Guion en el server: cada ataque y las reglas del rastreador que pide el catálogo (Nico) | S4 |
 | E7 Validación | WP-27 | Puerta G1: definición de terminado del catálogo, con evidencia (Nico + Opus) | S4 |
 
@@ -135,6 +135,8 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-25 | Arañas | WP-24 | Sonnet | Mordida con lentitud |
 | WP-26 | Consulta de memoria y métricas | WP-25 | Sonnet | `/mobai memory` y líneas de métricas para contar |
 | WP-27 | Validación del MVP | Puerta E6 | Nico + Opus | Sesiones de prueba, medición con Spark e informe para G1 |
+| WP-28 | Trazas: incidentes y reproducción | WP-15 | Sonnet | `IncidentReport`, su JSON y `TraceReplay`; cierra la etapa E4 |
+| WP-29 | Trazas en el server | WP-21 | Sonnet | `TraceWriter`, `FlightRecorder`, `IncidentWriter`, `RecordingRandomSource`, `/mobai debug`; cierra la etapa E5 |
 
 ```mermaid
 flowchart LR
@@ -149,10 +151,10 @@ flowchart LR
     W07 & W09 --> W10["WP-10"] --> W11["WP-11"] --> P3{{"Puerta E3"}}
     P3 --> W12["WP-12"] --> W13["WP-13"]
     P3 --> W14["WP-14"]
-    W13 & W14 --> W15["WP-15"] --> P4{{"Puerta E4"}}
+    W13 & W14 --> W15["WP-15"] --> W28["WP-28"] --> P4{{"Puerta E4"}}
     P1 & P4 --> W16["WP-16"]
     P1 & P4 --> W17["WP-17"] --> W18["WP-18"] --> W19["WP-19"]
-    W16 & W19 --> W20["WP-20"] --> W21["WP-21"] --> P5{{"Puerta E5"}}
+    W16 & W19 --> W20["WP-20"] --> W21["WP-21"] --> W29["WP-29"] --> P5{{"Puerta E5"}}
     P5 --> W22["WP-22"] --> W23["WP-23"] --> W24["WP-24"] --> W25["WP-25"] --> W26["WP-26"] --> P6{{"Puerta E6"}}
     P6 --> W27["WP-27"] --> G1{{"Puerta G1"}}
 ```

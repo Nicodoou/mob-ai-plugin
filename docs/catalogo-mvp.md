@@ -116,7 +116,7 @@ Estos son los valores de arranque para las primeras pruebas; todos están en la 
 
 ### Grupo de prueba
 
-El comando de prueba spawnea un grupo de 9 mobs junto al jugador: 4 zombies, 3 esqueletos y 2 arañas. Con esa composición las tres estrategias son viables, así que el grupo puede elegir entre todas desde la primera pelea.
+El comando de prueba spawnea un grupo de 9 mobs junto al jugador: 4 zombies, 3 esqueletos y 2 arañas, sin equipo (un mob spawneado por la API puede traer armas o armadura, y eso haría que las pruebas no sean comparables). Con esa composición las tres estrategias son viables, así que el grupo puede elegir entre todas desde la primera pelea.
 
 ## Definición de terminado
 

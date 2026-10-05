@@ -94,6 +94,7 @@ Un error en el plugin nunca debe tirar abajo el server, pero tampoco puede pasar
 | Debug | Decisiones del cerebro, solo con la opción de debug activada | "Grupo 7: flanqueo contra Juan, tasa sorteada 0,64" |
 
 - **Nada se registra en cada tick** con la opción de debug apagada: con 20 ticks por segundo, llena la consola en minutos.
+- **Las trazas no son logs:** el detalle de las decisiones va a los archivos de traza (`TraceWriter`), no a la consola. El dominio no escribe nada: devuelve la explicación como datos (ver «Trazabilidad y depuración» en `arquitectura.md`).
 - **Los mensajes llevan contexto:** qué grupo, qué mob, qué jugador.
 
 ## Configuración y números mágicos

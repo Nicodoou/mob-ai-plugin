@@ -82,7 +82,8 @@ Los adaptadores son la única capa que conoce Minecraft: convierten lo que pasa 
 
 - **Aplicador de decisiones:** recibe la decisión de cada grupo y escribe el rol de cada mob en un registro de roles (mapa UUID del mob → rol).
 - **Goals (Mob Goal API):** un goal por rol. Cada goal solo pregunta "¿cuál es mi rol?" al registro y se activa si le toca. No calcula puntajes ni lee memoria.
-- **Instalador de goals:** al sumarse un mob a un grupo, quita los goals vanilla de movimiento y combate (deja nadar) y pone los propios. Al salir del grupo, los restaura.
+- **Instalador de goals:** al sumarse un mob a un grupo, quita los goals vanilla de los tipos `MOVE`, `LOOK` y `TARGET` y pone los propios. Los goals propios se pierden cuando el chunk se descarga, así que se reinstalan cada vez que un miembro vuelve al mundo (`EntityAddToWorldEvent`). En el MVP un mob solo sale del grupo al morir, así que no hace falta restaurar goals vanilla.
+- **Rastreador de movimiento:** guarda la posición de cada jugador tick a tick y calcula su movimiento por tick. `getVelocity()` no sirve: da 0 al caminar (ver `docs/plan/hallazgos-api.md`).
 
 ### Traductor de versión (capa anticorrupción)
 
@@ -135,7 +136,7 @@ Solo tres. Cualquier otra interfaz tiene que justificarse con una prueba que sin
 
 | Foto | Datos |
 | --- | --- |
-| FotoJugador | UUID, posición, vida, vida máxima, armadura, efectos activos, categoría de equipo, si está bloqueando con escudo |
+| FotoJugador | UUID, posición, movimiento por tick (medido, no `getVelocity()`), vida, absorción, vida máxima, armadura, efectos activos, categoría de equipo, si está bloqueando con escudo |
 | FotoMob | UUID, tipo, posición, vida, grupo al que pertenece, rol actual |
 | FotoGrupo | ID del grupo, sus FotoMob, los FotoJugador cercanos, amenaza acumulada por jugador, tick actual |
 | ResultadoAtaque | Mob, objetivo, ataque, resultado (acierto, fallo o neutral), causa si es neutral |
@@ -181,6 +182,26 @@ Todo el sistema se mueve con dos flujos: uno guiado por eventos que escribe en l
 ### Cierre de un plan
 
 Cuando el cerebro detecta que un plan terminó (objetivo muerto, objetivo perdido, plan agotado, grupo en retirada), llama a CerrarPlan: el resultado se registra en la memoria del grupo con peso 1, en la memoria global por categoría de equipo y en los grupos observadores cercanos con peso 0,5.
+
+## Trazabilidad y depuración
+
+Requisito obligatorio: ante un bug, el modo debug tiene que decir dónde ocurrió, por qué camino pasaron los datos y cómo reproducirlo. Se apoya en que el dominio es determinista: con la misma foto, la misma memoria, la misma configuración y los mismos números al azar, decide exactamente lo mismo.
+
+1. **IDs de correlación.** Toda traza lleva el grupo y el tick, y además el `PlanId` (grupo + número de plan dentro del grupo) y el `AttemptId` (número del intento en el rastreador) cuando corresponden. Filtrando por un ID se ve el recorrido completo de un dato: evento de Paper → rastreador → clasificador → memoria.
+2. **Explicaciones como datos.** El dominio no escribe logs: devuelve la explicación junto con el resultado.
+   - `DecisionTrace` (dentro de `BrainResult`): prioridad de cada jugador con sus componentes, estrategias viables y descartadas con la razón, valor sorteado y puntaje de cada opción, roles y ataques sugeridos, y la condición que cerró el plan.
+   - `ClassificationTrace` (dentro del resultado del clasificador): la regla del rastreador que aplicó (1 a 8) y los hechos que usó.
+   - La memoria devuelve el registro antes y después de cada cambio.
+3. **Escritura.** `TraceWriter` escribe JSON Lines en `plugins/MobAI/debug/`, en otro hilo. El nivel (`TraceLevel`: `OFF`, `DECISIONS` o `FULL`) se elige por grupo con `/mobai debug <grupo|all> <nivel>`. En la consola solo salen errores y una línea por incidente.
+4. **Caja negra.** `FlightRecorder` guarda en RAM los últimos eventos de traza de cada grupo (cantidad configurable, 200 por defecto), siempre, aunque el nivel sea `OFF`.
+5. **Incidentes.** Ante una excepción atrapada en el borde de los adaptadores, una validación del dominio que falla o un estado imposible, `IncidentWriter` escribe `incident-<id>.json` con:
+   - dónde: capa, clase, método, caso de uso y stack trace;
+   - la caja negra del grupo;
+   - las entradas para reproducirlo: foto, estado del grupo (memoria, plan y estado), configuración y los números al azar que se consumieron.
+6. **Reproducción.** `RecordingRandomSource` envuelve el puerto `RandomSource` (no es un puerto nuevo) y registra cada número sorteado. `TraceReplay`, una herramienta de prueba, lee un incidente, reconstruye el estado, entrega los mismos números al azar y vuelve a ejecutar el dominio y la aplicación: el resultado tiene que coincidir. Así un incidente se convierte en la prueba JUnit que reproduce el bug (paso 3 de `resolucion-de-bugs.md`).
+7. **Límite.** Lo que hace Minecraft por su cuenta (pathfinding, física de las flechas) no se reproduce exactamente. Para esa parte, el incidente trae los hechos crudos de Paper y un guion para repetirlo en el server: posiciones, equipo, efectos, composición del grupo y política.
+
+**Reglas:** todo flujo nuevo emite su traza; ningún error sale sin contexto (grupo, tick e IDs); las pruebas verifican también las explicaciones.
 
 ## Hilos y tiempo
 
@@ -327,7 +348,7 @@ Paper no tiene un evento de "el mob empezó a atacar". Como los ataques los ejec
 
 ### Hechos que se registran (`AttackFacts`)
 
-Mob, objetivo, ataque, tick de apertura, daño final al objetivo, si el objetivo estaba bloqueando con escudo y de frente, si estaba en invulnerabilidad post-golpe, qué tocó el proyectil (el objetivo, un aliado, otra entidad o un bloque), si el mob recibió daño de un tercero antes de resolver, si el evento fue cancelado por otro plugin, y si el objetivo sigue válido (vivo, conectado, mismo mundo).
+Mob, objetivo, ataque, tick de apertura, daño real al objetivo (daño final más lo que absorbió la absorción, porque con absorción el daño final es 0), si el modificador de bloqueo (`BLOCKING`) estuvo presente, si el objetivo estaba bloqueando con escudo y de frente, si estaba en invulnerabilidad post-golpe, qué tocó el proyectil (el objetivo, un aliado, otra entidad o un bloque), si el mob recibió daño de un tercero antes de resolver, si el evento fue cancelado por otro plugin, y si el objetivo sigue válido (vivo, conectado, mismo mundo).
 
 ### Reglas de clasificación
 
@@ -337,11 +358,11 @@ Se evalúan en este orden; gana la primera que aplica.
 | --- | --- | --- |
 | 1 | El objetivo murió, se desconectó o cambió de mundo antes de resolver | Neutral |
 | 2 | El daño fue cancelado por otro plugin o una protección de región | Neutral |
-| 3 | El objetivo estaba en invulnerabilidad post-golpe por un golpe de otro | Neutral |
+| 3 | El objetivo era invulnerable al abrir el intento (`noDamageTicks` mayor a la mitad del máximo, o modo creativo o espectador) y no llegó evento de daño | Neutral |
 | 4 | El proyectil impactó a un aliado | Neutral (el daño al aliado se aplica, pero no cuenta para la memoria ni provoca cambio de objetivo) |
 | 5 | Un tercero golpeó al mob e interrumpió el ataque | Neutral |
-| 6 | Daño final mayor a 0 sobre el objetivo | Acierto |
-| 7 | El objetivo bloqueó con escudo de frente | Parcial (peso configurable, 0,5 por defecto); si el golpe fue de hacha y deshabilitó el escudo, acierto |
+| 6 | Daño real mayor a 0 sobre el objetivo (daño final más lo absorbido) | Acierto |
+| 7 | El evento trae el modificador `BLOCKING` (el escudo bloqueó; `isBlocking()` no alcanza, porque da `true` aunque el golpe venga por la espalda) | Parcial (peso configurable, 0,5 por defecto); si el golpe fue de hacha y deshabilitó el escudo, acierto |
 | 8 | El proyectil tocó un bloque u otra entidad, o venció el plazo | Fallo |
 
 ### Ciclo de vida de un intento
@@ -359,11 +380,14 @@ Se evalúan en este orden; gana la primera que aplica.
 - **Sin fugas de memoria**: los intentos abiertos se limpian cuando muere el mob, se descarga el chunk o vence el plazo.
 - **Un mob tiene como máximo un intento cuerpo a cuerpo abierto**; los proyectiles pueden tener varios en vuelo.
 
-### A verificar en la semana 1
+### Verificado en el spike
 
-- **Detección del bloqueo con escudo:** el sistema de modificadores de daño de Bukkit está deprecado. Plan: combinar "el jugador estaba bloqueando", "daño final 0" y "el golpe vino de frente", y confirmarlo con una prueba en el server.
-- **Detección de la invulnerabilidad post-golpe** desde la API pública.
-- **Que el evento de daño del cuerpo a cuerpo se dispare dentro del mismo tick del ataque**, para resolverlo sin plazo.
+Los tres puntos que había que verificar se probaron en el server (detalle en `docs/plan/hallazgos-api.md`):
+
+- **Bloqueo con escudo:** se detecta con el modificador `BLOCKING` del evento de daño. La lectura de modificadores usa una API deprecada y vive en un solo método de `VersionTranslator`.
+- **Invulnerabilidad:** un golpe que cae en la ventana de invulnerabilidad no dispara ningún evento; se detecta al abrir el intento.
+- **Mismo tick:** el evento de daño llega dentro de la llamada a `attack()`, así que el cuerpo a cuerpo se resuelve sin plazo.
+- **Flechas que llegan tarde:** un impacto que llega después de que venció el plazo del intento se ignora.
 
 ### Decisión: golpes bloqueados cuentan como parciales
 
@@ -395,6 +419,34 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Rastreador de ataques | `AttackTracker` | Adaptadores |
 | Registro de roles | `RoleRegistry` | Adaptadores |
 | Traductor de versión | `VersionTranslator` | Adaptadores |
+| Ataque (los 7 del catálogo) | `Attack` | Dominio |
+| Tipo de mob, efecto de poción | `MobKind`, `EffectKind` | Dominio |
+| Identificadores | `MobId`, `PlayerId`, `GroupId`, `StrategyId`, `PlanId`, `AttemptId` | Dominio |
+| Vector o posición | `Vec3` | Dominio |
+| Valores fijos de Minecraft | `MinecraftConstants` | Dominio |
+| Configuración | `MobAiSettings` (un record por sección) | Dominio |
+| Intentos virtuales de la velocidad de aprendizaje | `LearningPrior` | Dominio |
+| Estimación de éxito (los parámetros de la Beta) | `SuccessEstimate` | Dominio |
+| Sorteo desde la Beta | `BetaSampler` | Dominio |
+| Opción a elegir, con su puntaje base | `SelectionCandidate` | Dominio |
+| Hechos de un intento, clasificador, causa neutral | `AttackFacts`, `AttackClassifier`, `NeutralCause` | Dominio |
+| Registro de amenaza | `ThreatLedger` | Dominio |
+| Geometría de combate | `CombatGeometry` | Dominio |
+| Tiempo para matarlo | `KillTimeEstimator` | Dominio |
+| Regla de objetivo de la araña | `SpiderTargetRule` | Dominio |
+| Plan en curso | `Plan` | Dominio |
+| Orden para un mob (rol, objetivo y ataque sugerido) | `RoleAssignment` | Entre capas |
+| Plan cerrado | `ClosedPlan` | Entre capas |
+| Explicación de una decisión, de una clasificación | `DecisionTrace`, `ClassificationTrace` | Dominio |
+| Nivel de traza | `TraceLevel`: `OFF`, `DECISIONS`, `FULL` | Dominio |
+| Grupos activos e índice mob → grupo | `ActiveGroups` | Aplicación |
+| Configuración vigente | `SettingsHolder` | Aplicación |
+| Casos de uso nuevos | `RemoveMember`, `RecordDamageTaken`, `RecordPlayerDeath`, `ResetMemories`, `DescribeGroup`, `DescribePlayerMemory` | Aplicación |
+| Datos guardados | `StoredMemories`, `StoredGroup`, `StoredMember`, `StoredRecord` | Dominio (puerto) |
+| Scheduler de decisión, aplicador de decisiones | `DecisionScheduler`, `DecisionApplier` | Adaptadores |
+| Armado de fotos, instalador de goals, rastreador de movimiento | `SnapshotFactory`, `GoalInstaller`, `MovementTracker` | Adaptadores |
+| Escritor de trazas, caja negra, escritor de incidentes, azar registrado | `TraceWriter`, `FlightRecorder`, `IncidentWriter`, `RecordingRandomSource` | Adaptadores |
+| Reproducción de un incidente | `TraceReplay` | Pruebas |
 
 «Escape» se reserva para el mob (RF-08: `MemberEscaped`, `RecordEscape`). Cuando el que se va es el jugador, el plan cierra con `TARGET_LOST`; nunca se lo llama escape en el código.
 
