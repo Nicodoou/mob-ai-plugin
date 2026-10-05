@@ -2,6 +2,7 @@ package io.github.nicodoou.mobai.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.nicodoou.mobai.domain.event.DomainEvent;
 import io.github.nicodoou.mobai.domain.event.DomainEventPublisher;
 import io.github.nicodoou.mobai.domain.event.LeaderDied;
 import io.github.nicodoou.mobai.domain.group.Group;
@@ -19,53 +20,48 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-class DisbandGroupTest {
-  private final ActiveGroups activeGroups = new ActiveGroups();
+class GroupEventsTest {
   private final DomainEventPublisher publisher = new DomainEventPublisher();
-  private final DisbandGroup disbandGroup =
-      new DisbandGroup(activeGroups, new GroupEvents(publisher));
+  private final List<DomainEvent> published = new ArrayList<>();
+  private final GroupEvents groupEvents = new GroupEvents(publisher);
 
-  @Test
-  void disbandRemovesTheGroupAndUnindexesItsMembers() {
-    Group group = newGroup(1);
-    activeGroups.add(group);
-    activeGroups.join(groupId(1), mob(1), MobKind.ZOMBIE);
-    activeGroups.join(groupId(1), mob(2), MobKind.ZOMBIE);
-
-    Optional<Group> disbanded = disbandGroup.execute(groupId(1));
-
-    assertThat(disbanded).containsSame(group);
-    assertThat(activeGroups.groupOf(mob(1))).isEmpty();
-    assertThat(activeGroups.groupOf(mob(2))).isEmpty();
+  GroupEventsTest() {
+    publisher.subscribe(DomainEvent.class, published::add);
   }
 
   @Test
-  void disbandOfAnUnknownGroupReturnsEmpty() {
-    Optional<Group> disbanded = disbandGroup.execute(groupId(9));
-
-    assertThat(disbanded).isEmpty();
-  }
-
-  @Test
-  void disbandPublishesThePendingEventsAfterRemovingTheGroup() {
-    Group group = newGroup(1);
-    activeGroups.add(group);
-    activeGroups.join(groupId(1), mob(1), MobKind.ZOMBIE);
-    activeGroups.join(groupId(1), mob(2), MobKind.ZOMBIE);
+  void publishPendingDeliversEventsInOrder() {
+    Group group = groupWithThreeMobs();
     group.removeMember(mob(1), 50);
-    List<LeaderDied> received = new ArrayList<>();
-    List<Boolean> stillActive = new ArrayList<>();
-    publisher.subscribe(
-        LeaderDied.class,
-        event -> {
-          received.add(event);
-          stillActive.add(activeGroups.group(groupId(1)).isPresent());
-        });
+    group.removeMember(mob(2), 60);
 
-    disbandGroup.execute(groupId(1));
+    groupEvents.publishPending(group);
 
-    assertThat(received).hasSize(1);
-    assertThat(stillActive).containsExactly(false);
+    assertThat(published)
+        .containsExactly(
+            new LeaderDied(groupId(1), mob(1), Optional.of(mob(2)), 50),
+            new LeaderDied(groupId(1), mob(2), Optional.of(mob(3)), 60));
+  }
+
+  @Test
+  void publishPendingDrainsTheGroup() {
+    Group group = groupWithThreeMobs();
+    group.removeMember(mob(1), 50);
+    group.removeMember(mob(2), 60);
+
+    groupEvents.publishPending(group);
+    groupEvents.publishPending(group);
+
+    assertThat(group.drainEvents()).isEmpty();
+    assertThat(published).hasSize(2);
+  }
+
+  private static Group groupWithThreeMobs() {
+    Group group = newGroup(1);
+    for (long n = 1; n <= 3; n++) {
+      group.roster().addMember(mob(n), MobKind.ZOMBIE);
+    }
+    return group;
   }
 
   private static MobId mob(long n) {
