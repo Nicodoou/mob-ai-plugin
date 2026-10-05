@@ -7,6 +7,7 @@ public final class MobAiPlugin extends JavaPlugin {
   @Override
   public void onEnable() {
     getSLF4JLogger().info("MobAI {} enabled", getPluginMeta().getVersion());
+    io.github.nicodoou.mobai.spike.SpikeInstaller.install(this);
   }
 
   @Override
