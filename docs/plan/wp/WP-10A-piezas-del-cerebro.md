@@ -5,7 +5,7 @@
 | Campo | Valor |
 | --- | --- |
 | Etapa | E3 Dominio: grupo y cerebro |
-| Depende de | WP-07, WP-08 y WP-09 |
+| Depende de | WP-07, WP-08, WP-08B y WP-09 |
 | Modelo | Sonnet |
 | Rama | `wp-10a-piezas-del-cerebro` |
 
@@ -14,24 +14,27 @@ El WP-10 original pasaba las 400 líneas de producción, así que se dividió: e
 ## Objetivo
 
 - **Fin de plan:** `PlanEndDetector` decide si el plan en curso terminó por objetivo perdido, por tiempo o por retirada del grupo, y si el objetivo está a la vista.
-- **Retirada:** `RetreatRule` decide si un mob tiene poca vida y tiene que pasar a `RETREAT`.
+- **Retirada táctica** (CT-07 en `docs/plan/cambios-tecnicos.md`):
+  - `RetreatRule` decide si un mob pasa a `RETREAT`, si ya se recuperó para volver, y si puede curarse (lejos de los jugadores).
+  - `RegroupRule` decide cuándo termina el reagrupamiento del grupo.
+  - `RegroupWindow` es la ventana de reagrupamiento global y adaptativa.
+  - `RetreatSettings` es su configuración.
 - **Ataque sugerido:** `AttackSuggester` elige qué ataque le sugiere el cerebro a cada mob, con la política de selección y la memoria.
 - **Datos de salida del cerebro:** la decisión por grupo (`GroupDecision`, con un `RoleAssignment` por mob) y su explicación (`DecisionTrace`).
-- **`Plan` recuerda con cuántos miembros empezó,** para poder contar a los muertos en la regla de retirada.
 
 ## Contexto a leer
 
 1. `docs/plan/reglas-para-agentes.md` y este WP.
-2. Código existente (solo leer, salvo `Plan.java`, que se modifica):
-   - `src/main/java/io/github/nicodoou/mobai/domain/group/Plan.java`, `PlanStart.java`, `Role.java`, `GroupState.java`, `PlanEndReason.java`
+2. Código existente (solo leer, salvo los archivos que la tabla «Archivos» marca para modificar):
+   - `src/main/java/io/github/nicodoou/mobai/domain/group/Plan.java` (tiene `startingMembers()` desde el WP-08B), `PlanStart.java`, `Role.java`, `GroupState.java`, `PlanEndReason.java`
    - `src/main/java/io/github/nicodoou/mobai/domain/decision/ClosedPlan.java`
    - `src/main/java/io/github/nicodoou/mobai/domain/shared/Attack.java`, `MobKind.java`, `MobId.java`, `PlayerId.java`, `GroupId.java`, `PlanId.java`, `StrategyId.java`
    - `src/main/java/io/github/nicodoou/mobai/domain/snapshot/GroupSnapshot.java`, `MobSnapshot.java`, `PlayerSnapshot.java`
    - `src/main/java/io/github/nicodoou/mobai/domain/selection/SelectionPolicy.java`, `SelectionCandidate.java`, `SelectionResult.java`
    - `src/main/java/io/github/nicodoou/mobai/domain/memory/GroupMemory.java` (solo las firmas públicas)
    - `src/main/java/io/github/nicodoou/mobai/domain/target/TargetSelection.java`
-   - `src/main/java/io/github/nicodoou/mobai/domain/settings/PlanSettings.java`
-   - `src/test/java/io/github/nicodoou/mobai/domain/group/PlanTest.java`
+   - `src/main/java/io/github/nicodoou/mobai/domain/settings/PlanSettings.java`, `MobAiSettings.java`, `SettingsChecks.java`
+   - `src/test/java/io/github/nicodoou/mobai/domain/settings/SettingsValidationTest.java`
    - `src/test/java/io/github/nicodoou/mobai/testsupport/TestSettings.java`, `GroupSnapshotBuilder.java`, `MobSnapshotBuilder.java`, `PlayerSnapshotBuilder.java`
 
 ## Reglas de negocio
@@ -48,7 +51,22 @@ El WP-10 original pasaba las 400 líneas de producción, así que se dividió: e
 - **«Empezaron»** = cantidad de roles al empezar el plan (los mobs de la foto). **«Siguen»** = roles que quedan en el plan (un miembro que se va sale de los roles, WP-08). Un plan que empezó sin mobs nunca termina por retirada.
 - **Objetivo a la vista:** está en la foto, con vida mayor a 0, y algún mob de la foto está a `targetLostDistanceBlocks` (32) o menos. El cerebro llama a `markTargetSeen` solo cuando se cumple.
 
-**Retirada** (D8). Un mob pasa a `RETREAT` si `vida ≤ retreatHealthFraction × vida máxima` (30 %).
+**Retirada táctica** (D8 y CT-07):
+- Un mob pasa a `RETREAT` si `vida ≤ PlanSettings.retreatHealthFraction × vida máxima` (30 %).
+- Vuelve si `vida ≥ RetreatSettings.recoveryHealthFraction × vida máxima` (60 %). Entre los dos umbrales mantiene lo que tenga.
+- Puede curarse si ningún jugador vivo de la foto está a menos de `healSafeDistanceBlocks` (12). Un jugador justo a 12 bloques no lo impide.
+
+**Reagrupamiento** (CT-07). En `REGROUPING`, se evalúa en este orden:
+1. `RECOVERED`: más de la mitad de los mobs de la foto tiene 60 % o más (`2 × recuperados > mobs`).
+2. `WINDOW_EXPIRED`: pasaron `RegroupWindow.currentTicks()` ticks o más desde que empezó.
+
+Sin mobs en la foto solo puede vencer la ventana.
+
+**Ventana de reagrupamiento** (CT-07). Global: una sola instancia para todo el server, inyectada.
+- Empieza en `regroupInitialTicks` (600).
+- `recordWiped()` (un grupo murió entero reagrupándose) le resta `regroupStepTicks` (50).
+- `recordSurvived()` (un grupo terminó de reagruparse vivo) le suma 50.
+- Siempre se lee acotada entre `regroupMinTicks` (200) y `regroupMaxTicks` (1.200), con los valores de configuración vigentes: un `/mobai reload` que achica el rango la acota en la próxima lectura.
 
 **Ataque sugerido** (D9).
 - Araña: siempre `SPIDER_BITE`, sin pasar por la política: el catálogo dice que la araña no elige su ataque, y así no consume números al azar.
@@ -61,21 +79,41 @@ Rutas relativas a `src/main/java/io/github/nicodoou/mobai/` y `src/test/java/io/
 
 | Acción | Ruta |
 | --- | --- |
-| Modificar | `domain/group/Plan.java` (agregar `startingMembers`) |
-| Modificar (prueba) | `domain/group/PlanTest.java` (una prueba nueva) |
+| Crear | `domain/settings/RetreatSettings.java` |
+| Modificar | `domain/settings/MobAiSettings.java` (sección nueva y una validación cruzada) |
+| Modificar (prueba) | `testsupport/TestSettings.java`, `domain/settings/SettingsValidationTest.java` |
 | Crear | `domain/decision/RoleAssignment.java`, `GroupDecision.java`, `StrategyCheck.java`, `AttackChoice.java`, `DecisionTrace.java`, `BrainResult.java` |
-| Crear | `domain/brain/PlanEndDetector.java`, `RetreatRule.java`, `AttackContext.java`, `AttackSuggester.java` |
+| Crear | `domain/brain/PlanEndDetector.java`, `RetreatRule.java`, `RegroupEndReason.java`, `RegroupWindow.java`, `RegroupRule.java`, `AttackContext.java`, `AttackSuggester.java` |
 | Crear (prueba) | `domain/decision/GroupDecisionTest.java` |
-| Crear (prueba) | `domain/brain/PlanEndDetectorTest.java`, `RetreatRuleTest.java`, `AttackSuggesterTest.java` |
+| Crear (prueba) | `domain/brain/PlanEndDetectorTest.java`, `RetreatRuleTest.java`, `RegroupWindowTest.java`, `RegroupRuleTest.java`, `AttackSuggesterTest.java` |
 
 ## Especificación
 
-### 1. `Plan`: con cuántos miembros empezó
+### 1. `RetreatSettings` y `MobAiSettings`
 
-- Agregar el componente `int startingMembers` **al final** del record (después de `damageDealt`).
-- `Plan.start` lo llena con `start.roles().size()`.
-- Los tres métodos `copyWith…` lo copian sin cambios.
-- Ningún otro cambio. Ningún archivo fuera de `Plan.java` construye un `Plan` con `new`.
+```java
+public record RetreatSettings(
+    double recoveryHealthFraction,
+    double healSafeDistanceBlocks,
+    long regroupInitialTicks,
+    long regroupMinTicks,
+    long regroupMaxTicks,
+    long regroupStepTicks) { ... }
+```
+
+Validación con `SettingsChecks`, en este orden:
+1. `requireBetween("RetreatSettings.recoveryHealthFraction", recoveryHealthFraction, 0, 1)`
+2. `requirePositive("RetreatSettings.healSafeDistanceBlocks", healSafeDistanceBlocks)`
+3. `requireAtLeast("RetreatSettings.regroupMinTicks", regroupMinTicks, 1)`
+4. `requireNotAbove("RetreatSettings.regroupMinTicks", regroupMinTicks, "RetreatSettings.regroupMaxTicks", regroupMaxTicks)`
+5. `requireBetween("RetreatSettings.regroupInitialTicks", regroupInitialTicks, regroupMinTicks, regroupMaxTicks)`
+6. `requireAtLeast("RetreatSettings.regroupStepTicks", regroupStepTicks, 1)`
+
+`MobAiSettings`:
+- Agregá el componente `RetreatSettings retreat` **al final** (después de `debug`), con `requireNonNull(retreat, "MobAiSettings.retreat")`.
+- Después de los `requireNonNull`, la validación cruzada: si `retreat.recoveryHealthFraction() <= plan.retreatHealthFraction()`, lanzá `IllegalArgumentException("RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got " + retreat.recoveryHealthFraction() + " <= " + plan.retreatHealthFraction())`. Sin ese margen, un mob cambiaría de rol en cada decisión.
+
+`TestSettings.defaults()` suma `new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50)` al final. En `SettingsValidationTest`, agregá el argumento nuevo (`defaults.retreat()`) a cada `new MobAiSettings(...)` que ya existe.
 
 ### 2. Datos de salida (`domain.decision`)
 
@@ -84,7 +122,11 @@ Todos son records. Cada componente de referencia lleva `requireNonNull` con mens
 ```java
 /** What one mob does until the next decision. */
 public record RoleAssignment(
-    MobId mob, Role role, Optional<PlayerId> target, Optional<Attack> suggestedAttack) {}
+    MobId mob,
+    Role role,
+    Optional<PlayerId> target,
+    Optional<Attack> suggestedAttack,
+    boolean recovering) {}   // recovering: the plugin heals this mob until the next decision
 
 public record GroupDecision(
     GroupId group,
@@ -112,7 +154,9 @@ public record DecisionTrace(
     List<StrategyCheck> strategyChecks,
     Optional<SelectionResult<StrategyId>> strategySelection,
     List<MobId> newlyRetreating,
+    List<MobId> returningFromRetreat,
     Optional<PlanEndReason> endReason,
+    Optional<RegroupEndReason> regroupEnd,
     List<AttackChoice> attackChoices) {}
 
 public record BrainResult(
@@ -144,17 +188,62 @@ public final class PlanEndDetector {
 | `isTargetVisible` | `snapshot.player(target).filter(player -> player.health() > 0).filter(player -> isNearAnyMob(snapshot, player)).isPresent()` |
 | `private boolean isNearAnyMob(GroupSnapshot snapshot, PlayerSnapshot player)` | `double limit = settings.get().targetLostDistanceBlocks();` devuelve `snapshot.mobs().stream().anyMatch(mob -> mob.position().distanceTo(player.pose().position()) <= limit)` |
 
-### 4. `domain.brain.RetreatRule`
+### 4. `RetreatRule`, `RegroupEndReason`, `RegroupWindow` y `RegroupRule` (`domain.brain`)
 
 ```java
 public final class RetreatRule {
-  public RetreatRule(Supplier<PlanSettings> settings) { ... }   // "RetreatRule.settings"
+  public RetreatRule(Supplier<PlanSettings> plan, Supplier<RetreatSettings> retreat) { ... }
+  // requireNonNull: "RetreatRule.plan", "RetreatRule.retreat"
 
-  public boolean shouldRetreat(MobSnapshot mob) {
-    return mob.health() <= settings.get().retreatHealthFraction() * mob.maxHealth();
-  }
+  public boolean shouldRetreat(MobSnapshot mob) { ... }
+  public boolean shouldReturn(MobSnapshot mob) { ... }
+  public boolean canRecover(MobSnapshot mob, GroupSnapshot snapshot) { ... }
 }
 ```
+
+| Método | Cuerpo |
+| --- | --- |
+| `shouldRetreat` | `mob.health() <= plan.get().retreatHealthFraction() * mob.maxHealth()` |
+| `shouldReturn` | `mob.health() >= retreat.get().recoveryHealthFraction() * mob.maxHealth()` |
+| `canRecover` | `double safe = retreat.get().healSafeDistanceBlocks();` devuelve `snapshot.players().stream().filter(player -> player.health() > 0).noneMatch(player -> player.pose().position().distanceTo(mob.position()) < safe)` |
+
+```java
+public enum RegroupEndReason { RECOVERED, WINDOW_EXPIRED }
+
+/** The regroup time shared by every group; it learns from how regrouping ends. */
+public final class RegroupWindow {
+  public RegroupWindow(Supplier<RetreatSettings> settings) { ... }   // "RegroupWindow.settings"
+
+  public long currentTicks() { ... }
+  public void recordWiped() { ... }
+  public void recordSurvived() { ... }
+  public void restore(long savedTicks) { ... }
+}
+```
+
+| Elemento | Comportamiento |
+| --- | --- |
+| Campo | `private long ticks;`, que el constructor inicializa con `settings.get().regroupInitialTicks()` |
+| `currentTicks()` | `bounded(ticks)` |
+| `recordWiped()` | `ticks = bounded(currentTicks() - settings.get().regroupStepTicks());` |
+| `recordSurvived()` | `ticks = bounded(currentTicks() + settings.get().regroupStepTicks());` |
+| `restore(savedTicks)` | `ticks = savedTicks;` (se acota al leer; lo usa la carga desde disco del WP-15) |
+| `private long bounded(long value)` | `RetreatSettings current = settings.get(); return Math.clamp(value, current.regroupMinTicks(), current.regroupMaxTicks());` |
+
+```java
+public final class RegroupRule {
+  public RegroupRule(Supplier<RetreatSettings> settings, RegroupWindow window) { ... }
+  // requireNonNull: "RegroupRule.settings", "RegroupRule.window"
+
+  public Optional<RegroupEndReason> detect(GroupSnapshot snapshot, long regroupStartTick) { ... }
+}
+```
+
+| Método | Cuerpo |
+| --- | --- |
+| `detect` | Si `hasRecoveredMajority(snapshot)` → `RECOVERED`; si `snapshot.tick() - regroupStartTick >= window.currentTicks()` → `WINDOW_EXPIRED`; si no, vacío |
+| `private boolean hasRecoveredMajority(GroupSnapshot snapshot)` | `long recovered = snapshot.mobs().stream().filter(this::isRecovered).count();` devuelve `2 * recovered > snapshot.mobs().size()` |
+| `private boolean isRecovered(MobSnapshot mob)` | `mob.health() >= settings.get().recoveryHealthFraction() * mob.maxHealth()` |
 
 ### 5. `domain.brain.AttackContext` y `AttackSuggester`
 
@@ -178,13 +267,7 @@ public final class AttackSuggester {
 
 ## Pruebas obligatorias
 
-Settings: `TestSettings.defaults().plan()` (duración máxima 600, distancia de objetivo perdido 32, tiempo de objetivo perdido 200, retirada 0,3). Plan de prueba: `Plan.start(new PlanId(new GroupId(new UUID(0, 3)), 1), new PlanStart(new StrategyId("FLANK"), ALICE, roles, 20, 100))`, donde `roles` tiene 4 mobs `m1` a `m4` (`new MobId(new UUID(1, n))`), todos `PRESS`, y `ALICE = new PlayerId(new UUID(0, 10))`.
-
-**`PlanTest`** (prueba nueva)
-
-| Prueba | Verificación |
-| --- | --- |
-| `remembersHowManyMembersItStartedWith` | El plan de 4 roles tiene `startingMembers()` 4; después de `withoutMember(m1)` sigue en 4 |
+Settings: `TestSettings.defaults()`. Plan: duración máxima 600, distancia de objetivo perdido 32, tiempo de objetivo perdido 200 y retirada 0,3. Retirada: vuelta 0,6, distancia segura 12 y ventana 600 (de 200 a 1.200, paso 50). Plan de prueba: `Plan.start(new PlanId(new GroupId(new UUID(0, 3)), 1), new PlanStart(new StrategyId("FLANK"), ALICE, roles, 20, 100))`, donde `roles` tiene 4 mobs `m1` a `m4` (`new MobId(new UUID(1, n))`), todos `PRESS`, y `ALICE = new PlayerId(new UUID(0, 10))`.
 
 **`PlanEndDetectorTest`**
 
@@ -208,6 +291,36 @@ Settings: `TestSettings.defaults().plan()` (duración máxima 600, distancia de 
 | --- | --- |
 | `retreatsAtThirtyPercentOrLess` | Vida 6 de 20: `true`. Vida 6,5 de 20: `false` |
 | `usesEachMobsMaxHealth` | Araña con vida 4,8 de 16: `true`; con 5 de 16: `false` |
+| `returnsAtSixtyPercentOrMore` | `shouldReturn`: vida 12 de 20 `true`; 11,9 de 20 `false`; araña con 9,6 de 16 `true` |
+| `betweenThresholdsNothingChanges` | Vida 8 de 20: `shouldRetreat` y `shouldReturn` son `false` |
+| `recoversOnlyAwayFromLivingPlayers` | Mob en `(0, 64, 0)`. Jugador vivo a 12 bloques: `canRecover` `true`. A 11,9: `false`. Jugador muerto (vida 0) a 1 bloque: `true`. Sin jugadores: `true` |
+
+**`RegroupWindowTest`.** `settings` es un `AtomicReference<RetreatSettings>` con los valores por defecto.
+
+| Prueba | Verificación |
+| --- | --- |
+| `startsAtTheInitialValue` | `currentTicks()` es 600 |
+| `wipesShortenAndSurvivalsLengthen` | `recordWiped()`: 550. Después dos `recordSurvived()`: 650 |
+| `staysWithinItsBounds` | 9 `recordWiped()` seguidos: 200 (el noveno no baja de 200). Después 25 `recordSurvived()`: 1.200 |
+| `restoredValueIsBoundedOnRead` | `restore(900)`: 900. `restore(5000)`: 1.200 |
+| `boundsFollowTheCurrentSettings` | `restore(900)` y después `settings.set(new RetreatSettings(0.6, 12.0, 600, 200, 800, 50))`: `currentTicks()` es 800 |
+| `rejectsInconsistentSettings` | `new RetreatSettings(0.6, 12.0, 600, 1300, 1200, 50)`: mensaje `RetreatSettings.regroupMinTicks must not exceed RetreatSettings.regroupMaxTicks, got 1300.0 > 1200.0` |
+
+**`RegroupRuleTest`.** Ventana nueva (600). El reagrupamiento empezó en el tick 1000.
+
+| Prueba | Verificación |
+| --- | --- |
+| `recoveredMajorityEndsRegrouping` | Foto en el tick 1100 con mobs de vida 12, 12 y 5 (de 20): `RECOVERED` |
+| `halfRecoveredIsNotEnough` | Tick 1100, vida 12 y 5: vacío |
+| `windowExpiresAfterItsTicks` | Mobs con vida 5: tick 1599 vacío; tick 1600 `WINDOW_EXPIRED` |
+| `recoveryWinsOverTheWindow` | Tick 1600, mobs con vida 12 y 12: `RECOVERED` |
+| `withoutMobsOnlyTheWindowCanEndIt` | Sin mobs: tick 1100 vacío; tick 1600 `WINDOW_EXPIRED` |
+
+**`SettingsValidationTest`** (prueba nueva)
+
+| Prueba | Verificación |
+| --- | --- |
+| `recoveryMustExceedTheRetreatThreshold` | Defaults con `new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50)`: mensaje `RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got 0.3 <= 0.3` |
 
 **`AttackSuggesterTest`.** La política es una clase de prueba, `RecordingPolicy implements SelectionPolicy`, que guarda los candidatos recibidos y la cantidad de llamadas, y elige el candidato de mayor `estimate().mean()` (el primero ante un empate). `memory = new GroupMemory(() -> TestSettings.defaults().memory())`, tick 1000.
 
@@ -237,13 +350,17 @@ Calculadas antes de escribirlas:
 | En `detect`, evaluar `isTimedOut` antes que `isTargetLost` | `lostWinsOverTimeout` | En el tick 700 daría `TIMED_OUT` |
 | En `isNearAnyMob`, `<` en vez de `<=` | `targetWithinLostDistanceOfAMobIsVisible` | A 32 bloques justos dejaría de estar a la vista |
 | En `suggest`, no tratar aparte a la araña | `spiderAlwaysBitesWithoutAskingThePolicy` | La política recibiría una llamada |
+| En `shouldReturn`, `>` en vez de `>=` | `returnsAtSixtyPercentOrMore` | 12 > 12 es falso |
+| En `canRecover`, `<=` en vez de `<` | `recoversOnlyAwayFromLivingPlayers` | El jugador a 12 justos impediría curarse |
+| En `hasRecoveredMajority`, `>=` en vez de `>` | `halfRecoveredIsNotEnough` | 1 de 2 alcanzaría |
+| En `RegroupWindow`, quitar el acotado (`bounded` devuelve `value` sin cambios) | `staysWithinItsBounds` | Nueve restas darían 150 |
 
 ## Procedimiento
 
 1. Rama `wp-10a-piezas-del-cerebro` desde `main`.
-2. `Plan` con `startingMembers` y la prueba nueva de `PlanTest`. `./gradlew spotlessApply build`. Commit: `feat(domain): remember how many members a plan started with`.
+2. `RetreatSettings`, `MobAiSettings`, `TestSettings` y `SettingsValidationTest`. `./gradlew spotlessApply build`. Commit: `feat(domain): add retreat settings`.
 3. Los 6 records de `domain.decision` y `GroupDecisionTest`. `./gradlew spotlessApply build`. Commit: `feat(domain): add brain decision and trace records`.
-4. `PlanEndDetector`, `RetreatRule` y sus pruebas. `./gradlew spotlessApply build`. Commit: `feat(domain): add plan end detector and retreat rule`.
+4. `PlanEndDetector`, `RetreatRule`, `RegroupEndReason`, `RegroupWindow`, `RegroupRule` y sus pruebas. `./gradlew spotlessApply build`. Commit: `feat(domain): add plan end, retreat and regroup rules with an adaptive regroup window`.
 5. `AttackContext`, `AttackSuggester` y `AttackSuggesterTest`. `./gradlew spotlessApply build`. Commit: `feat(domain): add attack suggester`.
 6. Pruebas que muerden.
 7. `./gradlew jacocoTestReport jacocoTestCoverageVerification` tiene que pasar.
@@ -258,7 +375,9 @@ Cualquier otra cosa: frená y reportá.
 ## Fuera de alcance
 
 - `Brain` y la coordinación de todas estas piezas (WP-10B).
-- Cerrar el plan por la muerte del objetivo (WP-13).
+- Cerrar el plan por la muerte del objetivo y llamar a `recordWiped` cuando un grupo muere reagrupándose (WP-13).
+- Guardar y cargar la ventana (WP-14 y WP-15).
+- Mover al mob al margen y curarlo en el server (WP-22).
 
 ## Aceptación
 
@@ -266,7 +385,7 @@ Cualquier otra cosa: frená y reportá.
 - [ ] Firmas, nombres, orden de las reglas y mensajes idénticos a los del WP.
 - [ ] Ninguna función hace más de una tarea; ningún bucle sin límite; ninguna clase con más de 20 métodos públicos.
 - [ ] Todas las pruebas obligatorias pasan con su nombre exacto.
-- [ ] Las 6 pruebas que muerden fallaron con su cambio temporal y el código quedó revertido.
+- [ ] Las 10 pruebas que muerden fallaron con su cambio temporal y el código quedó revertido.
 - [ ] Cobertura del dominio ≥ 80 %.
 - [ ] 4 commits con los mensajes indicados.
 - [ ] PR abierto con el check `build` en verde, verificado antes del informe.
