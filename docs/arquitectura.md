@@ -433,7 +433,8 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Hechos de un intento, clasificador, causa neutral, contacto de la flecha, clasificación | `AttackFacts`, `AttackClassifier`, `NeutralCause`, `ProjectileContact`, `Classification` | Dominio |
 | Registro de amenaza | `ThreatLedger` | Dominio |
 | Geometría de combate, posición y frente del jugador | `CombatGeometry`, `PlayerPose` | Dominio |
-| Tiempo para matarlo | `KillTimeEstimator` | Dominio |
+| Tiempo para matarlo y su desglose | `KillTimeEstimator`, `KillTimeEstimate` | Dominio |
+| Consulta, puntaje y resultado de la selección de objetivo | `TargetQuery`, `TargetScore`, `TargetSelection` | Dominio |
 | Regla de objetivo de la araña | `SpiderTargetRule` | Dominio |
 | Plan en curso | `Plan` | Dominio |
 | Orden para un mob (rol, objetivo y ataque sugerido) | `RoleAssignment` | Entre capas |

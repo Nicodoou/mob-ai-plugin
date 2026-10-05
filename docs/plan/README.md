@@ -197,7 +197,8 @@ io.github.nicodoou.mobai
 │   ├── snapshot    SnapshotChecks, PlayerSnapshot, MobSnapshot, GroupSnapshot         WP-06
 │   ├── threat      ThreatLedger                                                       WP-06
 │   ├── geometry    PlayerPose, CombatGeometry                                         WP-06
-│   ├── target      KillTimeEstimator, TargetSelector, SpiderTargetRule                WP-07
+│   ├── target      KillTimeEstimate, KillTimeEstimator, TargetQuery, TargetScore,
+│   │               TargetSelection, TargetSelector, SpiderTargetRule                  WP-07
 │   ├── group       Member, Role, GroupState, Plan, PlanEndReason, Group               WP-08
 │   ├── decision    RoleAssignment, GroupDecision, ClosedPlan                          WP-08
 │   │               BrainResult                                                        WP-10

@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Especificar el WP-07 (selección de objetivo) y presentarlo a Nico. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+1. WP-07 aprobado y en curso (Sonnet). Al recibir el informe: revisar con la checklist de `orquestacion.md`. Después, especificar el WP-08. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -22,7 +22,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-04 | Sorteo Beta y políticas de selección | E2 | mergeado | Sonnet | [#4](https://github.com/Nicodoou/mob-ai-plugin/pull/4) | Una ronda: la prueba del boost era simétrica y no mordía; ahora mide la cola de Beta(0,5; 2) |
 | WP-05 | Clasificador de ataques | E2 | mergeado | Sonnet | [#6](https://github.com/Nicodoou/mob-ai-plugin/pull/6) | Sin correcciones |
 | WP-06 | Fotos, amenaza y geometría | E3 | mergeado | Sonnet | [#7](https://github.com/Nicodoou/mob-ai-plugin/pull/7) | La foto del jugador lleva el movimiento por tick y la dirección hacia la que mira; la amenaza sale de la foto y la guarda el grupo |
-| WP-07 | Selección de objetivo | E3 | pendiente | Sonnet | — | |
+| WP-07 | Selección de objetivo | E3 | en curso | Sonnet | — | |
 | WP-08 | Grupo, plan y eventos | E3 | pendiente | Sonnet | — | Incluye `PlanId` |
 | WP-09 | Estrategias | E3 | pendiente | Haiku | — | |
 | WP-10 | Cerebro | E3 | pendiente | Opus | — | Devuelve `DecisionTrace` |
