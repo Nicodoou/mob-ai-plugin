@@ -45,11 +45,11 @@ La aplicación traduce "pasó algo" en "qué tiene que hacer el dominio": cada c
 | Caso de uso | Lo dispara | Recibe | Devuelve o produce |
 | --- | --- | --- | --- |
 | TickGrupos | Scheduler, cada 10 ticks | Una foto por grupo | Una decisión por grupo (objetivo, plan, roles) |
-| RegistrarResultado | Rastreador de ataques, al resolver un intento | ResultadoAtaque (mob, objetivo, ataque, acierto/fallo/neutral) | Memoria del grupo actualizada |
+| RegistrarResultado | Rastreador de ataques, al resolver un intento | ResultadoAtaque (mob, objetivo, ataque, acierto/parcial/fallo/neutral) | Memoria del grupo actualizada |
 | CerrarPlan | Cerebro, cuando un plan termina | Grupo, objetivo, estrategia, resultado | Memoria del grupo, de la global y de los observadores actualizada |
 | ReclutarMob | Adaptador, cuando un mob se acerca a un grupo | Foto del mob y del grupo | Mob sumado, rechazado o grupo nuevo |
 | UnirGrupos | Adaptador, cuando dos grupos están cerca | Dos grupos | Un grupo con memorias sumadas |
-| RegistrarEscape | Adaptador, cuando un mob cumple la condición de escape | Mob y grupo | Memoria conservada en el grupo que corresponda |
+| RegistrarEscape | Adaptador, cuando un mob cumple la condición de escape (RF-08) | Mob y grupo | Memoria conservada en el grupo que corresponda |
 | DisolverGrupo | Adaptador, cuando muere el último miembro | Grupo | Memoria descartada (o conservada si hubo testigos) |
 | GuardarMemorias | Scheduler periódico y apagado del server | Todas las memorias | Llamada al puerto de persistencia |
 | CargarMemorias | Arranque del server | Nada | Memorias en RAM |
@@ -68,7 +68,7 @@ Los adaptadores son la única capa que conoce Minecraft: convierten lo que pasa 
 | --- | --- | --- |
 | Scheduler de decisión | Cada 10 ticks arma una foto por grupo | TickGrupos |
 | Rastreador de ataques | Abre un intento cuando un mob arranca un golpe; lo resuelve con el evento de daño o por tiempo | RegistrarResultado |
-| Listener de daño | Daño entre entidades: resuelve intentos, cancela fuego amigo, acumula amenaza por jugador | Rastreador, fotos |
+| Listener de daño | Daño entre entidades: resuelve intentos, deja pasar el daño de fuego amigo sin que provoque cambio de objetivo, acumula amenaza por jugador | Rastreador, fotos |
 | Listener de proyectiles | Disparos e impactos de flechas | Rastreador |
 | Listener de muertes | Muerte de un miembro o del último | DisolverGrupo, cambio de líder |
 | Listener de spawns | Entidades que entran al mundo | ReclutarMob |
@@ -108,8 +108,8 @@ La persistencia guarda la memoria en JSON y es reemplazable: implementa un puert
 
 | Qué se guarda | Dónde | Cuándo |
 | --- | --- | --- |
-| Memoria de cada grupo vivo | Un archivo por grupo | Cada 5 minutos y al apagar |
-| Memoria global por categoría de equipo | Un archivo único | Cada 5 minutos y al apagar |
+| Memoria de cada grupo vivo | Un archivo por grupo | Cada intervalo de guardado (6.000 ticks por defecto) y al apagar |
+| Memoria global por categoría de equipo | Un archivo único | Cada intervalo de guardado y al apagar |
 | Contador de ticks del reloj del server | Archivo de estado | Junto con las memorias |
 
 - **Formato versionado:** cada archivo lleva un número de versión, para poder migrar datos si cambia la estructura.
@@ -180,7 +180,7 @@ Todo el sistema se mueve con dos flujos: uno guiado por eventos que escribe en l
 
 ### Cierre de un plan
 
-Cuando el cerebro detecta que un plan terminó (objetivo muerto, objetivo escapó, grupo en retirada), llama a CerrarPlan: el resultado se registra en la memoria del grupo con peso 1, en la memoria global por categoría de equipo y en los grupos observadores cercanos con peso 0,5.
+Cuando el cerebro detecta que un plan terminó (objetivo muerto, objetivo perdido, plan agotado, grupo en retirada), llama a CerrarPlan: el resultado se registra en la memoria del grupo con peso 1, en la memoria global por categoría de equipo y en los grupos observadores cercanos con peso 0,5.
 
 ## Hilos y tiempo
 
@@ -275,7 +275,7 @@ El ciclo del grupo se modela como cuatro estados con transiciones explícitas. S
 
 > **Diagrama:** ver «Ciclo del grupo (máquina de estados)» en [diagramas.md](diagramas.md).
 
-Un plan termina cuando el objetivo muere, escapa, el plan se agota o el grupo entra en retirada. Al evaluar se llama a CerrarPlan, que publica el evento PlanCerrado.
+Un plan termina cuando el objetivo muere, se pierde (`TARGET_LOST`), el plan se agota o el grupo entra en retirada. «Objetivo perdido» y «escape del mob» son conceptos distintos: el primero cierra un plan; el segundo (RF-08) decide si la memoria sobrevive. Al evaluar se llama a CerrarPlan, que publica el evento PlanCerrado.
 
 ### Observer: avisar sin acoplar
 
@@ -310,7 +310,7 @@ El rastreador abre un intento cuando uno de nuestros goals ataca, junta los hech
 ### Principio: el adaptador junta hechos, el dominio clasifica
 
 - **`AttackTracker`** (adaptador): abre intentos, escucha eventos de Paper y arma un `AttackFacts` con datos crudos.
-- **`AttackClassifier`** (dominio): función pura que recibe `AttackFacts` y devuelve un `AttackOutcome` (`Hit`, `Miss` o `Neutral` con su causa, o Partial si el golpe conectó pero se bloqueó).
+- **`AttackClassifier`** (dominio): función pura que recibe `AttackFacts` y devuelve un `AttackOutcome` (`Hit`, `Partial` si el golpe conectó pero se bloqueó, `Miss`, o `Neutral` con su causa).
 - Las reglas de clasificación, que son lo más delicado, se prueban con JUnit sin server.
 
 ### Quién abre el intento
@@ -338,7 +338,7 @@ Se evalúan en este orden; gana la primera que aplica.
 | 1 | El objetivo murió, se desconectó o cambió de mundo antes de resolver | Neutral |
 | 2 | El daño fue cancelado por otro plugin o una protección de región | Neutral |
 | 3 | El objetivo estaba en invulnerabilidad post-golpe por un golpe de otro | Neutral |
-| 4 | El proyectil impactó a un aliado | Neutral (el daño se cancela por fuego amigo) |
+| 4 | El proyectil impactó a un aliado | Neutral (el daño al aliado se aplica, pero no cuenta para la memoria ni provoca cambio de objetivo) |
 | 5 | Un tercero golpeó al mob e interrumpió el ataque | Neutral |
 | 6 | Daño final mayor a 0 sobre el objetivo | Acierto |
 | 7 | El objetivo bloqueó con escudo de frente | Parcial (peso configurable, 0,5 por defecto); si el golpe fue de hacha y deshabilitó el escudo, acierto |
@@ -384,9 +384,10 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Selector de objetivo | `TargetSelector` | Dominio |
 | Política de selección | `SelectionPolicy` | Dominio |
 | Estados del grupo | `GroupState`: `OBSERVING`, `PLANNING`, `EXECUTING`, `EVALUATING` | Dominio |
-| Roles | `Role`: `PRESS`, `FLANK`, `CUT_OFF`, `RETREAT`, `SUPPORT` | Dominio |
-| Resultado de ataque | `AttackOutcome`: `Hit`, `Miss`, `Neutral`, Partial | Dominio |
-| Eventos | `PlanClosed`, `LeaderDied`, `CreeperIgnited`, `MemberEscaped` | Dominio |
+| Roles | `Role`: `PRESS`, `FLANK`, `SHOOT`, `RETREAT` (MVP); `CUT_OFF`, `SUPPORT` (posteriores) | Dominio |
+| Resultado de ataque | `AttackOutcome` (interfaz `sealed`): `Hit`, `Partial`, `Miss`, `Neutral` | Dominio |
+| Motivo de cierre de un plan | `PlanEndReason`: `TARGET_DIED`, `TARGET_LOST`, `TIMED_OUT`, `GROUP_RETREATED` | Dominio |
+| Eventos | `PlanClosed`, `LeaderDied`, `CreeperIgnited`, `MemberEscaped` (escape del mob, RF-08) | Dominio |
 | Fotos | `PlayerSnapshot`, `MobSnapshot`, `GroupSnapshot` | Entre capas |
 | Decisiones | `GroupDecision`, `CreeperAlert` | Entre capas |
 | Puertos | `MemoryRepository`, `ServerClock`, `RandomSource` | Dominio (interfaz) |
@@ -394,5 +395,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Rastreador de ataques | `AttackTracker` | Adaptadores |
 | Registro de roles | `RoleRegistry` | Adaptadores |
 | Traductor de versión | `VersionTranslator` | Adaptadores |
+
+«Escape» se reserva para el mob (RF-08: `MemberEscaped`, `RecordEscape`). Cuando el que se va es el jugador, el plan cierra con `TARGET_LOST`; nunca se lo llama escape en el código.
 
 El reloj se llama `ServerClock` y no `Clock` para no chocar con `java.time.Clock`, que es otra cosa.

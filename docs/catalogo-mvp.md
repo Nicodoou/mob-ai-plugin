@@ -79,7 +79,7 @@ La curación del jugador durante el plan no se descuenta: mide lo que el grupo l
 Gana la primera condición que se cumpla:
 
 1. El objetivo muere.
-2. El objetivo escapa: más de 32 bloques del grupo o 10 s sin que ningún miembro lo vea.
+2. El objetivo se pierde (`TARGET_LOST`): más lejos del grupo que la distancia de objetivo perdido o sin que ningún miembro lo vea durante el tiempo de objetivo perdido.
 3. El plan llega a su duración máxima: 30 s.
 4. Más de la mitad del grupo queda con rol `RETREAT` o muere.
 
@@ -104,7 +104,12 @@ Estos son los valores de arranque para las primeras pruebas; todos están en la 
 | Bonus de compromiso con el objetivo | +20% |  |
 | Ventana de amenaza | 600 ticks (30 s) |  |
 | Plazo de un proyectil | 60 ticks (3 s) |  |
-| Escape (X de RF-08) | 200 ticks (10 s) sin ser atacado por el objetivo | Propuesta; antes estaba pendiente |
+| Escape del mob (X de RF-08) | 200 ticks (10 s) sin ser atacado por el objetivo | Propuesta; antes estaba pendiente |
+| Distancia de objetivo perdido | 32 bloques | Cierra el plan con `TARGET_LOST` |
+| Tiempo de objetivo perdido | 200 ticks (10 s) sin que ningún miembro lo vea | Cierra el plan con `TARGET_LOST` |
+| Radio de observadores (N de RF-07) | 32 bloques | Propuesta; antes estaba pendiente |
+| Intentos virtuales del patrón de equipo | 8 | Dentro del rango 5–10 de RF-07; a más, más pesa el patrón frente a los datos del jugador |
+| Intervalo de guardado | 6.000 ticks (5 min) | Además se guarda al apagar |
 | Duración máxima de un plan | 600 ticks (30 s) |  |
 | Vida para pasar a `RETREAT` | 30% o menos |  |
 | Lentitud de la araña | Lentitud I, 3 s, sin renovar ni acumular |  |

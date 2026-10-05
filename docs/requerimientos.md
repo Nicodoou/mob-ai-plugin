@@ -90,7 +90,7 @@ El MVP prueba la idea central (mobs que aprenden de cada jugador) con tres tipos
 
 ### RF-03 Cerebro y ciclo de planes
 
-1. El cerebro corre cada 10 ticks, de forma asíncrona respecto a las decisiones caras, sin bloquear el hilo principal.
+1. El cerebro corre cada 10 ticks en el hilo principal (Paper no permite tocar entidades desde otros hilos); tiene que ser lo bastante barato para no subir el MSPT. Solo la escritura a disco corre en otro hilo.
 2. Ciclo: observar → planificar → sortear → ejecutar → evaluar → reforzar o penalizar → volver a observar con el historial.
 3. La observación ocurre también durante el combate, a partir de cada interacción.
 4. Cada estrategia declara requisitos mínimos de composición; primero se filtran las viables y después se elige entre ellas.
@@ -128,19 +128,19 @@ El MVP prueba la idea central (mobs que aprenden de cada jugador) con tres tipos
 
 1. **Observadores:** al terminar un plan, los grupos a menos de N bloques registran el resultado con peso 0,5.
 2. **Patrones por equipo:** memoria global por categoría (armadura y nivel de protección, arma principal, escudo sí/no). Todo resultado se registra en el jugador y en su patrón.
-3. Un jugador nuevo arranca con hasta 5–10 intentos virtuales tomados de su patrón; con datos propios, manda su historial.
+3. Un jugador nuevo arranca con intentos virtuales tomados de su patrón (configurable, 5–10; 8 por defecto); con datos propios, manda su historial.
 4. Foto del equipo al arrancar cada plan.
 5. **Perfiles de composición** (posterior): cuerpo a cuerpo dominante, distancia dominante o balanceado, más marcas "con soporte" y "con brechas".
 
 ### RF-08 Supervivencia de la memoria
 
-1. Si al menos un mob escapa (X tiempo sin ser atacado por el objetivo, reunión con otro grupo o formación de un grupo nuevo), la memoria se conserva y viaja con él.
+1. Si al menos un mob escapa (escape del mob: X tiempo sin ser atacado por el objetivo, reunión con otro grupo o formación de un grupo nuevo), la memoria se conserva y viaja con él.
 2. Si el grupo muere entero y no hay testigos, se pierde lo aprendido en esa pelea.
 3. La memoria global solo recibe datos de peleas con sobrevivientes o testigos.
 
 ### RF-09 Fuego amigo
 
-1. No se cancela el daño entre miembros del mismo grupo (golpes y flechas) pero no provoca cambio de objetivo.
+1. El daño entre miembros del mismo grupo (golpes y flechas) no se cancela: se aplica, pero no provoca cambio de objetivo ni cuenta para la memoria.
 2. Daño de explosiones de creepers a aliados: activado; al dispararse la alerta, los aliados salen de la zona.
 
 ### RF-10 Comandos
@@ -170,7 +170,7 @@ El MVP prueba la idea central (mobs que aprenden de cada jugador) con tres tipos
 ### Rendimiento
 
 - Decisiones de grupo cada 10 ticks, nunca por mob en cada tick.
-- Nada que bloquee el hilo principal (cálculos pesados y guardado a disco fuera de él).
+- Nada que bloquee el hilo principal: el guardado a disco va en otro hilo y el cerebro se mide con Spark.
 - Si se mide lag: pathfinding largo solo para el líder de cada rol, seguidores con caminos cortos.
 - Medición con `/mspt` y Spark con grupos de 20, 40 y 80 mobs para fijar el tamaño máximo real.
 
@@ -240,7 +240,7 @@ Cada fase cierra con una puerta: no se suman mobs nuevos hasta que lo anterior f
 | El sistema aprende mal por definiciones flojas de acierto o causa externa | Lista cerrada de causas externas, cada una atada a un evento; revisar estadísticas con el comando de estado |
 | Datos fragmentados que nunca alcanzan para aprender | Perfiles y categorías gruesas, valor previo en la Beta, patrones por equipo |
 | Grupos imbatibles para quien juega solo | Benchmark de balance, grupos evitables y lentos al perseguir, techo de la memoria |
-| Fuego amigo destruye al grupo | Cancelar daño entre miembros desde el MVP |
+| Fuego amigo destruye al grupo | El daño no se cancela; desde el MVP se suprime el cambio de objetivo y se mide en las pruebas cuánta vida pierde el grupo por fuego amigo |
 | Lag con grupos grandes | Tope de tamaño, cerebro cada 10 ticks, medición con Spark |
 | Griefing de bases por creepers y zombies | Lista de bloques rompibles, bloques puestos que desaparecen, acuerdo previo sobre `mobGriefing` |
 | Alcance excesivo para el tiempo disponible | Cerrar el MVP antes de sumar mobs; cada fase se apoya en la anterior sin rehacerla |

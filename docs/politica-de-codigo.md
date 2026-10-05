@@ -44,7 +44,7 @@ Cada función hace una sola cosa y cada clase tiene un solo motivo para cambiar;
 **Java moderno** (Java 25, el mínimo que exige Paper 26.1 en adelante)
 
 - `record` para objetos de valor.
-- Interfaces `sealed` para conjuntos cerrados, como el resultado de un ataque (acierto, fallo o neutral), así el compilador avisa si falta un caso.
+- Interfaces `sealed` para conjuntos cerrados, como el resultado de un ataque (`Hit`, `Partial`, `Miss`, `Neutral`), así el compilador avisa si falta un caso.
 - `switch` con flechas y expresiones en lugar de cadenas de `if`.
 - `var` solo cuando el tipo es obvio por la misma línea.
 
@@ -115,7 +115,7 @@ Lo que una herramienta puede verificar no se deja a la memoria: el formato, las 
 
 | Herramienta | Qué verifica | Cuándo corre |
 | --- | --- | --- |
-| Spotless (plugin de Gradle) | Formato del código, siempre el mismo estilo | Al compilar; `spotlessApply` lo corrige solo |
+| Spotless (plugin de Gradle) | Formato del código con google-java-format | Al compilar; `spotlessApply` lo corrige solo |
 | ArchUnit | Reglas de capas: el dominio no importa Paper, la aplicación no importa adaptadores | Como una prueba más, en cada compilación |
 | JUnit 5 | Comportamiento del dominio, la aplicación y la persistencia | En cada compilación |
 | JaCoCo | Qué parte del código cubren las pruebas | A pedido |
@@ -153,4 +153,4 @@ La rama principal siempre compila y pasa las pruebas; el código escrito con ayu
 
 - [x] Idioma del código: inglés. Documentación en español; mensajes para jugadores en español, en un archivo aparte.
 - [x] Versión de Java: 25, el mínimo que exige Paper 26.1 en adelante.
-- [ ] Estilo de formato de Spotless (google-java-format u otro).
+- [x] Estilo de formato de Spotless: google-java-format. Sin discusiones de estilo: lo que el formateador decide, queda.

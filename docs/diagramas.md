@@ -50,7 +50,7 @@ stateDiagram-v2
     EXECUTING --> EVALUATING: plan termina
     EVALUATING --> OBSERVING: resultado registrado en la memoria
     note right of EXECUTING
-        Un plan termina cuando el objetivo muere, escapa,
+        Un plan termina cuando el objetivo muere, se pierde,
         el plan llega a su duración máxima o el grupo se retira.
     end note
 ```
