@@ -265,9 +265,27 @@ public final class Brain {
     return List.of();
   }
 
+  // The group observes again and plans in the next decision.
   private Outcome regroup(Turn turn) {
-    throw new IllegalStateException(
-        "Brain: group " + turn.group().id().shortId() + " cannot regroup yet");
+    Optional<RegroupEndReason> regroupEnd = detectRegroupEnd(turn);
+    if (regroupEnd.isPresent()) {
+      endRegrouping(turn);
+      return Outcome.idle();
+    }
+    return Outcome.withOrders(regroupOrders(turn));
+  }
+
+  private Optional<RegroupEndReason> detectRegroupEnd(Turn turn) {
+    long regroupStartTick = turn.lifecycle().regroupStartTick().orElseThrow();
+    Optional<RegroupEndReason> regroupEnd =
+        parts.regroupRule().detect(turn.snapshot(), regroupStartTick);
+    regroupEnd.ifPresent(turn.draft()::regroupEnd);
+    return regroupEnd;
+  }
+
+  private void endRegrouping(Turn turn) {
+    turn.lifecycle().finishRegrouping();
+    parts.regroupWindow().recordSurvived();
   }
 
   private List<RoleAssignment> regroupOrders(Turn turn) {
