@@ -15,6 +15,8 @@ Leé los documentos de `docs/` que correspondan a la tarea:
 
 Si una tarea contradice estos documentos, frená y preguntá antes de implementar.
 
+Si estás implementando un WP de `docs/plan/`, leé solo lo que indica el WP y `docs/plan/reglas-para-agentes.md`: el WP ya trae lo que necesita de estos documentos.
+
 ## Reglas que no se negocian
 
 - **Capas:** el dominio no importa nada de `org.bukkit` ni `io.papermc`. Las constantes de Paper solo aparecen en `VersionTranslator`. ArchUnit lo verifica.
