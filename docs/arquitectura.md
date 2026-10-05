@@ -430,7 +430,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Sorteo desde la Beta | `BetaSampler` | Dominio |
 | Opción a elegir, con su puntaje base | `SelectionCandidate` | Dominio |
 | Resultado de una elección, puntaje de cada opción, multiplicador de memoria | `SelectionResult`, `CandidateScore`, `MemoryMultiplier` | Dominio |
-| Hechos de un intento, clasificador, causa neutral | `AttackFacts`, `AttackClassifier`, `NeutralCause` | Dominio |
+| Hechos de un intento, clasificador, causa neutral, contacto de la flecha, clasificación | `AttackFacts`, `AttackClassifier`, `NeutralCause`, `ProjectileContact`, `Classification` | Dominio |
 | Registro de amenaza | `ThreatLedger` | Dominio |
 | Geometría de combate | `CombatGeometry` | Dominio |
 | Tiempo para matarlo | `KillTimeEstimator` | Dominio |

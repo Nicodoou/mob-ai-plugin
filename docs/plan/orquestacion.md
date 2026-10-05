@@ -35,6 +35,7 @@ Reglas que salieron de la experiencia:
 - **Todo exacto:** firmas, nombres de parámetros, mensajes de error textuales, valores esperados con su tolerancia y nombres de las pruebas. Lo que no está escrito, un modelo chico lo inventa.
 - **Valores de referencia de los documentos** (por ejemplo, 1 de 1 → 67 %) como pruebas con número exacto.
 - **Pruebas que muerden:** de 2 a 4 cambios temporales que tienen que hacer fallar una prueba concreta.
+- **Pruebas estadísticas con parámetros asimétricos:** un caso simétrico puede pasar aunque el algoritmo esté mal. En el WP-04, Beta(0,5; 0,5) daba media 0,5 incluso sin el boost para formas menores a 1.
 - **Contexto mínimo:** listá solo los archivos de código que el subagente necesita leer. Nunca le pidas leer `docs/` completo.
 - **Versiones:** si el WP agrega o cambia una dependencia, verificá que la combinación compile y funcione (no alcanza con que cada versión exista). En el WP-00, google-java-format 1.37.0 existía pero rompía Spotless.
 - **APIs de Paper:** consultá `hallazgos-api.md`; si el WP usa algo que el spike no verificó, verificalo antes (javap sobre el jar de paper-api en `~/.gradle/caches`, o el server).
