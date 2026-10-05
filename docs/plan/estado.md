@@ -7,7 +7,8 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. CT-06 y CT-07 aprobados por Nico (`cambios-tecnicos.md`). WP-08B y WP-10A mergeados.
-2. WP-11 mergeado. Pendiente la decisión de Nico sobre la calibración (ver bitácora, WP-11) para pasar la puerta E3. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+2. WP-11 mergeado. **Pendiente la decisión de Nico** sobre la calibración (bitácora, WP-11): (A, recomendada) `learningSpeed` 1,0 y `halfLifeTicks` 12.000, que aprueba el 90 % con 300 semillas; o (B) dos velocidades, 1,0 para estrategias y 0,7 para ataques. Con la decisión: actualizar `catalogo-mvp.md`, `TestSettings` y la nota de decisiones abiertas, registrar el cambio técnico (CT-09), marcar la puerta E3 y arrancar la E4 especificando el WP-12.
+3. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
