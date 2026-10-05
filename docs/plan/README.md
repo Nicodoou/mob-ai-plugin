@@ -356,6 +356,7 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D26. Reagrupamiento** (Nico, 5 de octubre). Un plan cerrado por `GROUP_RETREATED` lleva al estado nuevo `REGROUPING`: todos se retiran y se curan hasta que más de la mitad tiene 60 % o vence la ventana.
 - **D27. Ventana de reagrupamiento global y adaptativa** (Nico, 5 de octubre). 600 ticks al empezar, entre 200 y 1.200; −50 si un grupo muere entero reagrupándose, +50 si termina vivo. Una sola para todo el server, guardada con las memorias.
 - **D28. `Group` dividido** (5 de octubre). Por la regla de métodos públicos, `Group` delega en `GroupRoster` (miembros, líder, arañas) y `PlanLifecycle` (estados, plan, compromiso), que comparten `PendingEvents` (WP-08B).
+- **D29. Rol de flanqueo y ataque** (CT-08, 5 de octubre). El zombie con rol `FLANK` usa siempre `zombie.flank_strike`; los tres golpes se eligen solo con rol `PRESS`.
 
 ## 8. Partes siguientes
 

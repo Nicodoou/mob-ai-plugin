@@ -10,7 +10,8 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-04](#ct-04--infinitos-en-las-trazas) Infinitos en las trazas | 5 oct 2026 | Nico (opción B) | Pendiente, obligatorio en WP-28 |
 | [CT-05](#ct-05--el-wp-10-se-divide-y-cambian-de-lugar-las-salidas-del-cerebro) El WP-10 se divide y cambian de lugar las salidas del cerebro | 5 oct 2026 | Opus | Aplicado en el plan |
 | [CT-06](#ct-06--máximo-de-20-métodos-públicos-por-clase-y-división-de-group) Máximo de 20 métodos públicos por clase y división de `Group` | 5 oct 2026 | Nico | En curso: WP-08B |
-| [CT-07](#ct-07--retirada-táctica-reagrupamiento-y-ventana-adaptativa) Retirada táctica, reagrupamiento y ventana adaptativa | 5 oct 2026 | Nico | En curso: WP-08B, WP-10A y WP-10B |
+| [CT-07](#ct-07--retirada-táctica-reagrupamiento-y-ventana-adaptativa) Retirada táctica, reagrupamiento y ventana adaptativa | 5 oct 2026 | Nico | Dominio aplicado (WP-08B, WP-10A, WP-10B); faltan WP-13, WP-14 y WP-22 |
+| [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
 
@@ -113,3 +114,10 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 - **Riesgos:**
   - La curación es un recurso nuevo de los mobs: se calibra en la puerta G1 junto con el objetivo de dificultad («un grupo completo solo lo vence un jugador muy preparado»).
   - Si la ventana se estabiliza en un extremo, puede ser señal de que las otras reglas de retirada están mal calibradas.
+
+## CT-08 — El zombie que flanquea usa siempre el golpe de flanco
+
+- **Qué cambió:** un zombie con rol `FLANK` ejecuta siempre `zombie.flank_strike`, sin consultar la política ni consumir azar (como la mordida de la araña). La elección entre los tres golpes queda para los zombies con rol `PRESS`.
+- **Por qué:** al diseñar la simulación del WP-11 apareció una contaminación de la estadística. Un zombie que flanquea conecta desde el costado aunque use el «golpe frontal», y ese acierto se anotaba como éxito del golpe frontal contra el jugador que bloquea: el grupo aprendería lo contrario de lo que pasa.
+- **Alternativa descartada:** registrar la estadística por (ataque, rol). Multiplica los registros por cuatro y hace más lento el aprendizaje, que ya es el punto más justo del MVP.
+- **Impacto:** `Brain.fighterOrder` y dos pruebas de brain (WP-11).
