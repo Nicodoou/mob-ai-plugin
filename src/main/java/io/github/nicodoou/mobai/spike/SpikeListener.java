@@ -85,6 +85,21 @@ final class SpikeListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.MONITOR)
+  public void onRemoveFromWorld(
+      com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent event) {
+    if (isSpike(event.getEntity())) {
+      recorder.record(
+          "lifecycle",
+          "EntityRemoveFromWorldEvent "
+              + describe(event.getEntity())
+              + " isDead="
+              + event.getEntity().isDead()
+              + " isValid="
+              + event.getEntity().isValid());
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
   public void onAdd(EntityAddToWorldEvent event) {
     if (isSpike(event.getEntity())) {
       recorder.record("lifecycle", "EntityAddToWorldEvent " + describe(event.getEntity()));
