@@ -39,20 +39,20 @@ public record Vec3(double x, double y, double z) {
   }
 
   public Vec3 normalized() {
-    double len = length();
-    if (len == 0) {
+    double length = length();
+    if (length == 0) {
       throw new IllegalArgumentException("cannot normalize a zero-length vector");
     }
-    return times(1 / len);
+    return times(1 / length);
   }
 
   public double angleDegreesTo(Vec3 other) {
-    double len1 = length();
-    double len2 = other.length();
-    if (len1 == 0 || len2 == 0) {
+    double ownLength = length();
+    double otherLength = other.length();
+    if (ownLength == 0 || otherLength == 0) {
       throw new IllegalArgumentException("cannot measure an angle with a zero-length vector");
     }
-    double cosine = dot(other) / (len1 * len2);
+    double cosine = dot(other) / (ownLength * otherLength);
     cosine = Math.clamp(cosine, -1.0, 1.0);
     return Math.toDegrees(Math.acos(cosine));
   }
