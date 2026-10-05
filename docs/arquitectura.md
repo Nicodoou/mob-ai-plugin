@@ -429,6 +429,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Estimación de éxito (los parámetros de la Beta) | `SuccessEstimate` | Dominio |
 | Sorteo desde la Beta | `BetaSampler` | Dominio |
 | Opción a elegir, con su puntaje base | `SelectionCandidate` | Dominio |
+| Resultado de una elección, puntaje de cada opción, multiplicador de memoria | `SelectionResult`, `CandidateScore`, `MemoryMultiplier` | Dominio |
 | Hechos de un intento, clasificador, causa neutral | `AttackFacts`, `AttackClassifier`, `NeutralCause` | Dominio |
 | Registro de amenaza | `ThreatLedger` | Dominio |
 | Geometría de combate | `CombatGeometry` | Dominio |

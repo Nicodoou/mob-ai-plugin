@@ -6,8 +6,9 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Especificar el WP-04 (sorteo Beta y políticas) y el WP-05 (clasificador) y presentarlos a Nico para aprobar.
-2. Al cerrar el WP-05: puerta E2 y cambio de sesión.
+1. Revisar la entrega del WP-04 (subagente en la rama `wp-04-politicas`).
+2. Especificar el WP-05 (clasificador) y presentarlo a Nico para aprobar.
+3. Al cerrar el WP-05: puerta E2 y cambio de sesión.
 
 ## WPs
 
@@ -19,7 +20,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-01 | Spike en el server | E1 | terminado | Opus (chat principal) | — | Hallazgos en `hallazgos-api.md`; código en la rama `spike/wp-01`, sin mergear |
 | WP-02 | Tipos base, puertos y configuración | E2 | mergeado | Haiku | [#2](https://github.com/Nicodoou/mob-ai-plugin/pull/2) | Una ronda de corrección: nombres abreviados en `Vec3` |
 | WP-03 | Memoria con olvido | E2 | mergeado | Sonnet | [#3](https://github.com/Nicodoou/mob-ai-plugin/pull/3) | Sin desvíos ni correcciones |
-| WP-04 | Sorteo Beta y políticas de selección | E2 | pendiente | Sonnet | — | |
+| WP-04 | Sorteo Beta y políticas de selección | E2 | en curso | Sonnet | — | |
 | WP-05 | Clasificador de ataques | E2 | pendiente | Sonnet | — | Aplicar reglas 3, 6 y 7 corregidas por el spike |
 | WP-06 | Fotos, amenaza y geometría | E3 | pendiente | Sonnet | — | La foto del jugador lleva el movimiento por tick |
 | WP-07 | Selección de objetivo | E3 | pendiente | Sonnet | — | |
