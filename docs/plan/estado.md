@@ -8,7 +8,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 1. CT-06 y CT-07 aprobados por Nico (`cambios-tecnicos.md`). WP-08B mergeado. WP-10A en curso (Sonnet).
 2. Al recibir el WP-10A: revisar con la checklist.
-3. WP-10B especificado en `wp/WP-10B-cerebro.md`, esperando la aprobación de Nico (es el WP más sensible; Nico pidió ser minucioso). Se lanza cuando el WP-10A esté mergeado. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+3. WP-10B aprobado por Nico: lanzarlo con Opus apenas el WP-10A esté mergeado. Revisión línea por línea (es el WP más sensible). WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -29,7 +29,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-09 | Estrategias | E3 | mergeado | Sonnet | [#10](https://github.com/Nicodoou/mob-ai-plugin/pull/10) | Pasa de Haiku a Sonnet: la elección de flanqueadores usa geometría |
 | WP-08B | División de `Group` y estado de reagrupamiento | E3 | mergeado | Sonnet | [#11](https://github.com/Nicodoou/mob-ai-plugin/pull/11) | CT-06 y CT-07: regla de 20 métodos públicos, `GroupRoster`, `PlanLifecycle`, `REGROUPING`, roles iniciales del plan |
 | WP-10A | Piezas del cerebro | E3 | en curso | Sonnet | — | El WP-10 pasaba las 400 líneas y se dividió. Fin de plan, retirada táctica y reagrupamiento (CT-07), ataque sugerido, decisión y traza. Se lanza cuando el WP-08B esté mergeado |
-| WP-10B | Cerebro | E3 | especificado | Opus | — | `Brain`: coordina las piezas del WP-10A y devuelve `BrainResult` con `DecisionTrace` |
+| WP-10B | Cerebro | E3 | aprobado | Opus | — | `Brain`: coordina las piezas del WP-10A y devuelve `BrainResult` con `DecisionTrace` |
 | WP-11 | Simulación de aprendizaje | E3 | pendiente | Sonnet | — | Calibra velocidad de aprendizaje y vida media |
 | WP-12 | Grupos activos y membresía | E4 | pendiente | Sonnet | — | |
 | WP-13 | Casos de uso de combate | E4 | pendiente | Sonnet | — | Avisar a `RegroupWindow` cuando un grupo muere entero en `REGROUPING` (CT-07) |
