@@ -17,6 +17,8 @@ Si una tarea contradice estos documentos, frená y preguntá antes de implementa
 
 Si estás implementando un WP de `docs/plan/`, leé solo lo que indica el WP y `docs/plan/reglas-para-agentes.md`: el WP ya trae lo que necesita de estos documentos.
 
+Si sos el orquestador del plan (el chat principal, no un subagente), empezá por `docs/plan/orquestacion.md` y `docs/plan/estado.md`, o corré `/orquestar`.
+
 ## Reglas que no se negocian
 
 - **Capas:** el dominio no importa nada de `org.bukkit` ni `io.papermc`. Las constantes de Paper solo aparecen en `VersionTranslator`. ArchUnit lo verifica.
