@@ -18,7 +18,8 @@ public record Plan(
     double targetMaxHealth,
     long startTick,
     long lastTargetSeenTick,
-    double damageDealt) {
+    double damageDealt,
+    Map<MobId, Role> startingRoles) {
 
   public Plan {
     Objects.requireNonNull(id, "Plan.id");
@@ -26,6 +27,8 @@ public record Plan(
     Objects.requireNonNull(target, "Plan.target");
     Objects.requireNonNull(roles, "Plan.roles");
     roles = Collections.unmodifiableMap(new LinkedHashMap<>(roles));
+    Objects.requireNonNull(startingRoles, "Plan.startingRoles");
+    startingRoles = Collections.unmodifiableMap(new LinkedHashMap<>(startingRoles));
   }
 
   public static Plan start(PlanId id, PlanStart start) {
@@ -37,7 +40,8 @@ public record Plan(
         start.targetMaxHealth(),
         start.tick(),
         start.tick(),
-        0);
+        0,
+        start.roles());
   }
 
   public Plan withDamageDealt(double damage) {
@@ -76,6 +80,14 @@ public record Plan(
     return Optional.ofNullable(roles.get(mob));
   }
 
+  public int startingMembers() {
+    return startingRoles.size();
+  }
+
+  public Optional<Role> startingRoleOf(MobId mob) {
+    return Optional.ofNullable(startingRoles.get(mob));
+  }
+
   public long ageTicks(long tick) {
     return tick - startTick;
   }
@@ -97,15 +109,33 @@ public record Plan(
         targetMaxHealth,
         startTick,
         lastTargetSeenTick,
-        damageDealt);
+        damageDealt,
+        startingRoles);
   }
 
   private Plan copyWithDamage(double newDamage) {
     return new Plan(
-        id, strategy, target, roles, targetMaxHealth, startTick, lastTargetSeenTick, newDamage);
+        id,
+        strategy,
+        target,
+        roles,
+        targetMaxHealth,
+        startTick,
+        lastTargetSeenTick,
+        newDamage,
+        startingRoles);
   }
 
   private Plan copyWithLastSeen(long newTick) {
-    return new Plan(id, strategy, target, roles, targetMaxHealth, startTick, newTick, damageDealt);
+    return new Plan(
+        id,
+        strategy,
+        target,
+        roles,
+        targetMaxHealth,
+        startTick,
+        newTick,
+        damageDealt,
+        startingRoles);
   }
 }

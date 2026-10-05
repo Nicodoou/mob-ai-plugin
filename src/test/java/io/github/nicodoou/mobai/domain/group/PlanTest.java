@@ -90,6 +90,22 @@ class PlanTest {
   }
 
   @Test
+  void remembersTheRolesItStartedWith() {
+    Plan plan = newPlan();
+
+    assertThat(plan.startingMembers()).isEqualTo(2);
+
+    Plan changed = plan.withRole(MOB_1, Role.RETREAT);
+
+    assertThat(changed.startingRoleOf(MOB_1)).contains(Role.PRESS);
+
+    Plan reduced = changed.withoutMember(MOB_2);
+
+    assertThat(reduced.startingMembers()).isEqualTo(2);
+    assertThat(reduced.startingRoleOf(MOB_2)).contains(Role.FLANK);
+  }
+
+  @Test
   void targetSeenTickCannotGoBack() {
     Plan plan = newPlan().withTargetSeenAt(150);
 
