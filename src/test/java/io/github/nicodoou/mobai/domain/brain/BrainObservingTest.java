@@ -73,7 +73,7 @@ class BrainObservingTest {
 
   @Test
   void plansAndExecutesInTheSameDecision() {
-    ScriptedRandomSource random = new ScriptedRandomSource().withIndexes(1, 0, 1, 2, 0, 1, 2, 0);
+    ScriptedRandomSource random = new ScriptedRandomSource().withIndexes(1, 0, 1, 2, 0, 1, 2);
     BrainFixture fixture = BrainFixture.scripted(random);
     List<MobSnapshot> mobs = fixture.catalogGroup();
 
@@ -92,10 +92,10 @@ class BrainObservingTest {
             Attack.ZOMBIE_FRONT_STRIKE,
             Attack.ZOMBIE_FLANK_STRIKE,
             Attack.ZOMBIE_PATIENT_STRIKE,
-            Attack.ZOMBIE_FRONT_STRIKE,
+            Attack.ZOMBIE_FLANK_STRIKE,
+            Attack.SKELETON_DIRECT_SHOT,
             Attack.SKELETON_LEAD_SHOT,
             Attack.SKELETON_OPPORTUNISTIC_SHOT,
-            Attack.SKELETON_DIRECT_SHOT,
             Attack.SPIDER_BITE,
             Attack.SPIDER_BITE);
     assertThat(result.decision().assignments())

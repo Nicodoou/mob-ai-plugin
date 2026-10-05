@@ -37,11 +37,24 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("calibration")
+    }
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
+}
+
+val simulationReport by tasks.registering(Test::class) {
+    description = "Runs the learning simulation grid and writes build/reports/simulation/calibration.md"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform {
+        includeTags("calibration")
+    }
+    outputs.upToDateWhen { false }
 }
 
 tasks.processResources {

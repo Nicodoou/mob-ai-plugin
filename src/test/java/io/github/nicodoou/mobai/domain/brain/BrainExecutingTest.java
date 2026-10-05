@@ -10,12 +10,14 @@ import static io.github.nicodoou.mobai.testsupport.BrainFixture.withHealth;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.withPosition;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.nicodoou.mobai.domain.decision.AttackChoice;
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.Role;
+import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
@@ -37,6 +39,8 @@ class BrainExecutingTest {
   private static final int FIRST_ZOMBIE = 0;
   private static final int FLANKING_ZOMBIE = 3;
   private static final int NEAR_SPIDER = 8;
+  private static final int FLANK_DECISIONS = 3;
+  private static final int DECISION_TICKS = 10;
   private static final double LOW_HEALTH = 5;
   private static final double RECOVERED_HEALTH = 12;
   private static final double FULL_SUCCESS_FRACTION = 0.5;
@@ -123,6 +127,26 @@ class BrainExecutingTest {
     assertThat(back.suggestedAttack()).isPresent();
     assertThat(healed.trace().returningFromRetreat()).containsExactly(zombie);
     assertThat(healed.trace().newlyRetreating()).isEmpty();
+  }
+
+  @Test
+  void flankingZombiesAlwaysUseTheFlankStrike() {
+    BrainFixture flanking = BrainFixture.choosingStrategy(FLANK_INDEX);
+    List<MobSnapshot> mobs = startPlan(flanking);
+    MobId zombie = mobs.get(FLANKING_ZOMBIE).id();
+
+    for (int decision = 1; decision <= FLANK_DECISIONS; decision++) {
+      BrainResult result = flanking.decide(START_TICK + decision * DECISION_TICKS, mobs, alice());
+
+      RoleAssignment order = result.decision().assignments().get(FLANKING_ZOMBIE);
+      assertThat(order.role()).isEqualTo(Role.FLANK);
+      assertThat(order.suggestedAttack()).contains(Attack.ZOMBIE_FLANK_STRIKE);
+      assertThat(result.trace().attackChoices())
+          .filteredOn(choice -> choice.mob().equals(zombie))
+          .singleElement()
+          .extracting(AttackChoice::selection)
+          .isEqualTo(Optional.empty());
+    }
   }
 
   @Test

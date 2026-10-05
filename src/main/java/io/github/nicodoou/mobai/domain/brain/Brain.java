@@ -17,6 +17,7 @@ import io.github.nicodoou.mobai.domain.selection.SelectionCandidate;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicy;
 import io.github.nicodoou.mobai.domain.selection.SelectionResult;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
@@ -321,9 +322,24 @@ public final class Brain {
 
   private RoleAssignment fighterOrder(Turn turn, MobSnapshot mob, Role role) {
     PlayerId target = currentPlan(turn).target();
-    AttackChoice choice = suggestAttack(turn, mob, target);
+    AttackChoice choice = chooseFighterAttack(turn, mob, role);
     return new RoleAssignment(
         mob.id(), role, Optional.of(target), Optional.of(choice.attack()), false);
+  }
+
+  private AttackChoice chooseFighterAttack(Turn turn, MobSnapshot mob, Role role) {
+    if (mob.kind() == MobKind.ZOMBIE && role == Role.FLANK) {
+      return flankStrike(turn, mob);
+    }
+    return suggestAttack(turn, mob, currentPlan(turn).target());
+  }
+
+  // A flanker already stands outside the shield arc; letting the policy pick its strike would
+  // credit the front strike for hits the flank earned.
+  private AttackChoice flankStrike(Turn turn, MobSnapshot mob) {
+    AttackChoice choice = new AttackChoice(mob.id(), Attack.ZOMBIE_FLANK_STRIKE, Optional.empty());
+    turn.draft().addAttackChoice(choice);
+    return choice;
   }
 
   private RoleAssignment spiderOrder(Turn turn, MobSnapshot spider, Role role) {
