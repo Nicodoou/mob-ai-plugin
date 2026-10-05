@@ -1,0 +1,6 @@
+name: MobAI
+version: '${version}'
+main: io.github.nicodoou.mobai.bootstrap.MobAiPlugin
+api-version: '26.3'
+description: Hostile mobs fight in groups with roles and learn from each player.
+author: Nicolas Oroná
