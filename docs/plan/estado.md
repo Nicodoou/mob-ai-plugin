@@ -2,13 +2,13 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 5 de octubre de 2026 (WP-09 mergeado).
+**Última actualización:** 5 de octubre de 2026 (WP-08B mergeado).
 
 ## Próximo paso
 
-1. CT-06 y CT-07 aprobados por Nico (`cambios-tecnicos.md`). WP-08B en curso (Sonnet).
-2. WP-10A actualizado con CT-07: lanzarlo cuando el WP-08B esté mergeado. Nico aprobó el plan completo de CT-07: no hace falta volver a presentarlo.
-3. Especificar el WP-10B (Opus) con las pruebas de invariantes prometidas: una orden por mob, sin ataque en retirada, estados válidos, cada plan cierra una vez, reproducibilidad con la misma semilla. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+1. CT-06 y CT-07 aprobados por Nico (`cambios-tecnicos.md`). WP-08B mergeado. WP-10A en curso (Sonnet).
+2. Al recibir el WP-10A: revisar con la checklist.
+3. WP-10B especificado en `wp/WP-10B-cerebro.md`, esperando la aprobación de Nico (es el WP más sensible; Nico pidió ser minucioso). Se lanza cuando el WP-10A esté mergeado. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -27,9 +27,9 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-07 | Selección de objetivo | E3 | mergeado | Sonnet | [#8](https://github.com/Nicodoou/mob-ai-plugin/pull/8) | Desvío aceptado: prueba extra `weaknessAppliesToTheThreatFloorToo`, porque una rotura del WP no mordía con sus números |
 | WP-08 | Grupo, plan y eventos | E3 | mergeado | Sonnet | [#9](https://github.com/Nicodoou/mob-ai-plugin/pull/9) | Incluye `PlanId`; `RoleAssignment` y `GroupDecision` pasan al WP-10 |
 | WP-09 | Estrategias | E3 | mergeado | Sonnet | [#10](https://github.com/Nicodoou/mob-ai-plugin/pull/10) | Pasa de Haiku a Sonnet: la elección de flanqueadores usa geometría |
-| WP-08B | División de `Group` y estado de reagrupamiento | E3 | en curso | Sonnet | — | CT-06 y CT-07: regla de 20 métodos públicos, `GroupRoster`, `PlanLifecycle`, `REGROUPING`, roles iniciales del plan |
-| WP-10A | Piezas del cerebro | E3 | aprobado | Sonnet | — | El WP-10 pasaba las 400 líneas y se dividió. Fin de plan, retirada táctica y reagrupamiento (CT-07), ataque sugerido, decisión y traza. Se lanza cuando el WP-08B esté mergeado |
-| WP-10B | Cerebro | E3 | pendiente | Opus | — | `Brain`: coordina las piezas del WP-10A y devuelve `BrainResult` con `DecisionTrace` |
+| WP-08B | División de `Group` y estado de reagrupamiento | E3 | mergeado | Sonnet | [#11](https://github.com/Nicodoou/mob-ai-plugin/pull/11) | CT-06 y CT-07: regla de 20 métodos públicos, `GroupRoster`, `PlanLifecycle`, `REGROUPING`, roles iniciales del plan |
+| WP-10A | Piezas del cerebro | E3 | en curso | Sonnet | — | El WP-10 pasaba las 400 líneas y se dividió. Fin de plan, retirada táctica y reagrupamiento (CT-07), ataque sugerido, decisión y traza. Se lanza cuando el WP-08B esté mergeado |
+| WP-10B | Cerebro | E3 | especificado | Opus | — | `Brain`: coordina las piezas del WP-10A y devuelve `BrainResult` con `DecisionTrace` |
 | WP-11 | Simulación de aprendizaje | E3 | pendiente | Sonnet | — | Calibra velocidad de aprendizaje y vida media |
 | WP-12 | Grupos activos y membresía | E4 | pendiente | Sonnet | — | |
 | WP-13 | Casos de uso de combate | E4 | pendiente | Sonnet | — | Avisar a `RegroupWindow` cuando un grupo muere entero en `REGROUPING` (CT-07) |
