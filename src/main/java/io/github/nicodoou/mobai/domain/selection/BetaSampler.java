@@ -9,8 +9,10 @@ public final class BetaSampler {
   private static final double ONE_THIRD = 1.0 / 3;
   private static final double NINE = 9;
   private static final double SQUEEZE = 0.0331;
-
   private static final double HALF = 0.5;
+
+  // Only reachable with shapes below 1 and a uniform draw of exactly 0.
+  private static final double NEUTRAL_RATE = 0.5;
 
   private final RandomSource random;
 
@@ -23,7 +25,7 @@ public final class BetaSampler {
     double y = sampleGamma(estimate.beta());
     double total = x + y;
     if (total == 0) {
-      return HALF;
+      return NEUTRAL_RATE;
     }
     return x / total;
   }

@@ -25,6 +25,16 @@ class BetaSamplerTest {
     return sum / values.length;
   }
 
+  private static double fractionBelow(double[] values, double limit) {
+    int count = 0;
+    for (double value : values) {
+      if (value < limit) {
+        count++;
+      }
+    }
+    return (double) count / values.length;
+  }
+
   private static double variance(double[] values) {
     double mean = mean(values);
     double sum = 0;
@@ -70,9 +80,11 @@ class BetaSamplerTest {
 
   @Test
   void shapesBelowOneUseTheBoost() {
-    double[] values = draw(4, new SuccessEstimate(0.5, 0.5, 0), 20_000);
+    double[] symmetric = draw(4, new SuccessEstimate(0.5, 0.5, 0), 20_000);
+    double[] asymmetric = draw(4, new SuccessEstimate(0.5, 2, 0), 40_000);
 
-    assertThat(mean(values)).isCloseTo(0.5, within(0.02));
+    assertThat(mean(symmetric)).isCloseTo(0.5, within(0.02));
+    assertThat(fractionBelow(asymmetric, 0.01)).isCloseTo(0.1495, within(0.007));
   }
 
   @Test
