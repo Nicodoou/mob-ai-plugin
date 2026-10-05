@@ -20,7 +20,9 @@ Implementás **un solo WP**. Opus lo escribió para que no tengas que tomar deci
   - Prohibido `Manager`, `Helper` y `Utils`.
 - **Clases:** `final` por defecto; `record` para valores; `sealed` para conjuntos cerrados; `switch` con flechas; `var` solo si el tipo es obvio en la misma línea.
 - **Funciones:**
-  - unas 20 líneas y hasta 3 parámetros;
+  - **una sola tarea por función.** Si una función suma valores y además calcula un promedio, son dos funciones: una suma y la otra calcula el promedio a partir de la suma. Una función que coordina (llama a otras en orden) está bien, siempre que no haga cálculos propios además de coordinar;
+  - unas 20 líneas y hasta 3 parámetros, también en los métodos privados;
+  - **todo bucle que se repite hasta que se cumpla una condición tiene un límite de iteraciones** con nombre; al llegar al límite lanza `IllegalStateException` con contexto, nunca queda colgado;
   - sin parámetros booleanos que cambien el comportamiento;
   - retornos tempranos;
   - un método `calculate…` no modifica estado.
