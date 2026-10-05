@@ -71,6 +71,8 @@ final class SpikeChaseGoal implements Goal<Mob> {
             + player.getName()
             + " dist="
             + String.format("%.2f", Math.sqrt(distanceSquared))
+            + " angleFromPlayerFacing="
+            + String.format("%.0f", angleFromFacing(player))
             + " playerBlocking="
             + player.isBlocking()
             + " playerNoDamageTicks="
@@ -99,6 +101,13 @@ final class SpikeChaseGoal implements Goal<Mob> {
         .filter(player -> !player.isDead())
         .min(
             Comparator.comparingDouble(player -> player.getLocation().distance(mob.getLocation())));
+  }
+
+  private double angleFromFacing(Player player) {
+    org.bukkit.util.Vector facing = player.getLocation().getDirection().setY(0).normalize();
+    org.bukkit.util.Vector toMob =
+        mob.getLocation().toVector().subtract(player.getLocation().toVector()).setY(0).normalize();
+    return Math.toDegrees(facing.angle(toMob));
   }
 
   private String describe() {
