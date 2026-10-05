@@ -123,8 +123,31 @@ class SettingsValidationTest {
                     defaults.attack(),
                     defaults.spider(),
                     defaults.persistence(),
-                    defaults.debug()))
+                    defaults.debug(),
+                    defaults.retreat()))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("MobAiSettings.memory");
+  }
+
+  @Test
+  void recoveryMustExceedTheRetreatThreshold() {
+    MobAiSettings defaults = TestSettings.defaults();
+
+    assertThatThrownBy(
+            () ->
+                new MobAiSettings(
+                    defaults.group(),
+                    defaults.memory(),
+                    defaults.selection(),
+                    defaults.target(),
+                    defaults.plan(),
+                    defaults.attack(),
+                    defaults.spider(),
+                    defaults.persistence(),
+                    defaults.debug(),
+                    new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(
+            "RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got 0.3 <= 0.3");
   }
 }

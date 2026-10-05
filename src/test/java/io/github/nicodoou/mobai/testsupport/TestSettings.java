@@ -8,6 +8,7 @@ import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
+import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
@@ -26,6 +27,7 @@ public final class TestSettings {
         new AttackSettings(60, 60, 60, 8.0, 15.0, 3.0, 16.0),
         new SpiderSettings(60, 1),
         new PersistenceSettings(6_000),
-        new DebugSettings(TraceLevel.OFF, 200));
+        new DebugSettings(TraceLevel.OFF, 200),
+        new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50));
   }
 }
