@@ -104,7 +104,7 @@ git branch -D wp-XX-nombre worktree-<carpeta-del-subagente>
 
 Windows a veces no deja borrar la carpeta del worktree («Permission denied» o «Filename too long»): con `git worktree prune` alcanza; la carpeta se borra más tarde. `.claude/worktrees/` está en `.git/info/exclude`.
 
-Después: actualizá `estado.md`, commiteá y presentale a Nico el cierre del WP.
+Después: actualizá `estado.md`, agregá la entrada del WP a `bitacora.md` (qué hizo, arquitectura, tu opinión del código y lo pendiente), commiteá y presentale a Nico el cierre del WP.
 
 ## 8. Cambio de sesión
 
@@ -146,6 +146,7 @@ taskkill //F //IM tail.exe                       # después de apagar
 | --- | --- |
 | `README.md` | Plan maestro: etapas, WPs, mapa del código, decisiones D1 a D24 |
 | `estado.md` | Tablero |
+| `bitacora.md` | Cierre de cada WP: qué hizo, arquitectura, opinión del código y pendientes |
 | `reglas-para-agentes.md` | Reglas de los subagentes |
 | `hallazgos-api.md` | Comportamiento verificado de Paper 26.3 |
 | `wp/WP-XX-*.md` | Los WPs especificados |
