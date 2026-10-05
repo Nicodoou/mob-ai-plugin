@@ -521,5 +521,5 @@ Cualquier otra falla (una versión que no resuelve, un plugin incompatible, una 
 - [ ] `./gradlew build` está verde en la PC.
 - [ ] La prueba de las reglas dio exactamente 7 fallas y los archivos de prueba se borraron.
 - [ ] El `plugin.yml` del jar tiene la versión reemplazada.
-- [ ] Los 5 commits tienen los mensajes indicados.
+- [ ] Los commits tienen los mensajes indicados (6, contando el de `build: pin google-java-format 1.36.1 for spotless compatibility`).
 - [ ] El PR está abierto y su check `build` está verde.
