@@ -113,3 +113,13 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código de producción idéntico al WP, 28 pruebas, CI verde, 4 roturas del WP que mordieron y 2 roturas propias (sin disolver al vaciar; sin el chequeo de «ya en grupo») que hicieron fallar 2 pruebas.
 
 **Opinión del código.** Lo bueno: clases chicas, una tarea por función, `ActiveGroups` con 8 métodos públicos y atómico ante errores. Lo flojo: `DisbandGroup` hoy es un pasamanos de `ActiveGroups.remove`; se justifica porque el WP-13 le agrega la memoria y `recordWiped`. Riesgos: al disolver por vaciado se pierden los eventos pendientes del grupo (por ejemplo, el `LeaderDied` del último miembro); el WP-13 tiene que decidir si drena eventos antes de disolver. `RemoveMember` no devuelve el grupo disuelto: el WP-13 necesita mirar el estado (REGROUPING) antes de sacar al último miembro para llamar a `recordWiped`.
+
+## WP-13 — Casos de uso de combate (PR #16, Sonnet)
+
+**Qué hizo.** `TickGroups` (una decisión por grupo y publicación de sus eventos), `RecordOutcome` (intento → memoria del grupo y daño al plan), `RecordDamageTaken` (amenaza), `RecordPlayerDeath` (cierra con `TARGET_DIED`), `ClosePlan` (suscriptor de `PlanClosed`, peso 1) y `GroupEvents`. `DisbandGroup` publica los eventos pendientes después de sacar el grupo; `RemoveMember` recibe `RemovalCause` y avisa a `RegroupWindow.recordWiped()` si el último miembro muere reagrupando (CT-11, D32).
+
+**Arquitectura.** El resultado de un plan llega a la memoria por un solo camino: `PlanClosed` → `ClosePlan`. `BrainResult.closedPlan()` queda para las trazas. `TickGroups` va de a un grupo para que el adaptador aísle fallas.
+
+**Revisión.** Código de producción idéntico al WP; 37 pruebas nuevas y 6 adaptadas (2+3+8+3+5+2+9+3 ejecuciones en las clases tocadas); CI verde; las 5 roturas del WP mordieron, y 2 roturas propias (`ClosePlan` con éxito fijo 1.0; `RecordPlayerDeath` sin filtrar por objetivo) hicieron fallar 2 pruebas.
+
+**Opinión del código.** Lo bueno: casos de uso finos, sin lógica de balance, un camino único para el resultado del plan y los dos riesgos del WP-12 cerrados con pruebas de control (despawn, fuera de reagrupamiento, con sobrevivientes). Lo flojo: `TickGroupsTest` depende de la semilla 7 del cerebro; si cambia el orden de tiradas del dominio, puede requerir otra semilla. Riesgos: un grupo que muere entero ejecutando no cierra su plan (aceptado en el MVP; en la fase 2 los testigos lo necesitan); el `LeaderDied` de un grupo vivo se publica hasta 10 ticks tarde; el bootstrap tiene que acordarse de suscribir `ClosePlan` a `PlanClosed` (si se olvida, el aprendizaje de estrategias se apaga en silencio: el WP de arranque necesita una prueba de que la suscripción existe).
