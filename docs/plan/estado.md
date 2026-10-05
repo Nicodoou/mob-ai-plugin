@@ -39,7 +39,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-17 | Traductor de versión y fotos | E5 | pendiente | Sonnet | — | Incluye `MovementTracker` |
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
 | WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | Reinstalar goals en `EntityAddToWorldEvent` |
-| WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | |
+| WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | Suscribir `ClosePlan` a `PlanClosed`, con una prueba de que la suscripción existe (CT-11); recorrer los grupos con un `catch` por grupo al llamar a `TickGroups` |
 | WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | Spawn del grupo de prueba sin equipo |
 | WP-29 | Trazas en el server | E5 | pendiente | Sonnet | — | |
 | WP-22 | Flanqueo y retirada | E6 | pendiente | Sonnet | — | Repartir a los flanqueadores del mismo lado: `CombatGeometry.flankPoint` les da el mismo punto; `RETREAT` va al margen y aplica la curación de CT-07 (1 punto cada 50 ticks, sin jugadores a menos de 12 bloques) |
