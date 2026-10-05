@@ -205,7 +205,7 @@ io.github.nicodoou.mobai
 │   │               RoleAssignment, GroupDecision, BrainResult                         WP-10
 │   ├── event       DomainEvent, PlanClosed, LeaderDied, DomainEventPublisher          WP-08
 │   ├── strategy    GroupStrategy, DirectAssaultStrategy, FlankStrategy,
-│   │               PinAndShootStrategy, StrategyCatalog                               WP-09
+│   │               PinAndShootStrategy, GroupComposition, StrategyCatalog             WP-09
 │   └── brain       Brain, PlanEndDetector, AttackSuggester                            WP-10
 ├── application     SettingsHolder, ActiveGroups, RecruitMob, RecruitRequest,
 │                   RecruitResult, RemoveMember, DisbandGroup                          WP-12

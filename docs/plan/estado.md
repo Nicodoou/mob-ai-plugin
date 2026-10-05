@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Especificar el WP-09 (estrategias) y presentarlo a Nico. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+1. WP-09 aprobado y en curso (Sonnet). Al recibir el informe: revisar con la checklist de `orquestacion.md`. Mientras tanto, especificar el WP-10 (cerebro, Opus). WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -24,7 +24,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-06 | Fotos, amenaza y geometría | E3 | mergeado | Sonnet | [#7](https://github.com/Nicodoou/mob-ai-plugin/pull/7) | La foto del jugador lleva el movimiento por tick y la dirección hacia la que mira; la amenaza sale de la foto y la guarda el grupo |
 | WP-07 | Selección de objetivo | E3 | mergeado | Sonnet | [#8](https://github.com/Nicodoou/mob-ai-plugin/pull/8) | Desvío aceptado: prueba extra `weaknessAppliesToTheThreatFloorToo`, porque una rotura del WP no mordía con sus números |
 | WP-08 | Grupo, plan y eventos | E3 | mergeado | Sonnet | [#9](https://github.com/Nicodoou/mob-ai-plugin/pull/9) | Incluye `PlanId`; `RoleAssignment` y `GroupDecision` pasan al WP-10 |
-| WP-09 | Estrategias | E3 | pendiente | Haiku | — | |
+| WP-09 | Estrategias | E3 | en curso | Sonnet | — | Pasa de Haiku a Sonnet: la elección de flanqueadores usa geometría |
 | WP-10 | Cerebro | E3 | pendiente | Opus | — | Devuelve `DecisionTrace` |
 | WP-11 | Simulación de aprendizaje | E3 | pendiente | Sonnet | — | Calibra velocidad de aprendizaje y vida media |
 | WP-12 | Grupos activos y membresía | E4 | pendiente | Sonnet | — | |

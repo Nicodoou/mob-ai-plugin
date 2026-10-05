@@ -400,7 +400,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Concepto en el documento | Nombre en el código | Capa |
 | --- | --- | --- |
 | Grupo, miembro, rol | `Group`, `Member`, `Role` | Dominio |
-| Estrategia de grupo | `GroupStrategy` | Dominio |
+| Estrategia de grupo, composición del grupo | `GroupStrategy`, `GroupComposition` | Dominio |
 | Registro de ataque | `AttackRecord` | Dominio |
 | Memoria del grupo, memoria global | `GroupMemory`, `GlobalMemory` | Dominio |
 | Categoría de equipo | `GearCategory` | Dominio |
