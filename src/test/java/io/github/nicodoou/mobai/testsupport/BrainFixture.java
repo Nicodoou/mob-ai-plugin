@@ -81,6 +81,10 @@ public final class BrainFixture {
     return regroupWindow;
   }
 
+  public Brain brain() {
+    return brain;
+  }
+
   public BrainResult decide(GroupSnapshot snapshot) {
     return brain.decide(group, snapshot);
   }
