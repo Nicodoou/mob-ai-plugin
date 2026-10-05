@@ -179,7 +179,7 @@ Paquete base: `io.github.nicodoou.mobai`. Este mapa es el contrato de nombres: n
 ```text
 io.github.nicodoou.mobai
 ├── domain                            sin Paper, sin archivos, sin reloj del sistema
-│   ├── shared      MobId, PlayerId, GroupId, StrategyId, MobKind, Attack,
+│   ├── shared      MobId, PlayerId, GroupId, StrategyId, MobKind, Attack, PlanId (WP-08),
 │   │               EffectKind, Vec3, MinecraftConstants                               WP-02
 │   ├── port        ServerClock, RandomSource                                          WP-02
 │   │               MemoryRepository, StoredMemories, StoredGroup, StoredMember,
@@ -199,9 +199,10 @@ io.github.nicodoou.mobai
 │   ├── geometry    PlayerPose, CombatGeometry                                         WP-06
 │   ├── target      KillTimeEstimate, KillTimeEstimator, TargetQuery, TargetScore,
 │   │               TargetSelection, TargetSelector, SpiderTargetRule                  WP-07
-│   ├── group       Member, Role, GroupState, Plan, PlanEndReason, Group               WP-08
-│   ├── decision    RoleAssignment, GroupDecision, ClosedPlan                          WP-08
-│   │               BrainResult                                                        WP-10
+│   ├── group       Member, Role, GroupState, Plan, PlanStart, PlanEndReason,
+│   │               GroupKnowledge, Group                                              WP-08
+│   ├── decision    ClosedPlan                                                         WP-08
+│   │               RoleAssignment, GroupDecision, BrainResult                         WP-10
 │   ├── event       DomainEvent, PlanClosed, LeaderDied, DomainEventPublisher          WP-08
 │   ├── strategy    GroupStrategy, DirectAssaultStrategy, FlankStrategy,
 │   │               PinAndShootStrategy, StrategyCatalog                               WP-09

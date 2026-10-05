@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. WP-07 mergeado. WP-08 especificado en `wp/WP-08-grupo-plan-eventos.md`, esperando la aprobación de Nico. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+1. WP-07 mergeado. WP-08 aprobado y en curso (Sonnet). Al recibir el informe: revisar con la checklist de `orquestacion.md`. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -23,7 +23,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-05 | Clasificador de ataques | E2 | mergeado | Sonnet | [#6](https://github.com/Nicodoou/mob-ai-plugin/pull/6) | Sin correcciones |
 | WP-06 | Fotos, amenaza y geometría | E3 | mergeado | Sonnet | [#7](https://github.com/Nicodoou/mob-ai-plugin/pull/7) | La foto del jugador lleva el movimiento por tick y la dirección hacia la que mira; la amenaza sale de la foto y la guarda el grupo |
 | WP-07 | Selección de objetivo | E3 | mergeado | Sonnet | [#8](https://github.com/Nicodoou/mob-ai-plugin/pull/8) | Desvío aceptado: prueba extra `weaknessAppliesToTheThreatFloorToo`, porque una rotura del WP no mordía con sus números |
-| WP-08 | Grupo, plan y eventos | E3 | especificado | Sonnet | — | Incluye `PlanId`; `RoleAssignment` y `GroupDecision` pasan al WP-10 |
+| WP-08 | Grupo, plan y eventos | E3 | en curso | Sonnet | — | Incluye `PlanId`; `RoleAssignment` y `GroupDecision` pasan al WP-10 |
 | WP-09 | Estrategias | E3 | pendiente | Haiku | — | |
 | WP-10 | Cerebro | E3 | pendiente | Opus | — | Devuelve `DecisionTrace` |
 | WP-11 | Simulación de aprendizaje | E3 | pendiente | Sonnet | — | Calibra velocidad de aprendizaje y vida media |
@@ -31,7 +31,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-13 | Casos de uso de combate | E4 | pendiente | Sonnet | — | |
 | WP-14 | Puerto de persistencia y JSON | E4 | pendiente | Sonnet | — | |
 | WP-15 | Guardar, cargar, resetear y consultar | E4 | pendiente | Sonnet | — | |
-| WP-28 | Trazas: incidentes y reproducción | E4 | pendiente | Sonnet | — | |
+| WP-28 | Trazas: incidentes y reproducción | E4 | pendiente | Sonnet | — | **Obligatorio:** el JSON de trazas e incidentes tiene que escribir y volver a leer `Infinity` (tiempo para matar de un jugador inmatable, WP-07), con prueba de ida y vuelta; Gson por defecto lanza una excepción con infinitos |
 | WP-16 | Runtime, configuración y mensajes | E5 | pendiente | Sonnet | — | Prueba que compare rangos del cargador con los records |
 | WP-17 | Traductor de versión y fotos | E5 | pendiente | Sonnet | — | Incluye `MovementTracker` |
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |

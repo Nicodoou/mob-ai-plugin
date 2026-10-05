@@ -436,7 +436,8 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Tiempo para matarlo y su desglose | `KillTimeEstimator`, `KillTimeEstimate` | Dominio |
 | Consulta, puntaje y resultado de la selección de objetivo | `TargetQuery`, `TargetScore`, `TargetSelection` | Dominio |
 | Regla de objetivo de la araña | `SpiderTargetRule` | Dominio |
-| Plan en curso | `Plan` | Dominio |
+| Plan en curso, lo que se decide al empezarlo | `Plan`, `PlanStart` | Dominio |
+| Memoria y amenaza de un grupo, juntas | `GroupKnowledge` | Dominio |
 | Orden para un mob (rol, objetivo y ataque sugerido) | `RoleAssignment` | Entre capas |
 | Plan cerrado | `ClosedPlan` | Entre capas |
 | Explicación de una decisión, de una clasificación | `DecisionTrace`, `ClassificationTrace` | Dominio |
