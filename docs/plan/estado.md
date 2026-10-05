@@ -2,12 +2,12 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 5 de octubre de 2026 (WP-10A mergeado).
+**Última actualización:** 5 de octubre de 2026 (WP-10B mergeado).
 
 ## Próximo paso
 
 1. CT-06 y CT-07 aprobados por Nico (`cambios-tecnicos.md`). WP-08B y WP-10A mergeados.
-2. WP-10B en curso (Opus). Revisión línea por línea (es el WP más sensible). WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+2. WP-10B mergeado. Sigue el WP-11 (simulación de aprendizaje): especificarlo y presentarlo a Nico. Cierra la puerta E3. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -28,7 +28,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-09 | Estrategias | E3 | mergeado | Sonnet | [#10](https://github.com/Nicodoou/mob-ai-plugin/pull/10) | Pasa de Haiku a Sonnet: la elección de flanqueadores usa geometría |
 | WP-08B | División de `Group` y estado de reagrupamiento | E3 | mergeado | Sonnet | [#11](https://github.com/Nicodoou/mob-ai-plugin/pull/11) | CT-06 y CT-07: regla de 20 métodos públicos, `GroupRoster`, `PlanLifecycle`, `REGROUPING`, roles iniciales del plan |
 | WP-10A | Piezas del cerebro | E3 | mergeado | Sonnet | [#12](https://github.com/Nicodoou/mob-ai-plugin/pull/12) | El WP-10 pasaba las 400 líneas y se dividió. Fin de plan, retirada táctica y reagrupamiento (CT-07), ataque sugerido, decisión y traza. Se lanza cuando el WP-08B esté mergeado |
-| WP-10B | Cerebro | E3 | en curso | Opus | — | `Brain`: coordina las piezas del WP-10A y devuelve `BrainResult` con `DecisionTrace` |
+| WP-10B | Cerebro | E3 | mergeado | Opus | [#13](https://github.com/Nicodoou/mob-ai-plugin/pull/13) | `Brain`: coordina las piezas del WP-10A y devuelve `BrainResult` con `DecisionTrace` |
 | WP-11 | Simulación de aprendizaje | E3 | pendiente | Sonnet | — | Calibra velocidad de aprendizaje y vida media |
 | WP-12 | Grupos activos y membresía | E4 | pendiente | Sonnet | — | |
 | WP-13 | Casos de uso de combate | E4 | pendiente | Sonnet | — | Avisar a `RegroupWindow` cuando un grupo muere entero en `REGROUPING` (CT-07) |
@@ -69,5 +69,6 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | Valores por defecto de la velocidad de aprendizaje y de la vida media, calibrados juntos | Simulación del WP-11 (puerta E3) |
 | `Group` tiene 25 métodos públicos (umbral de alerta: 20). Antes de sumarle más, evaluar dividirlo, por ejemplo membresía por un lado y ciclo del plan por otro | WP-10, WP-12 o WP-13, el primero que le agregue métodos |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |
+| `PlanEndDetector.hasRetreated` con miembros que se suman a mitad de plan: «se fueron» = iniciales − roles actuales da negativo y la regla se vuelve menos sensible. Propuesta: `gone = max(0, iniciales − roles)` y comparar contra `max(iniciales, roles)` | WP de limpieza después de E3 (junto con los ciclos de paquetes); el WP-11 puede mostrar si importa |
 | Brujas contra un objetivo que se cura más rápido de lo que el grupo le pega (idea de Nico). Tres jugadas: debuffear al jugador (Veneno, Daño instantáneo, Debilidad, Lentitud), buffear a los aliados (Fuerza, Velocidad) o las dos en secuencia. Propuesta: puntuar cada poción por cuánto baja el tiempo para matarlo, recalculando `KillTimeEstimator` con la foto modificada, y multiplicar por su tasa aprendida. Cuidar la salpicadura: cura y daño se invierten en no-muertos, y Fuerza o Velocidad cerca del jugador también lo buffean a él. La señal de «inmatable» ya existe: `KillTimeEstimate.damagePerSecond` negativo | Fase 2, en el WP de las brujas |
 | Tope de seguridad por tipo de mob, regla para aceptar o rechazar mobs, mobs raros, bloques que rompen los zombies, memoria en SQLite | Fase 2, después de G1 |
