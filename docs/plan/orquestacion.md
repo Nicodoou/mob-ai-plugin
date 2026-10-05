@@ -37,6 +37,7 @@ Reglas que salieron de la experiencia:
 - **Pruebas que muerden:** de 2 a 4 cambios temporales que tienen que hacer fallar una prueba concreta.
 - **Pruebas estadísticas con parámetros asimétricos:** un caso simétrico puede pasar aunque el algoritmo esté mal. En el WP-04, Beta(0,5; 0,5) daba media 0,5 incluso sin el boost para formas menores a 1.
 - **Cada rotura, calculada:** antes de escribir una prueba que muerde, calculá el valor que da el código roto con los números de la prueba. En el WP-07, 8 de daño con Debilidad 2 daba 2 con el piso antes o después de la debilidad, y la rotura no mordía.
+- **Cambios técnicos:** todo cambio de diseño posterior al plan aprobado (pedido por Nico, salido de un spike o de una revisión) se registra en `cambios-tecnicos.md` y, si es una decisión, como D25 en adelante en `README.md`, en el mismo commit que actualiza los documentos de diseño.
 - **Métodos públicos a raya** (pedido de Nico): un WP que agrega métodos públicos a una clase existente justifica por qué van ahí. Umbral de alerta: 20 métodos públicos por clase; pasado ese número, el WP propone dividir la clase antes de seguir agregando. `Group` quedó con 25 en el WP-08: es la primera candidata a revisar cuando el cerebro (WP-10) o los casos de uso (WP-12 y WP-13) le pidan más.
 - **Contexto mínimo:** listá solo los archivos de código que el subagente necesita leer. Nunca le pidas leer `docs/` completo.
 - **Versiones:** si el WP agrega o cambia una dependencia, verificá que la combinación compile y funcione (no alcanza con que cada versión exista). En el WP-00, google-java-format 1.37.0 existía pero rompía Spotless.
@@ -148,6 +149,7 @@ taskkill //F //IM tail.exe                       # después de apagar
 | --- | --- |
 | `README.md` | Plan maestro: etapas, WPs, mapa del código, decisiones D1 a D24 |
 | `estado.md` | Tablero |
+| `cambios-tecnicos.md` | Cada cambio de diseño posterior al plan aprobado: qué, por qué, impacto y alternativas descartadas |
 | `bitacora.md` | Cierre de cada WP: qué hizo, arquitectura, opinión del código y pendientes |
 | `reglas-para-agentes.md` | Reglas de los subagentes |
 | `hallazgos-api.md` | Comportamiento verificado de Paper 26.3 |

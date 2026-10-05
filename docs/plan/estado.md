@@ -6,7 +6,9 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. WP-09 mergeado. WP-10A especificado en `wp/WP-10A-piezas-del-cerebro.md`, esperando la aprobación de Nico; después, especificar el WP-10B. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
+1. CT-06 y CT-07 aprobados por Nico (`cambios-tecnicos.md`). WP-08B en curso (Sonnet).
+2. Actualizar `wp/WP-10A-piezas-del-cerebro.md` con CT-07 (sin el cambio de `Plan`, que pasó al WP-08B; con `RetreatSettings`, vuelta de la retirada, curación, `RegroupRule` y `RegroupWindow`) y lanzarlo cuando el WP-08B esté mergeado. Nico aprobó el plan completo de CT-07: no hace falta volver a presentarlo antes de lanzar.
+3. Especificar el WP-10B (Opus) con las pruebas de invariantes prometidas: una orden por mob, sin ataque en retirada, estados válidos, cada plan cierra una vez, reproducibilidad con la misma semilla. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -25,12 +27,13 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-07 | Selección de objetivo | E3 | mergeado | Sonnet | [#8](https://github.com/Nicodoou/mob-ai-plugin/pull/8) | Desvío aceptado: prueba extra `weaknessAppliesToTheThreatFloorToo`, porque una rotura del WP no mordía con sus números |
 | WP-08 | Grupo, plan y eventos | E3 | mergeado | Sonnet | [#9](https://github.com/Nicodoou/mob-ai-plugin/pull/9) | Incluye `PlanId`; `RoleAssignment` y `GroupDecision` pasan al WP-10 |
 | WP-09 | Estrategias | E3 | mergeado | Sonnet | [#10](https://github.com/Nicodoou/mob-ai-plugin/pull/10) | Pasa de Haiku a Sonnet: la elección de flanqueadores usa geometría |
-| WP-10A | Piezas del cerebro | E3 | especificado | Sonnet | — | El WP-10 pasaba las 400 líneas y se dividió. Fin de plan, retirada, ataque sugerido, decisión y traza; `Plan` suma `startingMembers` |
+| WP-08B | División de `Group` y estado de reagrupamiento | E3 | en curso | Sonnet | — | CT-06 y CT-07: regla de 20 métodos públicos, `GroupRoster`, `PlanLifecycle`, `REGROUPING`, roles iniciales del plan |
+| WP-10A | Piezas del cerebro | E3 | aprobado (falta sumar CT-07) | Sonnet | — | El WP-10 pasaba las 400 líneas y se dividió. Fin de plan, retirada, ataque sugerido, decisión y traza; `Plan` suma `startingMembers` |
 | WP-10B | Cerebro | E3 | pendiente | Opus | — | `Brain`: coordina las piezas del WP-10A y devuelve `BrainResult` con `DecisionTrace` |
 | WP-11 | Simulación de aprendizaje | E3 | pendiente | Sonnet | — | Calibra velocidad de aprendizaje y vida media |
 | WP-12 | Grupos activos y membresía | E4 | pendiente | Sonnet | — | |
-| WP-13 | Casos de uso de combate | E4 | pendiente | Sonnet | — | |
-| WP-14 | Puerto de persistencia y JSON | E4 | pendiente | Sonnet | — | |
+| WP-13 | Casos de uso de combate | E4 | pendiente | Sonnet | — | Avisar a `RegroupWindow` cuando un grupo muere entero en `REGROUPING` (CT-07) |
+| WP-14 | Puerto de persistencia y JSON | E4 | pendiente | Sonnet | — | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
 | WP-15 | Guardar, cargar, resetear y consultar | E4 | pendiente | Sonnet | — | |
 | WP-28 | Trazas: incidentes y reproducción | E4 | pendiente | Sonnet | — | **Obligatorio:** el JSON de trazas e incidentes tiene que escribir y volver a leer `Infinity` (tiempo para matar de un jugador inmatable, WP-07), con prueba de ida y vuelta; Gson por defecto lanza una excepción con infinitos |
 | WP-16 | Runtime, configuración y mensajes | E5 | pendiente | Sonnet | — | Prueba que compare rangos del cargador con los records |
@@ -40,7 +43,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | |
 | WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | Spawn del grupo de prueba sin equipo |
 | WP-29 | Trazas en el server | E5 | pendiente | Sonnet | — | |
-| WP-22 | Flanqueo y retirada | E6 | pendiente | Sonnet | — | Repartir a los flanqueadores del mismo lado: `CombatGeometry.flankPoint` les da el mismo punto |
+| WP-22 | Flanqueo y retirada | E6 | pendiente | Sonnet | — | Repartir a los flanqueadores del mismo lado: `CombatGeometry.flankPoint` les da el mismo punto; `RETREAT` va al margen y aplica la curación de CT-07 (1 punto cada 50 ticks, sin jugadores a menos de 12 bloques) |
 | WP-23 | Golpes de flanco y paciente | E6 | pendiente | Sonnet | — | |
 | WP-24 | Esqueletos y proyectiles | E6 | pendiente | Sonnet | — | Ignorar impactos que llegan después del plazo |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |

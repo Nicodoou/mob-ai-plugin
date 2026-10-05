@@ -292,11 +292,20 @@ La velocidad de aprendizaje actúa sobre la memoria (intentos virtuales), no sob
 
 ### Máquina de estados: el ciclo del grupo
 
-El ciclo del grupo se modela como cuatro estados con transiciones explícitas. Se implementa con un `enum` y un `switch` en el cerebro; si algún estado acumula mucha lógica propia, se migra a una clase por estado. El estado actual se muestra en el comando de debug.
+El ciclo del grupo se modela como cinco estados con transiciones explícitas: observar, planificar, ejecutar, evaluar y reagrupar. Se implementa con un `enum` y un `switch` en el cerebro; si algún estado acumula mucha lógica propia, se migra a una clase por estado. El estado actual se muestra en el comando de debug.
 
 > **Diagrama:** ver «Ciclo del grupo (máquina de estados)» en [diagramas.md](diagramas.md).
 
 Un plan termina cuando el objetivo muere, se pierde (`TARGET_LOST`), el plan se agota o el grupo entra en retirada. «Objetivo perdido» y «escape del mob» son conceptos distintos: el primero cierra un plan; el segundo (RF-08) decide si la memoria sobrevive. Al evaluar se llama a CerrarPlan, que publica el evento PlanCerrado.
+
+### Retirada táctica y reagrupamiento
+
+La retirada no saca a un mob de la pelea: lo aparta para que se recupere y vuelva.
+
+- **Individual.** Un mob con 30 % de vida o menos pasa a `RETREAT`: se aleja del objetivo y se queda al margen. Con 60 % o más vuelve al rol que tenía al empezar el plan (o al rol básico si se sumó después). El margen entre los dos umbrales evita que cambie de rol en cada decisión.
+- **Curación.** Mientras está en `RETREAT` y ningún jugador está a menos de 12 bloques, el plugin le cura 1 punto cada 50 ticks, el ritmo de Regeneración I, sin partículas ni ícono y sin límite de duración. No se usa el efecto de poción: zombies y esqueletos son no-muertos y Minecraft los hace inmunes a Regeneración y Veneno.
+- **Del grupo.** Si más de la mitad de los mobs con los que empezó el plan murieron o están en `RETREAT`, el plan cierra con `GROUP_RETREATED` y el grupo pasa a **reagrupar**: todos se retiran y se curan. Sale cuando más de la mitad de los mobs presentes tiene 60 % o más, o cuando vence la ventana de reagrupamiento; después vuelve a observar.
+- **Ventana de reagrupamiento adaptativa y global.** Empieza en 600 ticks y la ajusta la experiencia de todos los grupos: si un grupo muere entero mientras se reagrupa, baja 50 ticks; si termina de reagruparse vivo, sube 50. Se mantiene entre 200 y 1.200 ticks y se guarda con las memorias.
 
 ### Observer: avisar sin acoplar
 
@@ -407,7 +416,9 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Cerebro | `Brain` | Dominio |
 | Selector de objetivo | `TargetSelector` | Dominio |
 | Política de selección | `SelectionPolicy` | Dominio |
-| Estados del grupo | `GroupState`: `OBSERVING`, `PLANNING`, `EXECUTING`, `EVALUATING` | Dominio |
+| Estados del grupo | `GroupState`: `OBSERVING`, `PLANNING`, `EXECUTING`, `EVALUATING`, `REGROUPING` | Dominio |
+| Miembros y líder de un grupo, ciclo del plan, eventos pendientes | `GroupRoster`, `PlanLifecycle`, `PendingEvents` | Dominio |
+| Ventana de reagrupamiento, regla de reagrupamiento, configuración de retirada | `RegroupWindow`, `RegroupRule`, `RetreatSettings` | Dominio |
 | Roles | `Role`: `PRESS`, `FLANK`, `SHOOT`, `RETREAT` (MVP); `CUT_OFF`, `SUPPORT` (posteriores) | Dominio |
 | Resultado de ataque | `AttackOutcome` (interfaz `sealed`): `Hit`, `Partial`, `Miss`, `Neutral` | Dominio |
 | Motivo de cierre de un plan | `PlanEndReason`: `TARGET_DIED`, `TARGET_LOST`, `TIMED_OUT`, `GROUP_RETREATED` | Dominio |
@@ -441,6 +452,9 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Orden para un mob (rol, objetivo y ataque sugerido) | `RoleAssignment` | Entre capas |
 | Plan cerrado | `ClosedPlan` | Entre capas |
 | Explicación de una decisión, de una clasificación | `DecisionTrace`, `ClassificationTrace` | Dominio |
+| Requisito de estrategia evaluado, ataque sugerido a un mob, lo que necesita el sugeridor | `StrategyCheck`, `AttackChoice`, `AttackContext` | Dominio |
+| Detector de fin de plan, regla de retirada, sugeridor de ataques | `PlanEndDetector`, `RetreatRule`, `AttackSuggester` | Dominio |
+| Resultado del cerebro, piezas que coordina | `BrainResult`, `BrainParts` | Dominio |
 | Nivel de traza | `TraceLevel`: `OFF`, `DECISIONS`, `FULL` | Dominio |
 | Grupos activos e índice mob → grupo | `ActiveGroups` | Aplicación |
 | Configuración vigente | `SettingsHolder` | Aplicación |

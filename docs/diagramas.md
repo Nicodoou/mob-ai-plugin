@@ -49,6 +49,8 @@ stateDiagram-v2
     PLANNING --> EXECUTING: plan elegido
     EXECUTING --> EVALUATING: plan termina
     EVALUATING --> OBSERVING: resultado registrado en la memoria
+    EVALUATING --> REGROUPING: el plan cerró por retirada del grupo
+    REGROUPING --> OBSERVING: más de la mitad recuperada o venció la ventana
     note right of EXECUTING
         Un plan termina cuando el objetivo muere, se pierde,
         el plan llega a su duración máxima o el grupo se retira.

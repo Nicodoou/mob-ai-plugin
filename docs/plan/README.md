@@ -201,12 +201,16 @@ io.github.nicodoou.mobai
 │   │               TargetSelection, TargetSelector, SpiderTargetRule                  WP-07
 │   ├── group       Member, Role, GroupState, Plan, PlanStart, PlanEndReason,
 │   │               GroupKnowledge, Group                                              WP-08
+│   │               GroupRoster, PlanLifecycle, PendingEvents                          WP-08B
 │   ├── decision    ClosedPlan                                                         WP-08
-│   │               RoleAssignment, GroupDecision, BrainResult                         WP-10
+│   │               RoleAssignment, GroupDecision, StrategyCheck, AttackChoice,
+│   │               DecisionTrace, BrainResult                                         WP-10A
 │   ├── event       DomainEvent, PlanClosed, LeaderDied, DomainEventPublisher          WP-08
 │   ├── strategy    GroupStrategy, DirectAssaultStrategy, FlankStrategy,
 │   │               PinAndShootStrategy, GroupComposition, StrategyCatalog             WP-09
-│   └── brain       Brain, PlanEndDetector, AttackSuggester                            WP-10
+│   └── brain       PlanEndDetector, RetreatRule, RegroupRule, RegroupWindow,
+│                   AttackContext, AttackSuggester                                     WP-10A
+│                   Brain, BrainParts                                                  WP-10B
 ├── application     SettingsHolder, ActiveGroups, RecruitMob, RecruitRequest,
 │                   RecruitResult, RemoveMember, DisbandGroup                          WP-12
 │                   TickGroups, RecordOutcome, RecordDamageTaken, RecordPlayerDeath,
@@ -348,6 +352,10 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D22. CI y ramas.** GitHub Actions corre `./gradlew build` en cada PR (en un repo privado usa los minutos gratis de la cuenta). Cada subagente trabaja en su worktree, con una rama y un PR por WP, y squash merge: queda un commit por WP en `main`.
 - **D23. El spike lo hace el chat principal.** WP-01 define los datos de API de los que dependen los once WPs de adaptadores (WP-16 a WP-26), así que lo hago yo directamente, sin subagente, con vos probando en el server. Su código no se mergea; queda `hallazgos-api.md`.
 - **D24. Ajuste a `CLAUDE.md`.** Agregar «Si estás implementando un WP de `docs/plan/`, leé solo lo que indica el WP», para que los implementadores no gasten contexto en los seis documentos.
+- **D25. Retirada táctica** (Nico, 5 de octubre). `RETREAT` con 30 % o menos y vuelta al rol inicial con 60 % o más; mientras se retira y sin jugadores a menos de 12 bloques, el plugin cura 1 punto cada 50 ticks (ritmo de Regeneración I), sin efecto visible, porque los no-muertos son inmunes a Regeneración y Veneno.
+- **D26. Reagrupamiento** (Nico, 5 de octubre). Un plan cerrado por `GROUP_RETREATED` lleva al estado nuevo `REGROUPING`: todos se retiran y se curan hasta que más de la mitad tiene 60 % o vence la ventana.
+- **D27. Ventana de reagrupamiento global y adaptativa** (Nico, 5 de octubre). 600 ticks al empezar, entre 200 y 1.200; −50 si un grupo muere entero reagrupándose, +50 si termina vivo. Una sola para todo el server, guardada con las memorias.
+- **D28. `Group` dividido** (5 de octubre). Por la regla de métodos públicos, `Group` delega en `GroupRoster` (miembros, líder, arañas) y `PlanLifecycle` (estados, plan, compromiso), que comparten `PendingEvents` (WP-08B).
 
 ## 8. Partes siguientes
 

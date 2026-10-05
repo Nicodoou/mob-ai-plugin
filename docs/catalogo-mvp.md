@@ -21,7 +21,7 @@ Tres estrategias alcanzan para que el grupo tenga decisiones distintas que apren
 | `PRESS` | Va al objetivo y lo ataca de frente o desde donde llegue primero |
 | `FLANK` | Se mueve hacia un punto al costado o detrás del objetivo antes de atacar |
 | `SHOOT` | Mantiene distancia de tiro (8 a 15 bloques) y dispara |
-| `RETREAT` | Se aleja del objetivo; se asigna a cualquier mob con 30% de vida o menos, sobre cualquier estrategia |
+| `RETREAT` | Se aleja del objetivo, se queda al margen y se cura; se asigna a cualquier mob con 30% de vida o menos, sobre cualquier estrategia, y vuelve a su rol con 60% o más |
 
 El rol de cortar la retirada queda para después del MVP.
 
@@ -81,7 +81,7 @@ Gana la primera condición que se cumpla:
 1. El objetivo muere.
 2. El objetivo se pierde (`TARGET_LOST`): más lejos del grupo que la distancia de objetivo perdido o sin que ningún miembro lo vea durante el tiempo de objetivo perdido.
 3. El plan llega a su duración máxima: 30 s.
-4. Más de la mitad del grupo queda con rol `RETREAT` o muere.
+4. Más de la mitad del grupo queda con rol `RETREAT` o muere. En ese caso el grupo entero se reagrupa (ver «Retirada táctica y reagrupamiento» en `arquitectura.md`).
 
 Al terminar se llama a `ClosePlan` con el éxito calculado, y el grupo vuelve a observar.
 
@@ -112,6 +112,9 @@ Estos son los valores de arranque para las primeras pruebas; todos están en la 
 | Intervalo de guardado | 6.000 ticks (5 min) | Además se guarda al apagar |
 | Duración máxima de un plan | 600 ticks (30 s) |  |
 | Vida para pasar a `RETREAT` | 30% o menos |  |
+| Vida para volver de `RETREAT` | 60% o más |  |
+| Curación en retirada | 1 punto cada 50 ticks (ritmo de Regeneración I) | Solo sin jugadores a menos de 12 bloques |
+| Ventana de reagrupamiento | 600 ticks al empezar; entre 200 y 1.200 | Global y adaptativa: −50 si un grupo muere reagrupándose, +50 si termina vivo |
 | Lentitud de la araña | Lentitud I, 3 s, sin renovar ni acumular |  |
 
 ### Grupo de prueba
