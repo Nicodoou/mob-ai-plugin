@@ -425,7 +425,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Eventos | `PlanClosed`, `LeaderDied`, `CreeperIgnited`, `MemberEscaped` (escape del mob, RF-08) | Dominio |
 | Fotos | `PlayerSnapshot`, `MobSnapshot`, `GroupSnapshot` | Entre capas |
 | Decisiones | `GroupDecision`, `CreeperAlert` | Entre capas |
-| Puertos | `MemoryRepository`, `ServerClock`, `RandomSource` | Dominio (interfaz) |
+| Puertos | `MemoryRepository`, `ServerClock`, `RandomSource`, `GroupIdSource` | Dominio (interfaz) |
 | Casos de uso | `TickGroups`, `RecordOutcome`, `ClosePlan`, `RecruitMob`, `MergeGroups`, `RecordEscape`, `DisbandGroup`, `SaveMemories`, `LoadMemories` | Aplicación |
 | Rastreador de ataques | `AttackTracker` | Adaptadores |
 | Registro de roles | `RoleRegistry` | Adaptadores |
@@ -458,6 +458,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Nivel de traza | `TraceLevel`: `OFF`, `DECISIONS`, `FULL` | Dominio |
 | Grupos activos e índice mob → grupo | `ActiveGroups` | Aplicación |
 | Configuración vigente | `SettingsHolder` | Aplicación |
+| Pedido y resultado de reclutar, resultado de sacar un miembro | `RecruitRequest`, `RecruitResult`, `RemovalOutcome` | Aplicación |
 | Casos de uso nuevos | `RemoveMember`, `RecordDamageTaken`, `RecordPlayerDeath`, `ResetMemories`, `DescribeGroup`, `DescribePlayerMemory` | Aplicación |
 | Datos guardados | `StoredMemories`, `StoredGroup`, `StoredMember`, `StoredRecord` | Dominio (puerto) |
 | Scheduler de decisión, aplicador de decisiones | `DecisionScheduler`, `DecisionApplier` | Adaptadores |

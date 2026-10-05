@@ -12,6 +12,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-06](#ct-06--máximo-de-20-métodos-públicos-por-clase-y-división-de-group) Máximo de 20 métodos públicos por clase y división de `Group` | 5 oct 2026 | Nico | En curso: WP-08B |
 | [CT-07](#ct-07--retirada-táctica-reagrupamiento-y-ventana-adaptativa) Retirada táctica, reagrupamiento y ventana adaptativa | 5 oct 2026 | Nico | Dominio aplicado (WP-08B, WP-10A, WP-10B); faltan WP-13, WP-14 y WP-22 |
 | [CT-09](#ct-09--velocidad-de-aprendizaje-10-calibrada-por-simulación) Velocidad de aprendizaje 1,0, calibrada por simulación | 5 oct 2026 | Nico (opción A) | Aplicado en el catálogo; WP-16 la pone en `config.yml` |
+| [CT-10](#ct-10--puerto-groupidsource) Puerto `GroupIdSource` | 5 oct 2026 | Opus (especificación del WP-12) | WP-12 crea el puerto y el fake; WP-16, la implementación real |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -130,3 +131,18 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 - **Alternativa descartada:** dos velocidades (1,0 para estrategias y 0,7 para ataques). Más configuración para un beneficio que la simulación no mostró: los ataques aprenden bien con cualquier velocidad.
 - **Riesgo:** con 1,0 el grupo se sesga rápido con pocas peleas (RF-06). Lo mitigan el olvido y el sorteo; se revisa en la puerta G1.
 - **Impacto:** `catalogo-mvp.md`, `config.yml` del WP-16. `TestSettings` queda en 0,7: es un fixture de pruebas con valores calculados a mano, no la configuración del plugin.
+
+## CT-10 — Puerto `GroupIdSource`
+
+**Qué cambia.** Los ids de grupo nuevos salen de un puerto del dominio, `GroupIdSource.nextGroupId()`. En las pruebas, `SequentialGroupIdSource` da ids 1, 2, 3…; en el plugin, el adaptador del WP-16 usa `UUID.randomUUID()`.
+
+**Por qué.** `RecruitMob` (aplicación) necesita crear grupos, y ArchUnit le prohíbe `UUID.randomUUID()`. Sacar el id de `RandomSource` correría el orden fijo de tiradas (estrategia primero, después ataques), y las reproducciones de trazas dejarían de coincidir.
+
+**Impacto.** Un puerto más, que se arma en el arranque. No cambia el dominio de grupos.
+
+**Alternativas descartadas.**
+- Id derivado del mob fundador: choca si un mob sale de su grupo y funda otro mientras el primero sigue vivo.
+- Contador más hash: se reinicia con el server y puede repetir ids guardados.
+
+**Riesgos.** Ninguno conocido: el adaptador real es una línea.
+

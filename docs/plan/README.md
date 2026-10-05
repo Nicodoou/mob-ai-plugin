@@ -182,6 +182,7 @@ io.github.nicodoou.mobai
 │   ├── shared      MobId, PlayerId, GroupId, StrategyId, MobKind, Attack, PlanId (WP-08),
 │   │               EffectKind, Vec3, MinecraftConstants                               WP-02
 │   ├── port        ServerClock, RandomSource                                          WP-02
+│   │               GroupIdSource                                                      WP-12
 │   │               MemoryRepository, StoredMemories, StoredGroup, StoredMember,
 │   │               StoredRecord                                                       WP-14
 │   ├── settings    MobAiSettings, GroupSettings, MemorySettings, SelectionSettings,
@@ -212,7 +213,7 @@ io.github.nicodoou.mobai
 │                   AttackContext, AttackSuggester                                     WP-10A
 │                   Brain, BrainParts                                                  WP-10B
 ├── application     SettingsHolder, ActiveGroups, RecruitMob, RecruitRequest,
-│                   RecruitResult, RemoveMember, DisbandGroup                          WP-12
+│                   RecruitResult, RemovalOutcome, RemoveMember, DisbandGroup          WP-12
 │                   TickGroups, RecordOutcome, RecordDamageTaken, RecordPlayerDeath,
 │                   ClosePlan                                                          WP-13
 │                   StoredMemoriesMapper, SaveMemories, LoadMemories, ResetMemories,
@@ -358,6 +359,7 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D28. `Group` dividido** (5 de octubre). Por la regla de métodos públicos, `Group` delega en `GroupRoster` (miembros, líder, arañas) y `PlanLifecycle` (estados, plan, compromiso), que comparten `PendingEvents` (WP-08B).
 - **D29. Rol de flanqueo y ataque** (CT-08, 5 de octubre). El zombie con rol `FLANK` usa siempre `zombie.flank_strike`; los tres golpes se eligen solo con rol `PRESS`.
 - **D30. Calibración** (CT-09, puerta E3, 5 de octubre). Velocidad de aprendizaje 1,0 y vida media 12.000 ticks.
+- **D31. Ids de grupo por puerto** (CT-10, WP-12). `GroupIdSource` da los ids de grupo nuevos, sin gastar tiradas de `RandomSource`.
 
 ## 8. Partes siguientes
 
