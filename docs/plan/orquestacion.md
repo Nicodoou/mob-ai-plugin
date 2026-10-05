@@ -66,6 +66,8 @@ Lanzamiento: herramienta `Agent` con `subagent_type: general-purpose`, el `model
 >
 > Datos del entorno: Windows 10 con Git Bash. El proyecto compila con `./gradlew` (Gradle descarga el JDK 25 solo). `gh` está autenticado y se invoca con la ruta completa "/c/Program Files/GitHub CLI/gh.exe".
 
+Si un subagente no puede correr `gh` desde Bash dentro del worktree (le pasó al del WP-05), puede usar PowerShell con el mismo ejecutable.
+
 Las correcciones se le piden **al mismo subagente** con `SendMessage`, mientras siga en esta sesión: conserva su contexto.
 
 Actualizá `estado.md` al lanzar (`en curso`), al recibir el informe (`en revisión`) y al mergear (`mergeado`).

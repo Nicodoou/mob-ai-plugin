@@ -2,12 +2,13 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 5 de octubre de 2026.
+**Última actualización:** 5 de octubre de 2026 (puerta E2 pasada).
 
 ## Próximo paso
 
-1. Revisar la entrega del WP-05 (subagente en la rama `wp-05-clasificador`).
-2. Al cerrar el WP-05: puerta E2 y cambio de sesión.
+1. Pendiente de Nico: ¿se reordena el plan para tener una versión jugable antes (casos de uso WP-12 y WP-13, después adaptadores WP-16 a WP-21, y recién después persistencia y trazas WP-14, WP-15, WP-28 y WP-29)? Si dice que sí, actualizar el README (tabla, diagrama y etapas) y este tablero.
+2. Especificar el WP-06 (fotos, amenaza y geometría) y presentarlo.
+3. Esta etapa empieza en una sesión nueva (`/orquestar`).
 
 ## WPs
 
@@ -20,7 +21,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-02 | Tipos base, puertos y configuración | E2 | mergeado | Haiku | [#2](https://github.com/Nicodoou/mob-ai-plugin/pull/2) | Una ronda de corrección: nombres abreviados en `Vec3` |
 | WP-03 | Memoria con olvido | E2 | mergeado | Sonnet | [#3](https://github.com/Nicodoou/mob-ai-plugin/pull/3) | Sin desvíos ni correcciones |
 | WP-04 | Sorteo Beta y políticas de selección | E2 | mergeado | Sonnet | [#4](https://github.com/Nicodoou/mob-ai-plugin/pull/4) | Una ronda: la prueba del boost era simétrica y no mordía; ahora mide la cola de Beta(0,5; 2) |
-| WP-05 | Clasificador de ataques | E2 | en curso | Sonnet | — | Aplicar reglas 3, 6 y 7 corregidas por el spike |
+| WP-05 | Clasificador de ataques | E2 | mergeado | Sonnet | [#6](https://github.com/Nicodoou/mob-ai-plugin/pull/6) | Sin correcciones |
 | WP-06 | Fotos, amenaza y geometría | E3 | pendiente | Sonnet | — | La foto del jugador lleva el movimiento por tick |
 | WP-07 | Selección de objetivo | E3 | pendiente | Sonnet | — | |
 | WP-08 | Grupo, plan y eventos | E3 | pendiente | Sonnet | — | Incluye `PlanId` |
@@ -52,7 +53,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | --- | --- | --- |
 | E0 | pasada | Paper 26.3 build 151 levantó con el plugin habilitado y deshabilitado sin errores |
 | E1 | pasada | `hallazgos-api.md`, 7 rondas de prueba con Nico en el server |
-| E2 | pendiente | |
+| E2 | pasada | 146 pruebas en verde; valores de RF-06 verificados en WP-03; cobertura del dominio 96 % |
 | E3 | pendiente | |
 | E4 | pendiente | |
 | E5 | pendiente | |
