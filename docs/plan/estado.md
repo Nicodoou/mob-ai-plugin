@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Especificar el WP-06 (fotos, amenaza y geometría) y presentarlo a Nico. El orden del plan se mantiene (Nico decidió no reordenar).
+1. WP-06 aprobado y en curso (Sonnet). Al recibir el informe: revisar con la checklist de `orquestacion.md`. El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -21,7 +21,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-03 | Memoria con olvido | E2 | mergeado | Sonnet | [#3](https://github.com/Nicodoou/mob-ai-plugin/pull/3) | Sin desvíos ni correcciones |
 | WP-04 | Sorteo Beta y políticas de selección | E2 | mergeado | Sonnet | [#4](https://github.com/Nicodoou/mob-ai-plugin/pull/4) | Una ronda: la prueba del boost era simétrica y no mordía; ahora mide la cola de Beta(0,5; 2) |
 | WP-05 | Clasificador de ataques | E2 | mergeado | Sonnet | [#6](https://github.com/Nicodoou/mob-ai-plugin/pull/6) | Sin correcciones |
-| WP-06 | Fotos, amenaza y geometría | E3 | pendiente | Sonnet | — | La foto del jugador lleva el movimiento por tick |
+| WP-06 | Fotos, amenaza y geometría | E3 | en curso | Sonnet | — | La foto del jugador lleva el movimiento por tick y la dirección hacia la que mira; la amenaza sale de la foto y la guarda el grupo |
 | WP-07 | Selección de objetivo | E3 | pendiente | Sonnet | — | |
 | WP-08 | Grupo, plan y eventos | E3 | pendiente | Sonnet | — | Incluye `PlanId` |
 | WP-09 | Estrategias | E3 | pendiente | Haiku | — | |
@@ -39,7 +39,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | |
 | WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | Spawn del grupo de prueba sin equipo |
 | WP-29 | Trazas en el server | E5 | pendiente | Sonnet | — | |
-| WP-22 | Flanqueo y retirada | E6 | pendiente | Sonnet | — | |
+| WP-22 | Flanqueo y retirada | E6 | pendiente | Sonnet | — | Repartir a los flanqueadores del mismo lado: `CombatGeometry.flankPoint` les da el mismo punto |
 | WP-23 | Golpes de flanco y paciente | E6 | pendiente | Sonnet | — | |
 | WP-24 | Esqueletos y proyectiles | E6 | pendiente | Sonnet | — | Ignorar impactos que llegan después del plazo |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |

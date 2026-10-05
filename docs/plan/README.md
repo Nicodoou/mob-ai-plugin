@@ -194,9 +194,9 @@ io.github.nicodoou.mobai
 │   │               RandomPolicy, SelectionPolicyFactory                               WP-04
 │   ├── attack      AttackFacts, ProjectileContact, AttackOutcome, NeutralCause,
 │   │               AttackClassifier                                                   WP-05
-│   ├── snapshot    PlayerSnapshot, MobSnapshot, GroupSnapshot                         WP-06
+│   ├── snapshot    SnapshotChecks, PlayerSnapshot, MobSnapshot, GroupSnapshot         WP-06
 │   ├── threat      ThreatLedger                                                       WP-06
-│   ├── geometry    CombatGeometry                                                     WP-06
+│   ├── geometry    PlayerPose, CombatGeometry                                         WP-06
 │   ├── target      KillTimeEstimator, TargetSelector, SpiderTargetRule                WP-07
 │   ├── group       Member, Role, GroupState, Plan, PlanEndReason, Group               WP-08
 │   ├── decision    RoleAssignment, GroupDecision, ClosedPlan                          WP-08

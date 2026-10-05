@@ -136,9 +136,9 @@ Solo tres. Cualquier otra interfaz tiene que justificarse con una prueba que sin
 
 | Foto | Datos |
 | --- | --- |
-| FotoJugador | UUID, posición, movimiento por tick (medido, no `getVelocity()`), vida, absorción, vida máxima, armadura, efectos activos, categoría de equipo, si está bloqueando con escudo |
-| FotoMob | UUID, tipo, posición, vida, grupo al que pertenece, rol actual |
-| FotoGrupo | ID del grupo, sus FotoMob, los FotoJugador cercanos, amenaza acumulada por jugador, tick actual |
+| FotoJugador | UUID, posición y dirección hacia la que mira (horizontal), movimiento por tick (medido, no `getVelocity()`), vida, absorción, vida máxima, armadura, dureza, nivel total de Protección, nivel de cada efecto activo, si está bloqueando con escudo. La categoría de equipo se suma con RF-07 (fase 2) |
+| FotoMob | UUID, tipo, posición, vida, vida máxima. El rol no va: es estado del grupo, no algo que el adaptador ve; el grupo es el de la FotoGrupo que lo contiene |
+| FotoGrupo | ID del grupo, tick actual, sus FotoMob y los FotoJugador cercanos. La amenaza no va: la guarda el grupo en su `ThreatLedger` |
 | ResultadoAtaque | Mob, objetivo, ataque, resultado (acierto, fallo o neutral), causa si es neutral |
 
 ### Decisiones (salida del dominio)
@@ -432,7 +432,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Resultado de una elección, puntaje de cada opción, multiplicador de memoria | `SelectionResult`, `CandidateScore`, `MemoryMultiplier` | Dominio |
 | Hechos de un intento, clasificador, causa neutral, contacto de la flecha, clasificación | `AttackFacts`, `AttackClassifier`, `NeutralCause`, `ProjectileContact`, `Classification` | Dominio |
 | Registro de amenaza | `ThreatLedger` | Dominio |
-| Geometría de combate | `CombatGeometry` | Dominio |
+| Geometría de combate, posición y frente del jugador | `CombatGeometry`, `PlayerPose` | Dominio |
 | Tiempo para matarlo | `KillTimeEstimator` | Dominio |
 | Regla de objetivo de la araña | `SpiderTargetRule` | Dominio |
 | Plan en curso | `Plan` | Dominio |
