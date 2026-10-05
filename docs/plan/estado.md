@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). Próximo: especificar el WP-14 (puerto de persistencia y JSON) y presentarlo a Nico. Etapa E4.
+1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 especificado (`wp/WP-14-persistencia-json.md`): esperando la aprobación de Nico. Etapa E4.
 2. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -32,8 +32,8 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-11 | Simulación de aprendizaje | E3 | mergeado | Sonnet | [#14](https://github.com/Nicodoou/mob-ai-plugin/pull/14) | Calibra velocidad de aprendizaje y vida media |
 | WP-12 | Grupos activos y membresía | E4 | mergeado | Sonnet | #15 | |
 | WP-13 | Casos de uso de combate | E4 | mergeado | Sonnet | #16 | Avisar a `RegroupWindow` cuando un grupo muere entero en `REGROUPING` (CT-07) |
-| WP-14 | Puerto de persistencia y JSON | E4 | pendiente | Sonnet | — | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
-| WP-15 | Guardar, cargar, resetear y consultar | E4 | pendiente | Sonnet | — | |
+| WP-14 | Puerto de persistencia y JSON | E4 | especificado | Sonnet | — | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
+| WP-15 | Guardar, cargar, resetear y consultar | E4 | pendiente | Sonnet | — | Agregar al dominio la restauración del número de plan (`PlanLifecycle`) y usar `RegroupWindow.restore`; si la carga falla por versión más nueva, no guardar nunca (si no, se borran esos archivos). |
 | WP-28 | Trazas: incidentes y reproducción | E4 | pendiente | Sonnet | — | **Obligatorio:** el JSON de trazas e incidentes tiene que escribir y volver a leer `Infinity` (tiempo para matar de un jugador inmatable, WP-07), con prueba de ida y vuelta; Gson por defecto lanza una excepción con infinitos |
 | WP-16 | Runtime, configuración y mensajes | E5 | pendiente | Sonnet | — | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
 | WP-17 | Traductor de versión y fotos | E5 | pendiente | Sonnet | — | Incluye `MovementTracker` |

@@ -183,8 +183,8 @@ io.github.nicodoou.mobai
 │   │               EffectKind, Vec3, MinecraftConstants                               WP-02
 │   ├── port        ServerClock, RandomSource                                          WP-02
 │   │               GroupIdSource                                                      WP-12
-│   │               MemoryRepository, StoredMemories, StoredGroup, StoredMember,
-│   │               StoredRecord                                                       WP-14
+│   │               MemoryRepository, MemoryLoad, StoredMemories, StoredState,
+│   │               StoredGroup, StoredAttackRecord, StoredStrategyRecord              WP-14
 │   ├── settings    MobAiSettings, GroupSettings, MemorySettings, SelectionSettings,
 │   │               TargetSettings, PlanSettings, AttackSettings, SpiderSettings,
 │   │               PersistenceSettings, DebugSettings                                 WP-02
@@ -221,7 +221,8 @@ io.github.nicodoou.mobai
 │                   DescribeGroup, GroupStatusView, DescribePlayerMemory,
 │                   PlayerMemoryView                                                   WP-15
 ├── persistence     JsonMemoryRepository, MemoryFiles, AtomicFileWriter,
-│                   SchemaMigrator, GroupFile, StateFile, MemberEntry, RecordEntry      WP-14
+│                   SchemaMigrator, GroupFileMapper, GroupFile, StateFile,
+│                   MemberEntry, RecordEntry                                           WP-14
 ├── adapter
 │   ├── runtime     ServerTickCounter, JdkRandomSource                                 WP-16
 │   ├── config      ConfigLoader, Messages        (+ config.yml y messages.yml)        WP-16
