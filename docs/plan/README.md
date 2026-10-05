@@ -357,6 +357,7 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D27. Ventana de reagrupamiento global y adaptativa** (Nico, 5 de octubre). 600 ticks al empezar, entre 200 y 1.200; −50 si un grupo muere entero reagrupándose, +50 si termina vivo. Una sola para todo el server, guardada con las memorias.
 - **D28. `Group` dividido** (5 de octubre). Por la regla de métodos públicos, `Group` delega en `GroupRoster` (miembros, líder, arañas) y `PlanLifecycle` (estados, plan, compromiso), que comparten `PendingEvents` (WP-08B).
 - **D29. Rol de flanqueo y ataque** (CT-08, 5 de octubre). El zombie con rol `FLANK` usa siempre `zombie.flank_strike`; los tres golpes se eligen solo con rol `PRESS`.
+- **D30. Calibración** (CT-09, puerta E3, 5 de octubre). Velocidad de aprendizaje 1,0 y vida media 12.000 ticks.
 
 ## 8. Partes siguientes
 

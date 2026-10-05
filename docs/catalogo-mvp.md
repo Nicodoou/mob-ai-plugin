@@ -97,7 +97,7 @@ Estos son los valores de arranque para las primeras pruebas; todos están en la 
 | Tiempo de vida de un mob | 20 min fuera de combate |  |
 | Ticks entre decisiones | 10 |  |
 | Vida media del olvido | 12.000 ticks (10 min de server prendido) | Se calibra junto con la velocidad |
-| Velocidad de aprendizaje | 0,7 (unos 16 intentos virtuales) | Punto medio con algo de rapidez para que se note en pruebas cortas |
+| Velocidad de aprendizaje | 1,0 (2 intentos virtuales) | Calibrada en la simulación del WP-11: con 0,7 el grupo no llega a preferir el flanqueo en 20 planes (67 % de las corridas); con 1,0, el 90 % (CT-09) |
 | Política de selección | Thompson Sampling |  |
 | Peso del golpe bloqueado (parcial) | 0,5 | Bajar a 0,25 si insisten de frente contra escudos |
 | Techo del multiplicador de memoria | Entre 0,5 y 1,5 |  |

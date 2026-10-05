@@ -2,12 +2,12 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 5 de octubre de 2026 (WP-11 mergeado).
+**Última actualización:** 5 de octubre de 2026 (puerta E3 pasada).
 
 ## Próximo paso
 
 1. CT-06 y CT-07 aprobados por Nico (`cambios-tecnicos.md`). WP-08B y WP-10A mergeados.
-2. WP-11 mergeado. **Pendiente la decisión de Nico** sobre la calibración (bitácora, WP-11): (A, recomendada) `learningSpeed` 1,0 y `halfLifeTicks` 12.000, que aprueba el 90 % con 300 semillas; o (B) dos velocidades, 1,0 para estrategias y 0,7 para ataques. Con la decisión: actualizar `catalogo-mvp.md`, `TestSettings` y la nota de decisiones abiertas, registrar el cambio técnico (CT-09), marcar la puerta E3 y arrancar la E4 especificando el WP-12.
+2. Puerta E3 pasada (Nico eligió la opción A: CT-09). Próximo: especificar el WP-12 (grupos activos y membresía) y presentarlo a Nico. Etapa E4.
 3. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. WP-07 y WP-08 pueden ir en paralelo (los dos dependen solo de WP-06). El orden del plan se mantiene (Nico decidió no reordenar).
 2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -36,7 +36,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-14 | Puerto de persistencia y JSON | E4 | pendiente | Sonnet | — | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
 | WP-15 | Guardar, cargar, resetear y consultar | E4 | pendiente | Sonnet | — | |
 | WP-28 | Trazas: incidentes y reproducción | E4 | pendiente | Sonnet | — | **Obligatorio:** el JSON de trazas e incidentes tiene que escribir y volver a leer `Infinity` (tiempo para matar de un jugador inmatable, WP-07), con prueba de ida y vuelta; Gson por defecto lanza una excepción con infinitos |
-| WP-16 | Runtime, configuración y mensajes | E5 | pendiente | Sonnet | — | Prueba que compare rangos del cargador con los records |
+| WP-16 | Runtime, configuración y mensajes | E5 | pendiente | Sonnet | — | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
 | WP-17 | Traductor de versión y fotos | E5 | pendiente | Sonnet | — | Incluye `MovementTracker` |
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
 | WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | Reinstalar goals en `EntityAddToWorldEvent` |
@@ -57,7 +57,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | E0 | pasada | Paper 26.3 build 151 levantó con el plugin habilitado y deshabilitado sin errores |
 | E1 | pasada | `hallazgos-api.md`, 7 rondas de prueba con Nico en el server |
 | E2 | pasada | 146 pruebas en verde; valores de RF-06 verificados en WP-03; cobertura del dominio 96 % |
-| E3 | pendiente | |
+| E3 | pasada | 367 pruebas; simulación del WP-11: con velocidad 1,0 y vida media 12.000 el grupo aprende a flanquear al que bloquea en el 90 % de 300 corridas (CT-09) |
 | E4 | pendiente | |
 | E5 | pendiente | |
 | E6 | pendiente | |
@@ -67,7 +67,6 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 
 | Decisión | Dónde se cierra |
 | --- | --- |
-| Valores por defecto de la velocidad de aprendizaje y de la vida media, calibrados juntos | Simulación del WP-11 (puerta E3) |
 | `Group` tiene 25 métodos públicos (umbral de alerta: 20). Antes de sumarle más, evaluar dividirlo, por ejemplo membresía por un lado y ciclo del plan por otro | WP-10, WP-12 o WP-13, el primero que le agregue métodos |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |
 | `PlanEndDetector.hasRetreated` con miembros que se suman a mitad de plan: «se fueron» = iniciales − roles actuales da negativo y la regla se vuelve menos sensible. Propuesta: `gone = max(0, iniciales − roles)` y comparar contra `max(iniciales, roles)` | WP de limpieza después de E3 (junto con los ciclos de paquetes); el WP-11 puede mostrar si importa |
