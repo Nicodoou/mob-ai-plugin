@@ -64,5 +64,5 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | Decisión | Dónde se cierra |
 | --- | --- |
 | Valores por defecto de la velocidad de aprendizaje y de la vida media, calibrados juntos | Simulación del WP-11 (puerta E3) |
-| Brujas contra un objetivo que se cura más rápido de lo que el grupo le pega (idea de Nico): la bruja prioriza Veneno o Daño instantáneo sobre ese jugador. La señal ya existe: `KillTimeEstimate.damagePerSecond` negativo | Fase 2, en el WP de las brujas |
+| Brujas contra un objetivo que se cura más rápido de lo que el grupo le pega (idea de Nico). Tres jugadas: debuffear al jugador (Veneno, Daño instantáneo, Debilidad, Lentitud), buffear a los aliados (Fuerza, Velocidad) o las dos en secuencia. Propuesta: puntuar cada poción por cuánto baja el tiempo para matarlo, recalculando `KillTimeEstimator` con la foto modificada, y multiplicar por su tasa aprendida. Cuidar la salpicadura: cura y daño se invierten en no-muertos, y Fuerza o Velocidad cerca del jugador también lo buffean a él. La señal de «inmatable» ya existe: `KillTimeEstimate.damagePerSecond` negativo | Fase 2, en el WP de las brujas |
 | Tope de seguridad por tipo de mob, regla para aceptar o rechazar mobs, mobs raros, bloques que rompen los zombies, memoria en SQLite | Fase 2, después de G1 |
