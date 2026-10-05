@@ -6,9 +6,8 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Pendiente de Nico: ¿se reordena el plan para tener una versión jugable antes (casos de uso WP-12 y WP-13, después adaptadores WP-16 a WP-21, y recién después persistencia y trazas WP-14, WP-15, WP-28 y WP-29)? Si dice que sí, actualizar el README (tabla, diagrama y etapas) y este tablero.
-2. Especificar el WP-06 (fotos, amenaza y geometría) y presentarlo.
-3. Esta etapa empieza en una sesión nueva (`/orquestar`).
+1. Especificar el WP-06 (fotos, amenaza y geometría) y presentarlo a Nico. El orden del plan se mantiene (Nico decidió no reordenar).
+2. Nico prefiere seguir en la misma sesión compactando el contexto en vez de abrir una nueva: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
 

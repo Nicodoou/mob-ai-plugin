@@ -108,6 +108,8 @@ Después: actualizá `estado.md`, commiteá y presentale a Nico el cierre del WP
 
 ## 8. Cambio de sesión
 
+Preferencia de Nico: mientras la ventana de contexto lo permita, en vez de abrir una sesión nueva se compacta la conversación (`/compact`) y después se releen este manual y `estado.md`. La sesión nueva queda para cuando compactar ya no alcance.
+
 Una sesión por etapa. Al pasar cada puerta:
 
 1. Dejá `estado.md` al día, con un «Próximo paso» concreto.
