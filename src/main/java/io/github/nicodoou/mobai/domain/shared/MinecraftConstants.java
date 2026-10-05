@@ -13,5 +13,32 @@ public final class MinecraftConstants {
   // the arrow's drop.
   public static final double ARROW_ARC_FACTOR = 0.2;
 
+  // Damage per hit on normal difficulty. Zombie measured in the spike; spider and arrow (1.6 speed
+  // x
+  // 2.0 base damage, rounded up) are vanilla values.
+  public static final double ZOMBIE_HIT_DAMAGE = 3.0;
+  public static final double SPIDER_HIT_DAMAGE = 2.0;
+  public static final double SKELETON_ARROW_DAMAGE = 4.0;
+
+  // Our goals attack at these vanilla rates; the kill time estimate assumes the same rates.
+  public static final int MELEE_ATTACK_INTERVAL_TICKS = 20;
+  public static final int SKELETON_ATTACK_INTERVAL_TICKS = 40;
+  public static final double MELEE_REACH_BLOCKS = 2.0;
+
+  // Vanilla damage reduction: armor, armor toughness, Protection and Resistance.
+  public static final double ARMOR_TOUGHNESS_BASE = 2.0;
+  public static final double ARMOR_TOUGHNESS_DIVISOR = 4.0;
+  public static final double ARMOR_MIN_FRACTION = 0.2;
+  public static final double ARMOR_MAX_POINTS = 20.0;
+  public static final int PROTECTION_MAX_FACTOR = 20;
+  public static final double DAMAGE_REDUCTION_SCALE = 25.0;
+  public static final double RESISTANCE_REDUCTION_PER_LEVEL = 0.2;
+
+  // Vanilla periodic effects heal or hurt one point every (base >> (level - 1)) ticks.
+  public static final int REGENERATION_BASE_INTERVAL_TICKS = 50;
+  public static final int POISON_BASE_INTERVAL_TICKS = 25;
+  public static final int WITHER_BASE_INTERVAL_TICKS = 40;
+  public static final double SLOWNESS_SPEED_REDUCTION_PER_LEVEL = 0.15;
+
   private MinecraftConstants() {}
 }
