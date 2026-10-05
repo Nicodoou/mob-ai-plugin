@@ -44,56 +44,57 @@ class GroupLifecycleTest {
             new GroupKnowledge(
                 new GroupMemory(() -> TestSettings.defaults().memory()),
                 new ThreatLedger(() -> TestSettings.defaults().target())));
-    group.addMember(MOB_1, MobKind.ZOMBIE);
-    group.addMember(MOB_2, MobKind.SPIDER);
+    group.roster().addMember(MOB_1, MobKind.ZOMBIE);
+    group.roster().addMember(MOB_2, MobKind.SPIDER);
   }
 
   private void enterExecuting() {
-    group.beginPlanning();
-    group.startPlan(start);
+    group.lifecycle().beginPlanning();
+    group.lifecycle().startPlan(start);
   }
 
   @Test
   void newGroupIsObservingWithoutPlan() {
-    assertThat(group.state()).isEqualTo(GroupState.OBSERVING);
-    assertThat(group.plan()).isEmpty();
-    assertThat(group.committedTarget()).isEmpty();
-    assertThat(group.planSequence()).isZero();
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+    assertThat(group.lifecycle().plan()).isEmpty();
+    assertThat(group.lifecycle().committedTarget()).isEmpty();
+    assertThat(group.lifecycle().planSequence()).isZero();
   }
 
   @Test
   void fullCycleWalksTheFourStates() {
-    group.beginPlanning();
+    group.lifecycle().beginPlanning();
 
-    assertThat(group.state()).isEqualTo(GroupState.PLANNING);
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.PLANNING);
 
-    Plan plan = group.startPlan(start);
+    Plan plan = group.lifecycle().startPlan(start);
 
-    assertThat(group.state()).isEqualTo(GroupState.EXECUTING);
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.EXECUTING);
     assertThat(plan.id()).isEqualTo(new PlanId(GROUP, 1));
 
-    group.closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
 
-    assertThat(group.state()).isEqualTo(GroupState.EVALUATING);
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.EVALUATING);
 
-    group.finishEvaluation();
+    group.lifecycle().finishEvaluation();
 
-    assertThat(group.state()).isEqualTo(GroupState.OBSERVING);
-    assertThat(group.plan()).isEmpty();
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+    assertThat(group.lifecycle().plan()).isEmpty();
   }
 
   @Test
   void illegalTransitionsAreRejected() {
-    assertThatThrownBy(() -> group.startPlan(start))
+    assertThatThrownBy(() -> group.lifecycle().startPlan(start))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Group 00000000 cannot start a plan while OBSERVING");
-    assertThatThrownBy(() -> group.closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION))
+    assertThatThrownBy(
+            () -> group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Group 00000000 cannot close a plan while OBSERVING");
 
-    group.beginPlanning();
+    group.lifecycle().beginPlanning();
 
-    assertThatThrownBy(() -> group.beginPlanning())
+    assertThatThrownBy(() -> group.lifecycle().beginPlanning())
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Group 00000000 cannot begin planning while PLANNING");
   }
@@ -101,49 +102,50 @@ class GroupLifecycleTest {
   @Test
   void planIdsCountUpPerGroup() {
     enterExecuting();
-    group.closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
-    group.finishEvaluation();
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().finishEvaluation();
 
-    group.beginPlanning();
-    Plan second = group.startPlan(start);
+    group.lifecycle().beginPlanning();
+    Plan second = group.lifecycle().startPlan(start);
 
     assertThat(second.id()).isEqualTo(new PlanId(GROUP, 2));
-    assertThat(group.planSequence()).isEqualTo(2);
+    assertThat(group.lifecycle().planSequence()).isEqualTo(2);
   }
 
   @Test
   void startPlanRejectsRolesForNonMembers() {
     MobId stranger = new MobId(new UUID(9, 9));
     PlanStart foreign = new PlanStart(FLANK_STRATEGY, ALICE, Map.of(stranger, Role.PRESS), 20, 100);
-    group.beginPlanning();
+    group.lifecycle().beginPlanning();
 
-    assertThatThrownBy(() -> group.startPlan(foreign))
+    assertThatThrownBy(() -> group.lifecycle().startPlan(foreign))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Group 00000000 has no member 00000000-0000-0009-0000-000000000009");
-    assertThat(group.state()).isEqualTo(GroupState.PLANNING);
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.PLANNING);
   }
 
   @Test
   void onlyDamageToThePlanTargetCounts() {
     enterExecuting();
 
-    group.recordPlanDamage(ALICE, 3);
-    group.recordPlanDamage(BOB, 4);
+    group.lifecycle().recordPlanDamage(ALICE, 3);
+    group.lifecycle().recordPlanDamage(BOB, 4);
 
-    assertThat(group.plan().orElseThrow().damageDealt()).isCloseTo(3, within(1e-9));
+    assertThat(group.lifecycle().plan().orElseThrow().damageDealt()).isCloseTo(3, within(1e-9));
   }
 
   @Test
   void damageOutsideAPlanIsIgnored() {
-    assertThatCode(() -> group.recordPlanDamage(ALICE, 3)).doesNotThrowAnyException();
+    assertThatCode(() -> group.lifecycle().recordPlanDamage(ALICE, 3)).doesNotThrowAnyException();
   }
 
   @Test
   void closingComputesSuccessAndCommitsToTheTarget() {
     enterExecuting();
-    group.recordPlanDamage(ALICE, 5);
+    group.lifecycle().recordPlanDamage(ALICE, 5);
 
-    ClosedPlan closed = group.closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+    ClosedPlan closed =
+        group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
 
     assertThat(closed)
         .isEqualTo(
@@ -156,7 +158,7 @@ class GroupLifecycleTest {
                 5.0,
                 100,
                 700));
-    assertThat(group.committedTarget()).contains(ALICE);
+    assertThat(group.lifecycle().committedTarget()).contains(ALICE);
     assertThat(group.drainEvents()).containsExactly(new PlanClosed(closed));
   }
 
@@ -164,7 +166,8 @@ class GroupLifecycleTest {
   void targetDeathIsAFullSuccess() {
     enterExecuting();
 
-    ClosedPlan closed = group.closePlan(PlanEndReason.TARGET_DIED, 700, FULL_SUCCESS_FRACTION);
+    ClosedPlan closed =
+        group.lifecycle().closePlan(PlanEndReason.TARGET_DIED, 700, FULL_SUCCESS_FRACTION);
 
     assertThat(closed.success()).isCloseTo(1, within(1e-9));
   }
@@ -173,19 +176,19 @@ class GroupLifecycleTest {
   void planIsReadableDuringEvaluation() {
     enterExecuting();
 
-    group.closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
 
-    assertThat(group.plan()).isPresent();
-    assertThat(group.state()).isEqualTo(GroupState.EVALUATING);
+    assertThat(group.lifecycle().plan()).isPresent();
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.EVALUATING);
   }
 
   @Test
   void assignRoleChangesOnlyThatMob() {
     enterExecuting();
 
-    group.assignRole(MOB_1, Role.RETREAT);
+    group.lifecycle().assignRole(MOB_1, Role.RETREAT);
 
-    assertThat(group.plan().orElseThrow().roleOf(MOB_1)).contains(Role.RETREAT);
+    assertThat(group.lifecycle().plan().orElseThrow().roleOf(MOB_1)).contains(Role.RETREAT);
   }
 
   @Test
@@ -194,15 +197,58 @@ class GroupLifecycleTest {
 
     group.removeMember(MOB_1, 300);
 
-    assertThat(group.plan().orElseThrow().roleOf(MOB_1)).isEmpty();
+    assertThat(group.lifecycle().plan().orElseThrow().roleOf(MOB_1)).isEmpty();
+  }
+
+  @Test
+  void groupRetreatLeadsToRegrouping() {
+    enterExecuting();
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 700, FULL_SUCCESS_FRACTION);
+
+    group.lifecycle().finishEvaluation();
+
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(group.lifecycle().regroupStartTick()).hasValue(700);
+    assertThat(group.lifecycle().plan()).isEmpty();
+
+    group.lifecycle().finishRegrouping();
+
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+    assertThat(group.lifecycle().regroupStartTick()).isEmpty();
+  }
+
+  @Test
+  void otherEndReasonsSkipRegrouping() {
+    enterExecuting();
+    group.lifecycle().closePlan(PlanEndReason.TARGET_LOST, 700, FULL_SUCCESS_FRACTION);
+
+    group.lifecycle().finishEvaluation();
+
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+    assertThat(group.lifecycle().regroupStartTick()).isEmpty();
+  }
+
+  @Test
+  void regroupingTransitionsAreGuarded() {
+    assertThatThrownBy(() -> group.lifecycle().finishRegrouping())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Group 00000000 cannot finish regrouping while OBSERVING");
+
+    enterExecuting();
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().finishEvaluation();
+
+    assertThatThrownBy(() -> group.lifecycle().beginPlanning())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Group 00000000 cannot begin planning while REGROUPING");
   }
 
   @Test
   void markTargetSeenUpdatesThePlan() {
     enterExecuting();
 
-    group.markTargetSeen(300);
+    group.lifecycle().markTargetSeen(300);
 
-    assertThat(group.plan().orElseThrow().ticksSinceTargetSeen(350)).isEqualTo(50);
+    assertThat(group.lifecycle().plan().orElseThrow().ticksSinceTargetSeen(350)).isEqualTo(50);
   }
 }

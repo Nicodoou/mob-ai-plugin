@@ -4,5 +4,6 @@ public enum GroupState {
   OBSERVING,
   PLANNING,
   EXECUTING,
-  EVALUATING
+  EVALUATING,
+  REGROUPING
 }

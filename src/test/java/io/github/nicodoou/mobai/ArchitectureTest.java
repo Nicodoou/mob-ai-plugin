@@ -4,9 +4,18 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
+import com.tngtech.archunit.lang.ArchCondition;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.RecordComponent;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +35,7 @@ class ArchitectureTest {
       "java\\.util\\.Random|java\\.util\\.SplittableRandom|java\\.util\\.concurrent\\.ThreadLocalRandom"
           + "|java\\.security\\.SecureRandom|java\\.util\\.random\\..*";
   private static final String FILE_AND_CONSOLE_IO = "java\\.io\\.(File.*|PrintStream|PrintWriter)";
+  private static final int MAX_PUBLIC_METHODS = 20;
 
   private static final JavaClasses MAIN_CLASSES =
       new ClassFileImporter()
@@ -183,5 +193,53 @@ class ArchitectureTest {
         .because("a class name must say what the class is")
         .allowEmptyShould(true)
         .check(MAIN_CLASSES);
+  }
+
+  @Test
+  void classesHaveAtMostTwentyPublicMethods() {
+    classes()
+        .should(haveAtMostPublicMethods(MAX_PUBLIC_METHODS))
+        .because("a class with a large public surface is doing too much")
+        .allowEmptyShould(true)
+        .check(MAIN_CLASSES);
+  }
+
+  private static ArchCondition<JavaClass> haveAtMostPublicMethods(int maximum) {
+    return new ArchCondition<>("have at most " + maximum + " public methods") {
+      @Override
+      public void check(JavaClass javaClass, ConditionEvents events) {
+        long count = countPublicBehavior(javaClass.reflect());
+        if (count > maximum) {
+          events.add(
+              SimpleConditionEvent.violated(
+                  javaClass,
+                  javaClass.getName()
+                      + " has "
+                      + count
+                      + " public methods (maximum "
+                      + maximum
+                      + ")"));
+        }
+      }
+    };
+  }
+
+  // Record accessors and the methods the compiler writes for records and enums are not behavior.
+  private static long countPublicBehavior(Class<?> type) {
+    Set<String> generated = generatedMethodNames(type);
+    return Arrays.stream(type.getDeclaredMethods())
+        .filter(method -> Modifier.isPublic(method.getModifiers()))
+        .filter(method -> !method.isSynthetic() && !method.isBridge())
+        .filter(method -> !generated.contains(method.getName()))
+        .count();
+  }
+
+  private static Set<String> generatedMethodNames(Class<?> type) {
+    Set<String> names =
+        new HashSet<>(Set.of("equals", "hashCode", "toString", "values", "valueOf"));
+    if (type.isRecord()) {
+      Arrays.stream(type.getRecordComponents()).map(RecordComponent::getName).forEach(names::add);
+    }
+    return names;
   }
 }
