@@ -6,8 +6,8 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): mergeados (#19 y #20), antes de la puerta E4 porque no tocan su código. WP-28 dividido en WP-28A (Opus) y WP-28B (Sonnet), aprobado por Nico (CT-12). Los dos aprobados por Nico. WP-28A mergeado (#21). WP-28B en curso (Sonnet, worktree); al mergearlo, puerta E4. Etapa E4.
-2. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
+1. **Puerta E4 pasada** (6 oct): WP-12 a WP-15, WP-28A y WP-28B mergeados; WP-16 y WP-17 (de E5) también. Próximo: especificar el WP-18 (rastreador cuerpo a cuerpo) y presentarlo a Nico. Etapa E5.
+2. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
 ## WPs
@@ -35,7 +35,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-14 | Puerto de persistencia y JSON | E4 | mergeado | Sonnet | #17 | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
 | WP-15 | Guardar, cargar, resetear y consultar | E4 | mergeado | Sonnet | #18 | Agregar al dominio la restauración del número de plan (`PlanLifecycle`) y usar `RegroupWindow.restore`; si la carga falla por versión más nueva, no guardar nunca (si no, se borran esos archivos). |
 | WP-28A | Estado completo y azar grabado | E4 | mergeado | Opus | #21 | |
-| WP-28B | Incidente, JSON y reproducción | E4 | en curso | Sonnet | — | Infinity ida y vuelta obligatorio (CT-04); cierra E4 |
+| WP-28B | Incidente, JSON y reproducción | E4 | mergeado | Sonnet | #22 | Infinity ida y vuelta obligatorio (CT-04); cierra E4 |
 | WP-16 | Runtime, configuración y mensajes | E5 | mergeado | Sonnet | #19 | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
 | WP-17 | Traductor de versión y fotos | E5 | mergeado | Sonnet | #20 | Incluye `MovementTracker` |
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
@@ -58,7 +58,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | E1 | pasada | `hallazgos-api.md`, 7 rondas de prueba con Nico en el server |
 | E2 | pasada | 146 pruebas en verde; valores de RF-06 verificados en WP-03; cobertura del dominio 96 % |
 | E3 | pasada | 367 pruebas; simulación del WP-11: con velocidad 1,0 y vida media 12.000 el grupo aprende a flanquear al que bloquea en el 90 % de 300 corridas (CT-09) |
-| E4 | pendiente | |
+| E4 | pasada | 560 pruebas, 0 fallas, cobertura total 94 % (dominio y aplicación entre 94 y 100 %). Memoria de ida y vuelta por disco (`JsonMemoryRepositoryTest`, `SaveAndLoadMemoriesTest`); todos los casos de uso con fakes; incidentes provocados (decisión en medio de un plan, cierre de plan y falla) se reproducen idénticos desde su JSON con `TraceReplay`, y los adulterados (azar, estado, números sobrantes, ventana) se detectan |
 | E5 | pendiente | Además del guion: verificar en el server lo que no tiene prueba JUnit (riesgo del WP-17): la foto de un grupo (`SnapshotFactory`) con jugadores en supervivencia, creativo y lejos; efectos, armadura y Protección leídos por `VersionTranslator`; daño absorbido y golpe bloqueado |
 | E6 | pendiente | |
 | G1 | pendiente | |

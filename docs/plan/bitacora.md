@@ -173,3 +173,17 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** El subagente frenó por un error mío en el WP: la repetición de una decisión que cierra el plan exigía consumir azar, y cerrar un plan no sortea nada; se corrigió a «cero números» (documenta el comportamiento). También corregí el conteo de `ThreatLedger` (7, no 8). 23 pruebas nuevas, toda la suite verde con el armado único, 4 roturas del WP con su prueba y 2 roturas propias (sin restaurar `lastEndTick`; sin restaurar objetivos de araña) con 3 fallas. CI verde.
 
 **Opinión del código.** Lo bueno: la prueba central repite una decisión en medio de un plan y otra que lo cierra, y exige igualdad de resultado, traza, estado final, eventos y consumo exacto del azar; cualquier estado nuevo que no se copie la rompe. Lo flojo: en esa prueba la memoria del grupo está vacía, así que la restauración de memoria con datos la cubre solo el WP-15 por separado. `LearningSimulation` sigue armando su propio cerebro (no afecta al plugin). Riesgo: el costo de copiar cada 10 ticks, que mide el WP-29.
+
+## WP-28B — Incidente, JSON y reproducción (PR #22, Sonnet + pruebas de Opus)
+
+**Qué hizo.** `IncidentReport` (con `IncidentLocation` e `IncidentFailure`), su JSON (`IncidentJson`, `IncidentFile`, `OptionalTypeAdapterFactory`) con versión de formato e infinitos (CT-04), y en pruebas `TraceReplay` e `IncidentFixture`.
+
+**Arquitectura.** El JSON vive en `adapter.debug` (no en `persistence`): `persistence` no puede depender de `application`, y quien escribe incidentes es el adaptador del WP-29. `TraceReplay` repite la decisión con `BrainParts.standard`, el azar grabado y la ventana de antes, y compara resultado o falla, estado después, ventana después y números sobrantes.
+
+**Revisión.** El subagente frenó por dos errores míos del WP (paquete del JSON y el jugador inmortal grabado en medio de un plan, donde la traza no trae selección de objetivo); los dos quedaron como lecciones en el manual. Mis roturas propias mostraron dos huecos de pruebas (no restaurar la ventana de reagrupamiento y no exigir que se consuman todos los números pasaban inadvertidos): agregué `leftoverDrawIsDetected` y `regroupWindowIsRestoredBeforeReplaying`, verificadas contra cada rotura. La rotura 2 del WP (`setStrictness`) no muerde: Gson 2.14 relee `Infinity` con `serializeSpecialFloatingPointValues`; se dejó por intención. CI verde (hubo que esperar una corrida que GitHub no disparó al abrir el PR).
+
+**Opinión del código.** Lo bueno: la reproducción es exacta y desconfiada (detecta cinco tipos de adulteración). Lo flojo: `IncidentJson.read("")` da `NullPointerException` en vez de un mensaje claro (lo lee una persona con un archivo a mano; menor). Riesgo: el armado de incidentes en el plugin (WP-29) tiene que copiar antes de decidir y publicar eventos antes de copiar; si no, la reproducción falla aunque el cerebro esté bien.
+
+## Puerta E4 — pasada (6 oct 2026)
+
+560 pruebas en verde, cobertura total 94 %. Memoria de ida y vuelta por disco, casos de uso probados con fakes y reproducción exacta de incidentes provocados desde su JSON.
