@@ -133,3 +133,13 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código idéntico al WP, 27 pruebas, 4 roturas del WP que mordieron con la prueba nombrada, y 2 roturas propias (borrado invertido y sin chequeo de nombre de archivo) con 12 fallas. El subagente señaló que un archivo con bytes UTF-8 inválidos hacía fallar toda la carga: lo arreglé en la rama (la `CharacterCodingException` pasa a ser cuarentena) con la prueba `loadQuarantinesAGroupFileWithInvalidUtf8`, verificada sin el arreglo.
 
 **Opinión del código.** Lo bueno: chico, legible, con la frontera de errores bien marcada (corrupto → cuarentena; disco o versión nueva → falla) y cuarentena por archivo. Lo flojo: un campo numérico ausente en el JSON se lee como 0 sin aviso (Gson con records), así que un archivo editado a mano puede perder un contador sin quedar en cuarentena; es poco probable con archivos escritos por el plugin. Riesgo: si el WP-20 guarda después de una carga fallida, se borran grupos; quedó anotado en el WP-15.
+
+## WP-15 — Guardar, cargar, resetear y consultar (PR #18, Sonnet)
+
+**Qué hizo.** `StoredMemoriesMapper` (grupo vivo ↔ datos guardados, con orden determinista de registros), `SaveMemories` (captura en el hilo principal y escritura aparte), `LoadMemories` (reconstruye grupos y saltea los que no se pueden restaurar), `GuardedMemoryRepository` (candado: sin carga exitosa no se guarda), `ResetMemories`, `DescribeGroup` y `DescribePlayerMemory` con sus vistas. En el dominio, `PlanLifecycle.restorePlanSequence` (14 métodos públicos).
+
+**Arquitectura.** El estado global (reloj y ventana) no lo aplican los casos de uso: `LoadMemories` lo devuelve y `SaveMemories` lo recibe; el arranque (WP-20) es el dueño.
+
+**Revisión.** Código conforme al WP (dos comparadores con nombre agregados, aceptados), 26 pruebas, CI verde, las 4 roturas del WP mordieron (la 4, la del orden de jugadores, de forma intermitente como estaba previsto), y 2 roturas propias (reset que cuenta todos los grupos; estado sin el objetivo de reagrupamiento) hicieron fallar 2 pruebas.
+
+**Opinión del código.** Lo bueno: casos de uso finos, el candado cierra el riesgo del WP-14 y la carga tolera grupos rotos sin perder el resto. Lo flojo: `toStoredOrdersRecordsByPlayerThenAttack` muerde de forma intermitente si se rompe el orden (depende del orden de `Map.copyOf`); con el código correcto es determinista. Riesgo: un miembro guardado cuya entidad ya no existe (por ejemplo, un mob que desapareció con el server apagado) queda para siempre en su grupo; anotado en el WP-21 que los mobs del grupo de prueba no se descarten por distancia.
