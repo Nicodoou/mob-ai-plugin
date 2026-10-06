@@ -127,7 +127,8 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-17 | Traductor de versión y fotos | Puertas E1 y E4 | Sonnet | `VersionTranslator`, `SnapshotFactory` |
 | WP-18 | Rastreador cuerpo a cuerpo | WP-17 | Sonnet | `AttackTracker`, `DamageListener`, `DeathListener` |
 | WP-19 | Roles, goals y golpe frontal | WP-18 | Sonnet | `RoleRegistry`, `GoalInstaller`, `PressGoal`, `MeleeAttacker`, listeners de carga y de objetivo |
-| WP-20 | Scheduler, guardado y arranque | WP-16, WP-19 | Sonnet | `DecisionScheduler`, `DecisionApplier`, `PersistenceScheduler`, `MobAiPlugin` armado |
+| WP-20A | Schedulers y aplicador | WP-19 | Sonnet | `DecisionScheduler`, `DecisionApplier`, `PersistenceScheduler`, `MovementSampler` |
+| WP-20B | Arranque del plugin | WP-20A | Opus | `CoreServices`, `AdapterServices`, `PluginRuntime`, `MobAiPlugin` armado |
 | WP-21 | Comandos y log de debug | WP-20 | Sonnet | `/mobai spawngroup`, `status`, `reset`, `reload`; `DebugLog` |
 | WP-22 | Flanqueo y retirada | Puerta E5 | Sonnet | `FlankGoal`, `RetreatGoal` |
 | WP-23 | Golpes de flanco y paciente | WP-22 | Sonnet | Dos estilos más en `MeleeAttacker` |
@@ -239,10 +240,12 @@ io.github.nicodoou.mobai
 │   │               MeleeRhythm, GoalContext                                           WP-19
 │   │               FlankGoal, RetreatGoal                                             WP-22
 │   │               ShootGoal, BowShooter                                              WP-24
-│   ├── scheduler   DecisionScheduler, DecisionApplier, PersistenceScheduler           WP-20
+│   ├── scheduler   DecisionScheduler, DecisionApplier, PersistenceScheduler,
+│   │               DecisionCadence, DecisionParts, GroupDecider, MovementSampler      WP-20A
 │   ├── command     MobAiCommand                                      WP-21 (memory: WP-26)
 │   └── debug       DebugLog                                                           WP-21
-└── bootstrap       MobAiPlugin                                     WP-00 vacío, WP-20 armado
+└── bootstrap       MobAiPlugin, CoreServices, AdapterServices, PluginRuntime
+                                                    WP-00 vacío, WP-20B armado
 ```
 
 Las pruebas espejan esos paquetes en `src/test/java`. Los fakes y builders compartidos viven en `testsupport`: `FakeServerClock`, `SeededRandomSource` y `TestSettings` (WP-02); `PlayerSnapshotBuilder`, `MobSnapshotBuilder` y `GroupSnapshotBuilder` (WP-06); `InMemoryMemoryRepository` (WP-14). `ArchitectureTest` (WP-00) vive en el paquete base.
