@@ -219,7 +219,7 @@ io.github.nicodoou.mobai
 │                   GroupEvents                                                        WP-13
 │                   StoredMemoriesMapper, SaveMemories, LoadMemories, ResetMemories,
 │                   DescribeGroup, GroupStatusView, DescribePlayerMemory,
-│                   PlayerMemoryView                                                   WP-15
+│                   PlayerMemoryView, GuardedMemoryRepository, LoadReport              WP-15
 ├── persistence     JsonMemoryRepository, MemoryFiles, AtomicFileWriter,
 │                   SchemaMigrator, GroupFileMapper, GroupFile, StateFile,
 │                   MemberEntry, RecordEntry                                           WP-14
