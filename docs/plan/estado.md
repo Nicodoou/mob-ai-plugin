@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): mergeados (#19 y #20), antes de la puerta E4 porque no tocan su código. Próximo: especificar el WP-28 (trazas), que cierra E4. Etapa E4.
+1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): mergeados (#19 y #20), antes de la puerta E4 porque no tocan su código. Próximo: WP-28 dividido en WP-28A (estado completo del grupo y azar grabado, Opus) y WP-28B (incidente, JSON y reproducción, Sonnet), aprobado por Nico (CT-12): escribir las dos especificaciones y presentarlas. Etapa E4.
 2. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -40,7 +40,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
 | WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | Reinstalar goals en `EntityAddToWorldEvent` |
 | WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | Agendar cada tick `ServerTickCounter.advance()` y `MovementTracker.sample` de los jugadores conectados (`forget` al salir); semilla de `JdkRandomSource`; `saveDefaultConfig` y `ConfigLoader`. Aplicar `LoadReport.state()` al reloj y a `RegroupWindow.restore`, y pasar el estado a `SaveMemories.capture`; usar `GuardedMemoryRepository` (WP-15). Suscribir `ClosePlan` a `PlanClosed`, con una prueba de que la suscripción existe (CT-11); recorrer los grupos con un `catch` por grupo al llamar a `TickGroups` |
-| WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | Los mobs de `spawngroup` con `setRemoveWhenFarAway(false)`: si no, un miembro que desaparece con el server apagado queda para siempre en su grupo guardado. Spawn del grupo de prueba sin equipo |
+| WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | `/mobai reload` atrapa cualquier excepción de `ConfigLoader` (un entero enorme sale como `ArithmeticException`, riesgo del WP-16) y conserva la configuración anterior. Los mobs de `spawngroup` con `setRemoveWhenFarAway(false)`: si no, un miembro que desaparece con el server apagado queda para siempre en su grupo guardado. Spawn del grupo de prueba sin equipo |
 | WP-29 | Trazas en el server | E5 | pendiente | Sonnet | — | |
 | WP-22 | Flanqueo y retirada | E6 | pendiente | Sonnet | — | Repartir a los flanqueadores del mismo lado: `CombatGeometry.flankPoint` les da el mismo punto; `RETREAT` va al margen y aplica la curación de CT-07 (1 punto cada 50 ticks, sin jugadores a menos de 12 bloques) |
 | WP-23 | Golpes de flanco y paciente | E6 | pendiente | Sonnet | — | |
@@ -58,7 +58,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | E2 | pasada | 146 pruebas en verde; valores de RF-06 verificados en WP-03; cobertura del dominio 96 % |
 | E3 | pasada | 367 pruebas; simulación del WP-11: con velocidad 1,0 y vida media 12.000 el grupo aprende a flanquear al que bloquea en el 90 % de 300 corridas (CT-09) |
 | E4 | pendiente | |
-| E5 | pendiente | |
+| E5 | pendiente | Además del guion: verificar en el server lo que no tiene prueba JUnit (riesgo del WP-17): la foto de un grupo (`SnapshotFactory`) con jugadores en supervivencia, creativo y lejos; efectos, armadura y Protección leídos por `VersionTranslator`; daño absorbido y golpe bloqueado |
 | E6 | pendiente | |
 | G1 | pendiente | |
 
