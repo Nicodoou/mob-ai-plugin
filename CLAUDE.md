@@ -12,6 +12,7 @@ Leé los documentos de `docs/` que correspondan a la tarea:
 - `docs/resolucion-de-bugs.md`: proceso obligatorio para cualquier bug.
 - `docs/catalogo-mvp.md`: estrategias, ataques, configuración inicial y definición de terminado del MVP.
 - `docs/diagramas.md`: los diagramas en Mermaid.
+- `docs/actualizar-paper.md`: dónde toca Paper el plugin y cómo pasar a otra versión.
 
 Si una tarea contradice estos documentos, frená y preguntá antes de implementar.
 
