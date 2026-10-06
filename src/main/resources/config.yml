@@ -1,0 +1,81 @@
+# MobAI: configuración. Los valores son los del catálogo del MVP.
+# Los tiempos van en ticks (20 ticks = 1 segundo) y las distancias, en bloques.
+# Después de editar, aplicá los cambios con /mobai reload.
+
+group:
+  # Mobs por grupo como máximo.
+  max-size: 12
+  # Cada cuántos ticks decide el cerebro de cada grupo.
+  decision-interval-ticks: 10
+  # Distancia a la que un grupo ve a los jugadores.
+  detection-radius-blocks: 24.0
+
+memory:
+  # Ticks para que lo aprendido pese la mitad (12.000 = 10 minutos de server prendido).
+  half-life-ticks: 12000
+  # Entre 0 y 1: más alto, aprende más rápido (1,0 calibrado en la simulación).
+  learning-speed: 1.0
+  # Cuánto vale un golpe bloqueado con escudo frente a uno que entra (0 a 1).
+  partial-hit-weight: 0.5
+
+selection:
+  # THOMPSON_SAMPLING, EPSILON_GREEDY, EXPLORE_FIRST o RANDOM (entre comillas).
+  default-policy: "THOMPSON_SAMPLING"
+  memory-multiplier-min: 0.5
+  memory-multiplier-max: 1.5
+  # Para EPSILON_GREEDY: probabilidad de elegir al azar.
+  epsilon: 0.1
+  # Para EXPLORE_FIRST: intentos al azar antes de usar la memoria.
+  explore-first-attempts: 10
+
+target:
+  # Cuánto tiempo cuenta el daño que hizo un jugador para su amenaza.
+  threat-window-ticks: 600
+  # Bonus por seguir con el mismo objetivo (0,2 = +20 %).
+  commitment-bonus: 0.2
+  base-threat: 1.0
+  approach-speed-blocks-per-second: 3.0
+  weakness-threat-multiplier-per-level: 0.5
+
+plan:
+  max-duration-ticks: 600
+  target-lost-distance-blocks: 32.0
+  target-lost-ticks: 200
+  # Vida (fracción) a la que un mob pasa a retirarse.
+  retreat-health-fraction: 0.3
+  # Fracción de la vida del objetivo que hay que sacarle para un plan exitoso.
+  full-success-damage-fraction: 0.5
+
+attack:
+  projectile-timeout-ticks: 60
+  patient-strike-max-wait-ticks: 60
+  opportunistic-shot-max-wait-ticks: 60
+  shoot-min-distance-blocks: 8.0
+  shoot-max-distance-blocks: 15.0
+  flank-distance-blocks: 3.0
+  retreat-distance-blocks: 16.0
+
+spider:
+  # Lentitud I por 3 segundos.
+  slowness-duration-ticks: 60
+  slowness-level: 1
+
+persistence:
+  # Cada cuánto se guardan las memorias (6.000 = 5 minutos); también se guardan al apagar.
+  save-interval-ticks: 6000
+
+debug:
+  # OFF, DECISIONS o FULL (entre comillas: sin comillas, YAML lee OFF como false).
+  default-trace-level: "OFF"
+  flight-recorder-events: 200
+
+retreat:
+  # Vida (fracción) a la que un mob vuelve a pelear; tiene que ser mayor que retreat-health-fraction.
+  recovery-health-fraction: 0.6
+  # Sin jugadores a esta distancia, un mob en retirada se cura.
+  heal-safe-distance-blocks: 12.0
+  # Ventana de reagrupamiento: arranca en este valor y aprende entre el mínimo y el máximo.
+  regroup-initial-ticks: 600
+  regroup-min-ticks: 200
+  regroup-max-ticks: 1200
+  regroup-step-ticks: 50
