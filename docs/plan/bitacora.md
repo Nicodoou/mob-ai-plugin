@@ -163,3 +163,13 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** El subagente frenó bien: el `switch` sobre `EntityType` que puse en el WP generaba una clase sintética que viola la regla de ArchUnit; se cambió por `if` con `==` y quedó la lección en el manual. Agregué en la rama los `requireNonNull` que faltaban en el constructor de `SnapshotFactory`. 13 pruebas, CI verde, 4 roturas del WP con su prueba, 2 roturas propias (mismo tick sin filtrar; mapeo de esqueleto cambiado) con 2 fallas.
 
 **Opinión del código.** Lo bueno: el traductor es la única puerta a las constantes de versión, y lo puro está probado. Lo flojo y el riesgo principal: `SnapshotFactory` y la mitad de `VersionTranslator` no tienen prueba automática (sin MockBukkit por decisión D20); se verifican en la puerta E5. `EntityType` sí se pudo cargar en JUnit sin server.
+
+## WP-28A — Estado completo del grupo y azar grabado (PR #21, Opus)
+
+**Qué hizo.** Copia y restauración del estado completo de un grupo (`LifecycleCapture`, `ThreatCapture`/`ThreatRecord`, `GroupRoster.spiderTargets`, `GroupCapture` y `GroupCaptureMapper`), azar grabado y repetido (`RecordingRandomSource`, `ReplayRandomSource`, `RecordedDraw`, `DrawKind`) y un único armado del cerebro (`BrainParts.standard`, que ya usa `BrainFixture`) (CT-12).
+
+**Arquitectura.** El dominio expone copiar y restaurar solo en grupos recién armados; la aplicación junta esa copia con la del WP-15. `GroupCapture` en `application` para no crear un ciclo de paquetes.
+
+**Revisión.** El subagente frenó por un error mío en el WP: la repetición de una decisión que cierra el plan exigía consumir azar, y cerrar un plan no sortea nada; se corrigió a «cero números» (documenta el comportamiento). También corregí el conteo de `ThreatLedger` (7, no 8). 23 pruebas nuevas, toda la suite verde con el armado único, 4 roturas del WP con su prueba y 2 roturas propias (sin restaurar `lastEndTick`; sin restaurar objetivos de araña) con 3 fallas. CI verde.
+
+**Opinión del código.** Lo bueno: la prueba central repite una decisión en medio de un plan y otra que lo cierra, y exige igualdad de resultado, traza, estado final, eventos y consumo exacto del azar; cualquier estado nuevo que no se copie la rompe. Lo flojo: en esa prueba la memoria del grupo está vacía, así que la restauración de memoria con datos la cubre solo el WP-15 por separado. `LearningSimulation` sigue armando su propio cerebro (no afecta al plugin). Riesgo: el costo de copiar cada 10 ticks, que mide el WP-29.

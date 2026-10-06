@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): mergeados (#19 y #20), antes de la puerta E4 porque no tocan su código. WP-28 dividido en WP-28A (Opus) y WP-28B (Sonnet), aprobado por Nico (CT-12). Los dos aprobados por Nico. WP-28A en curso (Opus, worktree); el WP-28B se lanza cuando se mergee el A. Etapa E4.
+1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): mergeados (#19 y #20), antes de la puerta E4 porque no tocan su código. WP-28 dividido en WP-28A (Opus) y WP-28B (Sonnet), aprobado por Nico (CT-12). Los dos aprobados por Nico. WP-28A mergeado (#21). WP-28B en curso (Sonnet, worktree); al mergearlo, puerta E4. Etapa E4.
 2. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -34,8 +34,8 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-13 | Casos de uso de combate | E4 | mergeado | Sonnet | #16 | Avisar a `RegroupWindow` cuando un grupo muere entero en `REGROUPING` (CT-07) |
 | WP-14 | Puerto de persistencia y JSON | E4 | mergeado | Sonnet | #17 | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
 | WP-15 | Guardar, cargar, resetear y consultar | E4 | mergeado | Sonnet | #18 | Agregar al dominio la restauración del número de plan (`PlanLifecycle`) y usar `RegroupWindow.restore`; si la carga falla por versión más nueva, no guardar nunca (si no, se borran esos archivos). |
-| WP-28A | Estado completo y azar grabado | E4 | en curso | Opus | — | |
-| WP-28B | Incidente, JSON y reproducción | E4 | aprobado | Sonnet | — | Infinity ida y vuelta obligatorio (CT-04); cierra E4 |
+| WP-28A | Estado completo y azar grabado | E4 | mergeado | Opus | #21 | |
+| WP-28B | Incidente, JSON y reproducción | E4 | en curso | Sonnet | — | Infinity ida y vuelta obligatorio (CT-04); cierra E4 |
 | WP-16 | Runtime, configuración y mensajes | E5 | mergeado | Sonnet | #19 | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
 | WP-17 | Traductor de versión y fotos | E5 | mergeado | Sonnet | #20 | Incluye `MovementTracker` |
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
