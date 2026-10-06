@@ -236,4 +236,15 @@ class JsonMemoryRepositoryTest {
     assertThat(load.quarantinedFiles()).isEmpty();
     assertThat(load.groups()).isEqualTo(List.of(sampleGroup(1)));
   }
+
+  @Test
+  void loadQuarantinesAGroupFileWithInvalidUtf8() throws IOException {
+    repository().save(memoriesOf(sampleGroup(1), sampleGroup(2)));
+    Files.write(groupFile(2), new byte[] {'{', (byte) 0xC3, (byte) 0x28, '}'});
+
+    MemoryLoad load = repository().load();
+
+    assertThat(load.groups()).isEqualTo(List.of(sampleGroup(1)));
+    expectQuarantined(load, groupFile(2));
+  }
 }

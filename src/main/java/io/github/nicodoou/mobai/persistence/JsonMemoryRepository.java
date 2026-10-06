@@ -13,6 +13,7 @@ import io.github.nicodoou.mobai.domain.port.StoredMemories;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -107,6 +108,10 @@ public final class JsonMemoryRepository implements MemoryRepository {
   private static String readText(Path file) {
     try {
       return Files.readString(file, StandardCharsets.UTF_8);
+    } catch (CharacterCodingException exception) {
+      // Damaged bytes make the file corrupt, not the disk: quarantine it like bad JSON.
+      throw new IllegalArgumentException(
+          "Memory file " + file.getFileName() + " is not valid UTF-8", exception);
     } catch (IOException exception) {
       throw new UncheckedIOException("Could not read " + file, exception);
     }
