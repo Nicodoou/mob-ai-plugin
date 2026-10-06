@@ -3,6 +3,7 @@ package io.github.nicodoou.mobai.domain.threat;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,27 @@ public final class ThreatLedger {
 
   public List<PlayerId> trackedPlayers() {
     return List.copyOf(entries.keySet());
+  }
+
+  public ThreatCapture capture() {
+    List<ThreatRecord> records = new ArrayList<>();
+    entries.forEach(
+        (player, queue) ->
+            queue.forEach(
+                entry -> records.add(new ThreatRecord(player, entry.tick(), entry.damage()))));
+    return new ThreatCapture(records, lastTick);
+  }
+
+  public void restore(ThreatCapture capture) {
+    if (!entries.isEmpty() || lastTick != 0) {
+      throw new IllegalStateException("ThreatLedger can only be restored while empty");
+    }
+    for (ThreatRecord record : capture.records()) {
+      entries
+          .computeIfAbsent(record.player(), ignored -> new ArrayDeque<>())
+          .addLast(new ThreatEntry(record.tick(), record.damage()));
+    }
+    lastTick = capture.lastTick();
   }
 
   int entryCount() {

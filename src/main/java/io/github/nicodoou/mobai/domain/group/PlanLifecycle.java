@@ -51,16 +51,32 @@ public final class PlanLifecycle {
 
   public void restorePlanSequence(long lastSequence) {
     requireState(GroupState.OBSERVING, "restore the plan sequence");
-    if (lastSequence < planSequence) {
-      throw new IllegalArgumentException(
-          "Group "
-              + groupId.shortId()
-              + " cannot restore plan sequence "
-              + lastSequence
-              + " below "
-              + planSequence);
-    }
+    requireNotBelowSequence(lastSequence);
     planSequence = lastSequence;
+  }
+
+  public LifecycleCapture capture() {
+    return new LifecycleCapture(
+        state,
+        plan(),
+        committedTarget(),
+        Optional.ofNullable(lastEndReason),
+        lastEndTick,
+        regroupStartTick(),
+        planSequence);
+  }
+
+  public void restore(LifecycleCapture capture) {
+    requireState(GroupState.OBSERVING, "restore its lifecycle");
+    requireNotBelowSequence(capture.planSequence());
+    capture.plan().ifPresent(this::requireRestorablePlan);
+    state = capture.state();
+    plan = capture.plan().orElse(null);
+    committedTarget = capture.committedTarget().orElse(null);
+    lastEndReason = capture.lastEndReason().orElse(null);
+    lastEndTick = capture.lastEndTick();
+    regroupStartTick = capture.regroupStartTick().orElse(NO_REGROUP);
+    planSequence = capture.planSequence();
   }
 
   public OptionalLong regroupStartTick() {
@@ -138,6 +154,29 @@ public final class PlanLifecycle {
       throw new IllegalStateException(
           "Group " + groupId.shortId() + " cannot " + action + " while " + state);
     }
+  }
+
+  private void requireNotBelowSequence(long sequence) {
+    if (sequence < planSequence) {
+      throw new IllegalArgumentException(
+          "Group "
+              + groupId.shortId()
+              + " cannot restore plan sequence "
+              + sequence
+              + " below "
+              + planSequence);
+    }
+  }
+
+  private void requireRestorablePlan(Plan restored) {
+    if (!restored.id().group().equals(groupId)) {
+      throw new IllegalArgumentException(
+          "Group "
+              + groupId.shortId()
+              + " cannot restore a plan of group "
+              + restored.id().group().shortId());
+    }
+    roster.requireMembers(restored.roles().keySet());
   }
 
   private ClosedPlan closedPlan(PlanEndReason reason, long tick, double fraction) {
