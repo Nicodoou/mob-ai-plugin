@@ -462,6 +462,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Resultado de un intento, daño recibido, causa de salida, publicador de eventos de un grupo | `AttackResolution`, `DamageTaken`, `RemovalCause`, `GroupEvents` | Aplicación |
 | Guardar, cargar y consultar: conversión, candado de guardado, informe de carga, vistas | `StoredMemoriesMapper`, `GuardedMemoryRepository`, `LoadReport`, `GroupStatusView`, `PlayerMemoryView` | Aplicación |
 | Rastreo cuerpo a cuerpo: apertura, golpe, intento abierto, condiciones del objetivo | `MeleeOpening`, `MeleeHit`, `OpenAttempt`, `TargetChecks` | Adaptadores |
+| Ritmo del cuerpo a cuerpo y lo que comparten los goals | `MeleeRhythm`, `GoalContext` | Adaptadores |
 | Listeners de daño, amenaza y muertes | `DamageListener`, `ThreatListener`, `DeathListener` | Adaptadores |
 | Reloj propio, azar e ids de grupo reales | `ServerTickCounter`, `JdkRandomSource`, `RandomGroupIdSource` | Adaptadores |
 | Configuración y mensajes | `ConfigLoader`, `InvalidConfigException`, `Messages`, `MessageKey` | Adaptadores |

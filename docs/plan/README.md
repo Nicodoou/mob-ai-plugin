@@ -235,7 +235,8 @@ io.github.nicodoou.mobai
 │   ├── listener    DamageListener, ThreatListener, DeathListener                      WP-18
 │   │               EntityLifecycleListener, TargetListener                            WP-19
 │   │               ProjectileListener                                                 WP-24
-│   ├── goal        RoleRegistry, GoalInstaller, PressGoal, MeleeAttacker              WP-19
+│   ├── goal        RoleRegistry, GoalInstaller, PressGoal, MeleeAttacker,
+│   │               MeleeRhythm, GoalContext                                           WP-19
 │   │               FlankGoal, RetreatGoal                                             WP-22
 │   │               ShootGoal, BowShooter                                              WP-24
 │   ├── scheduler   DecisionScheduler, DecisionApplier, PersistenceScheduler           WP-20
