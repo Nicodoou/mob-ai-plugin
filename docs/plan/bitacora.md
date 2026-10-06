@@ -197,3 +197,13 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código idéntico al WP, 13 pruebas, CI verde, sin desvíos; las 4 roturas del WP mordieron y mis 2 roturas propias (perder la invulnerabilidad al abrir; no guardar el golpe) hicieron fallar 6 pruebas.
 
 **Opinión del código.** Lo bueno: toda la lógica de intentos está probada sin server, y el invariante «cada intento termina una vez» tiene prueba propia. Lo flojo: `DeathListener.onRemove` llama a `RemoveMember` para cualquier entidad que se borre (flechas, ítems); es barato (una búsqueda en un mapa) pero ruidoso si algún día se loguea. Riesgo: los listeners y `TargetChecks` solo se verifican en el server (checklist de la puerta E5).
+
+## WP-19 — Roles, goals y golpe frontal (PR #24, Sonnet)
+
+**Qué hizo.** `RoleRegistry`, `MeleeRhythm` (Java puro), `MeleeAttacker`, `GoalContext`, `PressGoal`, `GoalInstaller`, `EntityLifecycleListener` y `TargetListener`. Zombies y arañas reciben nuestro goal; los esqueletos conservan su IA vanilla hasta el WP-24.
+
+**Arquitectura.** El goal solo lee su orden; `MeleeAttacker` es el único que golpea y envuelve `attack()` con el rastreador. El tipo de mob llega siempre desde `VersionTranslator` (condición de Nico al aprobar; regla en el manual). A pedido de Nico se creó `docs/actualizar-paper.md`, el mapa de todo uso directo de Paper y el procedimiento para cambiar de versión, que cada WP que toque Paper mantiene.
+
+**Revisión.** Código conforme al WP, 10 pruebas, CI verde, 4 roturas del WP con su prueba y 2 propias (sin chequeo de alcance; registro que no reemplaza órdenes) que fallaron.
+
+**Opinión del código.** Lo bueno: chico y legible; ningún intento queda abierto aunque `attack()` falle. Lo flojo: `executedAttack` mapea `SKELETON` a golpe frontal para cubrir el `switch`, aunque nunca pasa (el instalador no le da el goal); es inalcanzable pero confuso. Riesgo: nada de esto se ve sin server; la puerta E5 lo verifica.

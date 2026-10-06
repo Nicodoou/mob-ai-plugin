@@ -36,9 +36,9 @@ Riesgo: **alto** = API marcada como deprecada o que cambió en versiones recient
 | `adapter/listener/DamageListener` | `EntityDamageByEntityEvent` (`getDamager`, `getEntity`, `getFinalDamage`, `isCancelled`) | **Medio** | Que `mob.attack()` siga disparando el evento **dentro** de la misma llamada (hallazgo 2): el rastreador depende de eso |
 | `adapter/listener/ThreatListener` | `EntityDamageByEntityEvent`, `Projectile.getShooter` | Bajo | — |
 | `adapter/listener/DeathListener` | `EntityDeathEvent`, `EntityRemoveEvent` y su `Cause` (DEATH, UNLOAD) | **Medio** | El orden de eventos de muerte, quitado y descarga (hallazgo 6) y que la descarga no dispare `EntityRemoveEvent` |
-| `adapter/goal/*` (WP-19, en curso) | Mob Goal API: `Goal`, `GoalKey`, `GoalType`, `Bukkit.getMobGoals()` (`removeAllGoals`, `addGoal`), `Pathfinder.moveTo`/`stopPathfinding`, `Mob.lookAt`, `LivingEntity.attack`, `NamespacedKey` | **Medio** | Que los goals propios se sigan perdiendo al descargar el chunk (hallazgo 1) y que `attack()` no controle alcance ni ritmo (hallazgo 2) |
-| `adapter/listener/EntityLifecycleListener` (WP-19, en curso) | `EntityAddToWorldEvent`, `EntityRemoveFromWorldEvent` (`com.destroystokyo.paper.event.entity`) | **Medio**: paquete viejo de Paper | Que sigan existiendo y con la misma semántica (hallazgo 6) |
-| `adapter/listener/TargetListener` (WP-19, en curso) | `EntityTargetEvent` | Bajo | — |
+| `adapter/goal/*` | Mob Goal API: `Goal`, `GoalKey`, `GoalType`, `Bukkit.getMobGoals()` (`removeAllGoals`, `addGoal`), `Pathfinder.moveTo`/`stopPathfinding`, `Mob.lookAt`, `LivingEntity.attack`, `NamespacedKey` | **Medio** | Que los goals propios se sigan perdiendo al descargar el chunk (hallazgo 1) y que `attack()` no controle alcance ni ritmo (hallazgo 2) |
+| `adapter/listener/EntityLifecycleListener` | `EntityAddToWorldEvent`, `EntityRemoveFromWorldEvent` (`com.destroystokyo.paper.event.entity`) | **Medio**: paquete viejo de Paper | Que sigan existiendo y con la misma semántica (hallazgo 6) |
+| `adapter/listener/TargetListener` | `EntityTargetEvent` | Bajo | — |
 | `adapter/config/ConfigLoader` | `ConfigurationSection` | Bajo | — |
 | `adapter/config/Messages` | Adventure: `Component`, `MiniMessage`, `Placeholder`, `TagResolver` | Bajo | Que Paper siga trayendo Adventure con MiniMessage |
 | `bootstrap/MobAiPlugin` | `JavaPlugin` | Bajo | — |
