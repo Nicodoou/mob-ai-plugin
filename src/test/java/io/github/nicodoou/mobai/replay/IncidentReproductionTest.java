@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class IncidentReproductionTest {
   private static final double UNIT_TAMPER = 0.25;
+  private static final long REGROUP_TAMPER = 50;
   private final IncidentJson json = new IncidentJson();
 
   @Test
@@ -60,6 +61,29 @@ class IncidentReproductionTest {
 
     assertThatThrownBy(() -> TraceReplay.assertReproduces(tampered))
         .isInstanceOf(AssertionError.class);
+  }
+
+  @Test
+  void leftoverDrawIsDetected() {
+    IncidentReport original = throughJson(IncidentFixture.recordedDecision(START_TICK + 20));
+    List<RecordedDraw> longer = new ArrayList<>(original.draws());
+    longer.add(new RecordedDraw(DrawKind.UNIT, UNIT_TAMPER, 0));
+    IncidentReport tampered = withDraws(original, longer);
+
+    assertThatThrownBy(() -> TraceReplay.assertReproduces(tampered))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("unused draws");
+  }
+
+  @Test
+  void regroupWindowIsRestoredBeforeReplaying() {
+    IncidentReport original = throughJson(IncidentFixture.recordedDecision(START_TICK + 20));
+    IncidentReport tampered =
+        withRegroupWindowBefore(original, original.regroupWindowTicksBefore() + REGROUP_TAMPER);
+
+    assertThatThrownBy(() -> TraceReplay.assertReproduces(tampered))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("regroup window after");
   }
 
   private IncidentReport throughJson(IncidentReport report) {
@@ -119,6 +143,22 @@ class IncidentReproductionTest {
         base.failure(),
         before,
         base.regroupWindowTicksBefore(),
+        base.snapshot(),
+        base.settings(),
+        base.draws(),
+        base.result(),
+        base.after(),
+        base.regroupWindowTicksAfter());
+  }
+
+  private static IncidentReport withRegroupWindowBefore(IncidentReport base, long ticks) {
+    return new IncidentReport(
+        base.id(),
+        base.tick(),
+        base.location(),
+        base.failure(),
+        base.before(),
+        ticks,
         base.snapshot(),
         base.settings(),
         base.draws(),
