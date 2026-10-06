@@ -13,6 +13,7 @@ import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -31,9 +32,9 @@ public final class SnapshotFactory {
 
   public SnapshotFactory(
       VersionTranslator translator, MovementTracker movement, Supplier<GroupSettings> settings) {
-    this.translator = translator;
-    this.movement = movement;
-    this.settings = settings;
+    this.translator = Objects.requireNonNull(translator, "SnapshotFactory.translator");
+    this.movement = Objects.requireNonNull(movement, "SnapshotFactory.movement");
+    this.settings = Objects.requireNonNull(settings, "SnapshotFactory.settings");
   }
 
   public Optional<GroupSnapshot> snapshotOf(Group group, long tick) {
