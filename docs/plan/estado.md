@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. **Puerta E4 pasada** (6 oct): WP-12 a WP-15, WP-28A y WP-28B mergeados; WP-16 y WP-17 (de E5) también. WP-18 aprobado y en curso (Sonnet, worktree). Mientras tanto: especificar el WP-19. Etapa E5.
+1. **Puerta E4 pasada** (6 oct): WP-12 a WP-15, WP-28A y WP-28B mergeados; WP-16 y WP-17 (de E5) también. WP-18 mergeado (#23). Próximo: especificar el WP-19 (roles, goals y golpe frontal) y presentarlo a Nico. Etapa E5.
 2. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -38,7 +38,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-28B | Incidente, JSON y reproducción | E4 | mergeado | Sonnet | #22 | Infinity ida y vuelta obligatorio (CT-04); cierra E4 |
 | WP-16 | Runtime, configuración y mensajes | E5 | mergeado | Sonnet | #19 | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
 | WP-17 | Traductor de versión y fotos | E5 | mergeado | Sonnet | #20 | Incluye `MovementTracker` |
-| WP-18 | Rastreador cuerpo a cuerpo | E5 | en curso | Sonnet | — | |
+| WP-18 | Rastreador cuerpo a cuerpo | E5 | mergeado | Sonnet | #23 | |
 | WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | `MeleeAttacker`: `openMelee` con `TargetChecks.isInvulnerable`, `mob.attack`, `closeMelee` con `TargetChecks.isValidTarget`, siempre en `try/finally` (cancelar si `attack` lanza); cancelar intentos al descargarse el chunk (WP-18). Reinstalar goals en `EntityAddToWorldEvent` |
 | WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | Agendar cada tick `ServerTickCounter.advance()` y `MovementTracker.sample` de los jugadores conectados (`forget` al salir); semilla de `JdkRandomSource`; `saveDefaultConfig` y `ConfigLoader`. Aplicar `LoadReport.state()` al reloj y a `RegroupWindow.restore`, y pasar el estado a `SaveMemories.capture`; usar `GuardedMemoryRepository` (WP-15). Suscribir `ClosePlan` a `PlanClosed`, con una prueba de que la suscripción existe (CT-11); recorrer los grupos con un `catch` por grupo al llamar a `TickGroups` |
 | WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | `/mobai reload` atrapa cualquier excepción de `ConfigLoader` (un entero enorme sale como `ArithmeticException`, riesgo del WP-16) y conserva la configuración anterior. Los mobs de `spawngroup` con `setRemoveWhenFarAway(false)`: si no, un miembro que desaparece con el server apagado queda para siempre en su grupo guardado. Spawn del grupo de prueba sin equipo |

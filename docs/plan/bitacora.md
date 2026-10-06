@@ -187,3 +187,13 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 ## Puerta E4 — pasada (6 oct 2026)
 
 560 pruebas en verde, cobertura total 94 %. Memoria de ida y vuelta por disco, casos de uso probados con fakes y reproducción exacta de incidentes provocados desde su JSON.
+
+## WP-18 — Rastreador cuerpo a cuerpo (PR #23, Sonnet)
+
+**Qué hizo.** `AttackTracker` (Java puro: abrir, juntar el primer golpe contra el objetivo, cerrar, clasificar con `AttackClassifier` y registrar con `RecordOutcome`), `MeleeOpening`, `MeleeHit`, `OpenAttempt`, `TargetChecks` y los listeners `DamageListener`, `ThreatListener` y `DeathListener`.
+
+**Arquitectura.** El rastreador no conoce Paper: los listeners traducen eventos a valores simples (daño real = final + absorbido; bloqueo por el modificador `BLOCKING`). `ThreatListener` se separó del de daño para que cada listener tenga una tarea.
+
+**Revisión.** Código idéntico al WP, 13 pruebas, CI verde, sin desvíos; las 4 roturas del WP mordieron y mis 2 roturas propias (perder la invulnerabilidad al abrir; no guardar el golpe) hicieron fallar 6 pruebas.
+
+**Opinión del código.** Lo bueno: toda la lógica de intentos está probada sin server, y el invariante «cada intento termina una vez» tiene prueba propia. Lo flojo: `DeathListener.onRemove` llama a `RemoveMember` para cualquier entidad que se borre (flechas, ítems); es barato (una búsqueda en un mapa) pero ruidoso si algún día se loguea. Riesgo: los listeners y `TargetChecks` solo se verifican en el server (checklist de la puerta E5).
