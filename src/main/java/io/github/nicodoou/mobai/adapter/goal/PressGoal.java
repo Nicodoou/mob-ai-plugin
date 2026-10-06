@@ -104,8 +104,13 @@ public final class PressGoal implements Goal<Mob> {
   // The attack that lands is the one recorded, not the one the brain suggested.
   private Attack executedAttack() {
     return switch (kind) {
+      case ZOMBIE -> Attack.ZOMBIE_FRONT_STRIKE;
       case SPIDER -> Attack.SPIDER_BITE;
-      case ZOMBIE, SKELETON -> Attack.ZOMBIE_FRONT_STRIKE;
+      // A skeleton holding a sword or an axe would strike here once it has its own melee attack;
+      // until then GoalInstaller never gives a skeleton this goal.
+      case SKELETON ->
+          throw new IllegalStateException(
+              "Skeleton " + mob.getUniqueId() + " has no melee attack to strike with");
     };
   }
 }
