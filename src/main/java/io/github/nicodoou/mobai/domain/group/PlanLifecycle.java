@@ -49,6 +49,20 @@ public final class PlanLifecycle {
     return planSequence;
   }
 
+  public void restorePlanSequence(long lastSequence) {
+    requireState(GroupState.OBSERVING, "restore the plan sequence");
+    if (lastSequence < planSequence) {
+      throw new IllegalArgumentException(
+          "Group "
+              + groupId.shortId()
+              + " cannot restore plan sequence "
+              + lastSequence
+              + " below "
+              + planSequence);
+    }
+    planSequence = lastSequence;
+  }
+
   public OptionalLong regroupStartTick() {
     return regroupStartTick == NO_REGROUP
         ? OptionalLong.empty()
