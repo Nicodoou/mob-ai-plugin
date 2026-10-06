@@ -52,17 +52,22 @@ public final class IncidentFixture {
 
   private IncidentFixture() {
     mobs.forEach(mob -> group.roster().addMember(mob.id(), mob.kind()));
-    decidePrevious();
-    group.threat().recordDamage(ALICE, DAMAGE, START_TICK + DAMAGE_OFFSET);
+  }
+
+  private static IncidentFixture afterPreviousDecisions() {
+    IncidentFixture fixture = new IncidentFixture();
+    fixture.decidePrevious();
+    fixture.group.threat().recordDamage(ALICE, DAMAGE, START_TICK + DAMAGE_OFFSET);
+    return fixture;
   }
 
   public static IncidentReport recordedDecision(long tick) {
-    IncidentFixture fixture = new IncidentFixture();
+    IncidentFixture fixture = afterPreviousDecisions();
     return fixture.record(BrainFixture.snapshot(tick, fixture.mobs, BrainFixture.alice()));
   }
 
   public static IncidentReport provokedFailure() {
-    IncidentFixture fixture = new IncidentFixture();
+    IncidentFixture fixture = afterPreviousDecisions();
     List<MobSnapshot> withStranger = new ArrayList<>(fixture.mobs);
     withStranger.add(new MobSnapshotBuilder().withId(new MobId(new UUID(9, 9))).build());
     long tick = START_TICK + MID_PLAN_OFFSET;
@@ -77,8 +82,7 @@ public final class IncidentFixture {
             .fullDiamondProtectionFour()
             .withEffect(EffectKind.REGENERATION, UNKILLABLE_REGENERATION_LEVEL)
             .build();
-    long tick = START_TICK + MID_PLAN_OFFSET;
-    return fixture.record(BrainFixture.snapshot(tick, fixture.mobs, unkillable));
+    return fixture.record(BrainFixture.snapshot(START_TICK, fixture.mobs, unkillable));
   }
 
   private void decidePrevious() {
