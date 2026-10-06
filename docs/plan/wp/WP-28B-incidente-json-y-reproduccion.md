@@ -46,18 +46,20 @@ Escribir los incidentes desde el plugin es del WP-29.
 
 ## Archivos
 
+**Paquete del JSON:** `adapter.debug`, no `persistence`. La regla de ArchUnit no deja que `persistence` dependa de `application` (donde vive `IncidentReport`), y quien escribe incidentes es un adaptador (el `IncidentWriter` del WP-29, en el mismo paquete).
+
 | Acción | Ruta |
 | --- | --- |
 | Crear | `src/main/java/io/github/nicodoou/mobai/application/IncidentLocation.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/application/IncidentFailure.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/application/IncidentReport.java` |
-| Crear | `src/main/java/io/github/nicodoou/mobai/persistence/OptionalTypeAdapterFactory.java` |
-| Crear | `src/main/java/io/github/nicodoou/mobai/persistence/IncidentFile.java` |
-| Crear | `src/main/java/io/github/nicodoou/mobai/persistence/IncidentJson.java` |
+| Crear | `src/main/java/io/github/nicodoou/mobai/adapter/debug/OptionalTypeAdapterFactory.java` |
+| Crear | `src/main/java/io/github/nicodoou/mobai/adapter/debug/IncidentFile.java` |
+| Crear | `src/main/java/io/github/nicodoou/mobai/adapter/debug/IncidentJson.java` |
 | Crear | `src/test/java/io/github/nicodoou/mobai/testsupport/TraceReplay.java` |
 | Crear | `src/test/java/io/github/nicodoou/mobai/testsupport/IncidentFixture.java` |
 | Crear | `src/test/java/io/github/nicodoou/mobai/application/IncidentReportTest.java` |
-| Crear | `src/test/java/io/github/nicodoou/mobai/persistence/IncidentJsonTest.java` |
+| Crear | `src/test/java/io/github/nicodoou/mobai/adapter/debug/IncidentJsonTest.java` |
 | Crear | `src/test/java/io/github/nicodoou/mobai/replay/IncidentReproductionTest.java` |
 
 Sin dependencias nuevas (Gson 2.14.0 viene con Paper).
@@ -132,7 +134,7 @@ public record IncidentReport(
 }
 ```
 
-### `persistence/OptionalTypeAdapterFactory.java` (package-private)
+### `adapter/debug/OptionalTypeAdapterFactory.java` (package-private)
 
 ```java
 /** Gson has no built-in support for Optional: empty is written as null and read back as empty. */
@@ -163,13 +165,13 @@ final class OptionalTypeAdapterFactory implements TypeAdapterFactory {
 
 (`create` devuelve `null` para los tipos que no maneja: es el contrato de `TypeAdapterFactory`, no un nulo de nuestro dominio. Comentalo en una línea).
 
-### `persistence/IncidentFile.java` (package-private)
+### `adapter/debug/IncidentFile.java` (package-private)
 
 ```java
 record IncidentFile(int schemaVersion, IncidentReport report) {}
 ```
 
-### `persistence/IncidentJson.java` (`public final`)
+### `adapter/debug/IncidentJson.java` (`public final`)
 
 ```java
 public final class IncidentJson {
@@ -242,7 +244,7 @@ Arma incidentes reales grabando una decisión, con el mismo armado que `Decision
 | --- | --- |
 | `static IncidentReport recordedDecision(long tick)` | Copia antes, `recorder.clear()`, decide con la foto de `alice` en `tick`, y arma el incidente con el resultado, la copia después y la ventana antes y después. `id` = `"test-" + tick`, ubicación `new IncidentLocation("domain", "Brain", "decide", "TickGroups")` |
 | `static IncidentReport provokedFailure()` | Igual, pero la foto en `START_TICK + 20` agrega un mob que no es miembro (`new MobSnapshotBuilder().withId(new MobId(new UUID(9, 9))).build()` o equivalente): `decide` lanza `IllegalArgumentException`, y el incidente lleva `IncidentFailure.of(excepción)` |
-| `static IncidentReport unkillablePlayer()` | Igual que `recordedDecision(START_TICK + 20)`, pero la foto usa un jugador `ALICE` con `fullDiamondProtectionFour()` y Regeneración nivel 10 (la traza tiene un `TargetScore` con `killTimeSeconds` infinito) |
+| `static IncidentReport unkillablePlayer()` | La **primera** decisión del grupo, sin decisiones previas ni daño de amenaza: el grupo arranca en `OBSERVING`, así la traza trae `targetSelection`. Foto en `START_TICK` con `ALICE` con `fullDiamondProtectionFour()` y Regeneración nivel 10 (un `TargetScore` con `killTimeSeconds` infinito). La selección de objetivo solo aparece en la traza cuando el grupo observa |
 
 Una función por tarea: armado del grupo, decisiones previas, copia, decisión grabada, armado del incidente.
 
