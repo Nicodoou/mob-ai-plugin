@@ -77,7 +77,7 @@ El incidente, su JSON y la herramienta `TraceReplay` son del WP-28B.
 | Clase | Agrega | Queda con |
 | --- | --- | --- |
 | `PlanLifecycle` | `capture()`, `restore(LifecycleCapture)` | 16 |
-| `ThreatLedger` | `capture()`, `restore(ThreatCapture)` | 8 |
+| `ThreatLedger` | `capture()`, `restore(ThreatCapture)` | 7 |
 | `GroupRoster` | `spiderTargets()` | 9 |
 | `BrainParts` | `standard(...)` (estático) | — |
 
@@ -414,7 +414,7 @@ Armado común:
 | Prueba | Verifica |
 | --- | --- |
 | `repeatedDecisionMidPlanIsIdentical` | `S` = foto en `START_TICK + 20`: `repeated` igual a `original` (`isEqualTo`), `capture(restaurado)` igual a `after`, `replay.remaining()` 0 y `draws` no vacío |
-| `repeatedDecisionThatClosesThePlanIsIdentical` | `S` = foto en `START_TICK + 700` (vence el plan): lo mismo, y además `original.closedPlan()` presente y los eventos drenados de los dos grupos iguales |
+| `repeatedDecisionThatClosesThePlanIsIdentical` | `S` = foto en `START_TICK + 700` (vence el plan): resultado igual, copia después igual y `remaining()` 0; además `original.closedPlan()` presente, los eventos drenados de los dos grupos iguales y `draws` **vacío** (cerrar un plan no consume azar) |
 
 Total: **23 pruebas** nuevas. Todas las existentes siguen pasando.
 
@@ -455,6 +455,6 @@ Total: **23 pruebas** nuevas. Todas las existentes siguen pasando.
 - [ ] Exactamente los archivos de la tabla, con las firmas y mensajes especificados.
 - [ ] Las 23 pruebas nuevas con sus nombres exactos, en verde, y todas las existentes también.
 - [ ] Las 4 roturas mordieron.
-- [ ] `PlanLifecycle` 16, `ThreatLedger` 8 y `GroupRoster` 9 métodos públicos; ninguna clase pasa de 20.
+- [ ] `PlanLifecycle` 16, `ThreatLedger` 7 y `GroupRoster` 9 métodos públicos; ninguna clase pasa de 20.
 - [ ] Sin ciclos de paquetes nuevos (`GroupCapture` en `application`).
 - [ ] Build, cobertura y CI en verde.
