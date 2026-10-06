@@ -177,12 +177,14 @@ public final class PressGoal implements Goal<Mob> {
   private static final double WALK_SPEED = 1.0;
 
   private final Mob mob;
+  private final MobKind kind;
   private final GoalKey<Mob> key;
   private final GoalContext context;
   private final MeleeRhythm rhythm = new MeleeRhythm();
 
-  public PressGoal(Mob mob, GoalContext context) {
+  public PressGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "PressGoal.mob");
+    this.kind = Objects.requireNonNull(kind, "PressGoal.kind");
     this.context = Objects.requireNonNull(context, "PressGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "press"));
   }
@@ -229,11 +231,11 @@ Funciones privadas, una tarea cada una:
 | `void pressOn(Player target)` | `rhythm.advance()`, `mob.lookAt(target)`, `followIfDue(target)`, `strikeIfReady(target)` |
 | `void followIfDue(Player target)` | Si `rhythm.shouldRepath()`: `moveTo(target, WALK_SPEED)` y `rhythm.markRepath()` |
 | `void strikeIfReady(Player target)` | Si `rhythm.canStrike(distancia)`: `context.attacker().strike(mob, target, executedAttack())` y `rhythm.markStrike()` |
-| `Attack executedAttack()` | Regla 6: `SPIDER_BITE` si `mob` es `Spider`, si no `ZOMBIE_FRONT_STRIKE` |
+| `Attack executedAttack()` | Regla 6: `SPIDER_BITE` si `kind` es `SPIDER`, si no `ZOMBIE_FRONT_STRIKE` (un `switch` sobre `MobKind`, que es del dominio) |
 
 La distancia es `mob.getLocation().distance(target.getLocation())`. `WALK_SPEED` 1.0 es la velocidad normal del pathfinder (multiplicador, no bloques); comentalo en una línea.
 
-`executedAttack` usa `instanceof Spider` (una interfaz de entidad de Paper, no una constante sensible a la versión): no hace falta `VersionTranslator`.
+**El tipo de mob sale siempre de `VersionTranslator`** (pedido de Nico): `GoalInstaller` lo obtiene con `translator.mobKindOf(mob.getType())` y se lo pasa al goal; ningún goal ni listener averigua el tipo de mob por su cuenta (nada de `instanceof Zombie` o `instanceof Spider`).
 
 ### `GoalInstaller.java`
 
@@ -249,20 +251,21 @@ public final class GoalInstaller {
   public GoalInstaller(GoalContext context, VersionTranslator translator) { … }
 
   public boolean install(Mob mob) {
-    if (!receivesOurGoals(mob)) {
+    Optional<MobKind> kind = meleeKindOf(mob);
+    if (kind.isEmpty()) {
       return false;
     }
     MobGoals goals = Bukkit.getMobGoals();
     goals.removeAllGoals(mob, GoalType.MOVE);
     goals.removeAllGoals(mob, GoalType.LOOK);
     goals.removeAllGoals(mob, GoalType.TARGET);
-    goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, context));
+    goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, kind.get(), context));
     return true;
   }
 
   // Skeletons keep their vanilla goals until ShootGoal exists (WP-24).
-  private boolean receivesOurGoals(Mob mob) {
-    return translator.mobKindOf(mob.getType()).filter(MobKind::isMelee).isPresent();
+  private Optional<MobKind> meleeKindOf(Mob mob) {
+    return translator.mobKindOf(mob.getType()).filter(MobKind::isMelee);
   }
 }
 ```
