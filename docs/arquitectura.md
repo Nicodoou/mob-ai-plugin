@@ -470,8 +470,11 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Datos guardados | `StoredMemories`, `StoredGroup`, `StoredMember`, `StoredRecord` | Dominio (puerto) |
 | Scheduler de decisión, aplicador de decisiones | `DecisionScheduler`, `DecisionApplier` | Adaptadores |
 | Armado de fotos, instalador de goals, rastreador de movimiento | `SnapshotFactory`, `GoalInstaller`, `MovementTracker` | Adaptadores |
-| Escritor de trazas, caja negra, escritor de incidentes, azar registrado | `TraceWriter`, `FlightRecorder`, `IncidentWriter`, `RecordingRandomSource` | Adaptadores |
-| Reproducción de un incidente | `TraceReplay` | Pruebas |
+| Escritor de trazas, caja negra, escritor de incidentes | `TraceWriter`, `FlightRecorder`, `IncidentWriter` | Adaptadores |
+| Reproducción de un incidente | `TraceReplay`, `IncidentFixture` | Pruebas |
+| Copia completa de un grupo | `GroupCapture`, `GroupCaptureMapper` (aplicación), `LifecycleCapture` (dominio), `ThreatCapture`, `ThreatRecord` (dominio) | Dominio y aplicación |
+| Azar grabado y repetido | `RecordingRandomSource`, `ReplayRandomSource`, `RecordedDraw`, `DrawKind` | Aplicación |
+| Incidente y su JSON | `IncidentReport`, `IncidentLocation`, `IncidentFailure` (aplicación), `IncidentJson`, `IncidentFile`, `OptionalTypeAdapterFactory` (persistencia) | Aplicación y persistencia |
 
 «Escape» se reserva para el mob (RF-08: `MemberEscaped`, `RecordEscape`). Cuando el que se va es el jugador, el plan cierra con `TARGET_LOST`; nunca se lo llama escape en el código.
 

@@ -14,6 +14,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-09](#ct-09--velocidad-de-aprendizaje-10-calibrada-por-simulación) Velocidad de aprendizaje 1,0, calibrada por simulación | 5 oct 2026 | Nico (opción A) | Aplicado en el catálogo; WP-16 la pone en `config.yml` |
 | [CT-10](#ct-10--puerto-groupidsource) Puerto `GroupIdSource` | 5 oct 2026 | Opus (especificación del WP-12) | WP-12 crea el puerto y el fake; WP-16, la implementación real |
 | [CT-11](#ct-11--un-solo-camino-para-el-resultado-del-plan-y-causa-de-salida) Un solo camino para el resultado del plan y causa de salida | 5 oct 2026 | Opus (cierre del WP-12, especificación del WP-13) | WP-13 |
+| [CT-12](#ct-12--estado-completo-del-grupo-y-división-del-wp-28) Estado completo del grupo y división del WP-28 | 6 oct 2026 | Nico | WP-28A y WP-28B |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -162,3 +163,20 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 **Alternativas descartadas.** Llamar a `ClosePlan` directo desde `TickGroups` y desde `RecordPlayerDeath`: dos lugares que recordar, y los observadores de la fase 2 igual necesitan el evento. Contar también los despawns como fracaso: un despawn no dice nada del tiempo de reagrupamiento.
 
 **Riesgos.** El `LeaderDied` de un miembro que sale de un grupo vivo se publica en la próxima decisión (hasta 10 ticks tarde). Hoy nadie lo escucha en tiempo real.
+
+## CT-12 — Estado completo del grupo y división del WP-28
+
+**Qué cambia.**
+1. El dominio puede copiar y restaurar el estado completo de un grupo: `PlanLifecycle.capture`/`restore` (con `LifecycleCapture`), `ThreatLedger.capture`/`restore` (con `ThreatCapture` y `ThreatRecord`) y `GroupRoster.spiderTargets`. `GroupCapture` y `GroupCaptureMapper` (aplicación) juntan eso con lo que ya guardaba el WP-15.
+2. `RecordingRandomSource` pasa del WP-29 al WP-28A, junto con `ReplayRandomSource`, `RecordedDraw` y `DrawKind`.
+3. `BrainParts.standard` es el único armado del cerebro: lo usan el plugin, las pruebas y la reproducción.
+4. El WP-28 se divide en WP-28A (estado completo y azar grabado, Opus) y WP-28B (incidente, JSON y `TraceReplay`, Sonnet).
+5. La copia se toma **antes** de cada decisión y se guarda en RAM; a disco va solo si hay un incidente (WP-29).
+
+**Por qué.** Reproducir un bug exige repetir la decisión con el estado exacto de antes; lo que guarda el WP-15 (lo que sobrevive a un reinicio) no alcanza: falta el plan en curso, la amenaza, los objetivos de las arañas y la ventana de reagrupamiento. Guardar una referencia al grupo no sirve: el cerebro la modifica al decidir.
+
+**Impacto.** Métodos públicos nuevos: `PlanLifecycle` 16, `ThreatLedger` 8, `GroupRoster` 9. `GroupCapture` vive en `application` para no crear un ciclo `group` ↔ `port`.
+
+**Alternativas descartadas.** Reconstruir el estado desde la caja negra (frágil y lento); serialización nativa de Java (acopla el formato a las clases y no es legible).
+
+**Riesgos.** Copiar el grupo cada 10 ticks cuesta memoria y CPU; el WP-29 lo mide y, si pesa, lo limita al debug activo. Un campo de estado nuevo que alguien agregue en el futuro sin sumarlo a la copia rompería la reproducción: `DecisionRepeatTest` lo detecta.
