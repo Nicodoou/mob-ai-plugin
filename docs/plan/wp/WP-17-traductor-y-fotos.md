@@ -64,13 +64,18 @@ Imports a tu criterio; Spotless decide el formato. Los nombres de las constantes
 ```java
 /** The only class that reads Paper constants that change between Minecraft versions. */
 public final class VersionTranslator {
+  // No switch here: javac would put the EntityType table in a synthetic class outside this one.
   public Optional<MobKind> mobKindOf(EntityType type) {
-    return switch (type) {
-      case ZOMBIE -> Optional.of(MobKind.ZOMBIE);
-      case SKELETON -> Optional.of(MobKind.SKELETON);
-      case SPIDER -> Optional.of(MobKind.SPIDER);
-      default -> Optional.empty();
-    };
+    if (type == EntityType.ZOMBIE) {
+      return Optional.of(MobKind.ZOMBIE);
+    }
+    if (type == EntityType.SKELETON) {
+      return Optional.of(MobKind.SKELETON);
+    }
+    if (type == EntityType.SPIDER) {
+      return Optional.of(MobKind.SPIDER);
+    }
+    return Optional.empty();
   }
 
   public EntityType entityTypeOf(MobKind kind) {
