@@ -5,6 +5,7 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,6 +57,10 @@ public final class GroupRoster {
 
   public Optional<PlayerId> spiderTarget(MobId spider) {
     return Optional.ofNullable(spiderTargets.get(spider));
+  }
+
+  public Map<MobId, PlayerId> spiderTargets() {
+    return Collections.unmodifiableMap(new LinkedHashMap<>(spiderTargets));
   }
 
   public void assignSpiderTarget(MobId spider, PlayerId target) {
