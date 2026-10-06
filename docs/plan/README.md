@@ -230,8 +230,9 @@ io.github.nicodoou.mobai
 │   │               (+ config.yml y messages.yml)                                      WP-16
 │   ├── translate   VersionTranslator                                                  WP-17
 │   ├── snapshot    SnapshotFactory, MovementTracker, EntityReadings                   WP-17
-│   ├── tracker     AttackTracker, OpenAttempt                         WP-18 (flechas: WP-24)
-│   ├── listener    DamageListener, DeathListener                                      WP-18
+│   ├── tracker     AttackTracker, OpenAttempt, MeleeOpening, MeleeHit, TargetChecks
+│   │                                                                  WP-18 (flechas: WP-24)
+│   ├── listener    DamageListener, ThreatListener, DeathListener                      WP-18
 │   │               EntityLifecycleListener, TargetListener                            WP-19
 │   │               ProjectileListener                                                 WP-24
 │   ├── goal        RoleRegistry, GoalInstaller, PressGoal, MeleeAttacker              WP-19

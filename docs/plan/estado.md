@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. **Puerta E4 pasada** (6 oct): WP-12 a WP-15, WP-28A y WP-28B mergeados; WP-16 y WP-17 (de E5) también. Próximo: especificar el WP-18 (rastreador cuerpo a cuerpo) y presentarlo a Nico. Etapa E5.
+1. **Puerta E4 pasada** (6 oct): WP-12 a WP-15, WP-28A y WP-28B mergeados; WP-16 y WP-17 (de E5) también. WP-18 especificado (`wp/WP-18-rastreador-cuerpo-a-cuerpo.md`): esperando la aprobación de Nico. Etapa E5.
 2. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -38,8 +38,8 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-28B | Incidente, JSON y reproducción | E4 | mergeado | Sonnet | #22 | Infinity ida y vuelta obligatorio (CT-04); cierra E4 |
 | WP-16 | Runtime, configuración y mensajes | E5 | mergeado | Sonnet | #19 | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
 | WP-17 | Traductor de versión y fotos | E5 | mergeado | Sonnet | #20 | Incluye `MovementTracker` |
-| WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
-| WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | Reinstalar goals en `EntityAddToWorldEvent` |
+| WP-18 | Rastreador cuerpo a cuerpo | E5 | especificado | Sonnet | — | |
+| WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | `MeleeAttacker`: `openMelee` con `TargetChecks.isInvulnerable`, `mob.attack`, `closeMelee` con `TargetChecks.isValidTarget`, siempre en `try/finally` (cancelar si `attack` lanza); cancelar intentos al descargarse el chunk (WP-18). Reinstalar goals en `EntityAddToWorldEvent` |
 | WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | Agendar cada tick `ServerTickCounter.advance()` y `MovementTracker.sample` de los jugadores conectados (`forget` al salir); semilla de `JdkRandomSource`; `saveDefaultConfig` y `ConfigLoader`. Aplicar `LoadReport.state()` al reloj y a `RegroupWindow.restore`, y pasar el estado a `SaveMemories.capture`; usar `GuardedMemoryRepository` (WP-15). Suscribir `ClosePlan` a `PlanClosed`, con una prueba de que la suscripción existe (CT-11); recorrer los grupos con un `catch` por grupo al llamar a `TickGroups` |
 | WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | `/mobai reload` atrapa cualquier excepción de `ConfigLoader` (un entero enorme sale como `ArithmeticException`, riesgo del WP-16) y conserva la configuración anterior. Los mobs de `spawngroup` con `setRemoveWhenFarAway(false)`: si no, un miembro que desaparece con el server apagado queda para siempre en su grupo guardado. Spawn del grupo de prueba sin equipo |
 | WP-29 | Trazas en el server | E5 | pendiente | Sonnet | — | Publicar los eventos pendientes y copiar el grupo (`GroupCaptureMapper`) antes de cada decisión, con `RecordingRandomSource.clear()`; medir el costo y limitarlo al debug si pesa (CT-12). `RecordingRandomSource` ya existe (WP-28A) |
@@ -59,7 +59,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | E2 | pasada | 146 pruebas en verde; valores de RF-06 verificados en WP-03; cobertura del dominio 96 % |
 | E3 | pasada | 367 pruebas; simulación del WP-11: con velocidad 1,0 y vida media 12.000 el grupo aprende a flanquear al que bloquea en el 90 % de 300 corridas (CT-09) |
 | E4 | pasada | 560 pruebas, 0 fallas, cobertura total 94 % (dominio y aplicación entre 94 y 100 %). Memoria de ida y vuelta por disco (`JsonMemoryRepositoryTest`, `SaveAndLoadMemoriesTest`); todos los casos de uso con fakes; incidentes provocados (decisión en medio de un plan, cierre de plan y falla) se reproducen idénticos desde su JSON con `TraceReplay`, y los adulterados (azar, estado, números sobrantes, ventana) se detectan |
-| E5 | pendiente | Además del guion: verificar en el server lo que no tiene prueba JUnit (riesgo del WP-17): la foto de un grupo (`SnapshotFactory`) con jugadores en supervivencia, creativo y lejos; efectos, armadura y Protección leídos por `VersionTranslator`; daño absorbido y golpe bloqueado |
+| E5 | pendiente | Además del guion: listeners del WP-18 (golpe normal, bloqueado con escudo, contra absorción, en invulnerabilidad y en creativo; muerte de un miembro y del jugador; amenaza por golpe y por flecha del jugador); verificar en el server lo que no tiene prueba JUnit (riesgo del WP-17): la foto de un grupo (`SnapshotFactory`) con jugadores en supervivencia, creativo y lejos; efectos, armadura y Protección leídos por `VersionTranslator`; daño absorbido y golpe bloqueado |
 | E6 | pendiente | |
 | G1 | pendiente | |
 
