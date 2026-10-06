@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados en paralelo, para presentar a Nico. Etapa E4.
+1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): esperando la aprobación de Nico; no tocan el código de E4, así que pueden lanzarse antes de la puerta si Nico lo aprueba. Etapa E4.
 2. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -35,11 +35,11 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-14 | Puerto de persistencia y JSON | E4 | mergeado | Sonnet | #17 | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
 | WP-15 | Guardar, cargar, resetear y consultar | E4 | mergeado | Sonnet | #18 | Agregar al dominio la restauración del número de plan (`PlanLifecycle`) y usar `RegroupWindow.restore`; si la carga falla por versión más nueva, no guardar nunca (si no, se borran esos archivos). |
 | WP-28 | Trazas: incidentes y reproducción | E4 | pendiente | Sonnet | — | **Obligatorio:** el JSON de trazas e incidentes tiene que escribir y volver a leer `Infinity` (tiempo para matar de un jugador inmatable, WP-07), con prueba de ida y vuelta; Gson por defecto lanza una excepción con infinitos |
-| WP-16 | Runtime, configuración y mensajes | E5 | pendiente | Sonnet | — | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
-| WP-17 | Traductor de versión y fotos | E5 | pendiente | Sonnet | — | Incluye `MovementTracker` |
+| WP-16 | Runtime, configuración y mensajes | E5 | especificado | Sonnet | — | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
+| WP-17 | Traductor de versión y fotos | E5 | especificado | Sonnet | — | Incluye `MovementTracker` |
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
 | WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | Reinstalar goals en `EntityAddToWorldEvent` |
-| WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | Aplicar `LoadReport.state()` al reloj y a `RegroupWindow.restore`, y pasar el estado a `SaveMemories.capture`; usar `GuardedMemoryRepository` (WP-15). Suscribir `ClosePlan` a `PlanClosed`, con una prueba de que la suscripción existe (CT-11); recorrer los grupos con un `catch` por grupo al llamar a `TickGroups` |
+| WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | Agendar cada tick `ServerTickCounter.advance()` y `MovementTracker.sample` de los jugadores conectados (`forget` al salir); semilla de `JdkRandomSource`; `saveDefaultConfig` y `ConfigLoader`. Aplicar `LoadReport.state()` al reloj y a `RegroupWindow.restore`, y pasar el estado a `SaveMemories.capture`; usar `GuardedMemoryRepository` (WP-15). Suscribir `ClosePlan` a `PlanClosed`, con una prueba de que la suscripción existe (CT-11); recorrer los grupos con un `catch` por grupo al llamar a `TickGroups` |
 | WP-21 | Comandos y log de debug | E5 | pendiente | Sonnet | — | Los mobs de `spawngroup` con `setRemoveWhenFarAway(false)`: si no, un miembro que desaparece con el server apagado queda para siempre en su grupo guardado. Spawn del grupo de prueba sin equipo |
 | WP-29 | Trazas en el server | E5 | pendiente | Sonnet | — | |
 | WP-22 | Flanqueo y retirada | E6 | pendiente | Sonnet | — | Repartir a los flanqueadores del mismo lado: `CombatGeometry.flankPoint` les da el mismo punto; `RETREAT` va al margen y aplica la curación de CT-07 (1 punto cada 50 ticks, sin jugadores a menos de 12 bloques) |

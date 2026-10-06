@@ -224,10 +224,11 @@ io.github.nicodoou.mobai
 │                   SchemaMigrator, GroupFileMapper, GroupFile, StateFile,
 │                   MemberEntry, RecordEntry                                           WP-14
 ├── adapter
-│   ├── runtime     ServerTickCounter, JdkRandomSource                                 WP-16
-│   ├── config      ConfigLoader, Messages        (+ config.yml y messages.yml)        WP-16
+│   ├── runtime     ServerTickCounter, JdkRandomSource, RandomGroupIdSource            WP-16
+│   ├── config      ConfigLoader, InvalidConfigException, Messages, MessageKey
+│   │               (+ config.yml y messages.yml)                                      WP-16
 │   ├── translate   VersionTranslator                                                  WP-17
-│   ├── snapshot    SnapshotFactory                                                    WP-17
+│   ├── snapshot    SnapshotFactory, MovementTracker, EntityReadings                   WP-17
 │   ├── tracker     AttackTracker, OpenAttempt                         WP-18 (flechas: WP-24)
 │   ├── listener    DamageListener, DeathListener                                      WP-18
 │   │               EntityLifecycleListener, TargetListener                            WP-19

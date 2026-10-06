@@ -461,6 +461,9 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Pedido y resultado de reclutar, resultado de sacar un miembro | `RecruitRequest`, `RecruitResult`, `RemovalOutcome` | Aplicación |
 | Resultado de un intento, daño recibido, causa de salida, publicador de eventos de un grupo | `AttackResolution`, `DamageTaken`, `RemovalCause`, `GroupEvents` | Aplicación |
 | Guardar, cargar y consultar: conversión, candado de guardado, informe de carga, vistas | `StoredMemoriesMapper`, `GuardedMemoryRepository`, `LoadReport`, `GroupStatusView`, `PlayerMemoryView` | Aplicación |
+| Reloj propio, azar e ids de grupo reales | `ServerTickCounter`, `JdkRandomSource`, `RandomGroupIdSource` | Adaptadores |
+| Configuración y mensajes | `ConfigLoader`, `InvalidConfigException`, `Messages`, `MessageKey` | Adaptadores |
+| Movimiento real del jugador, lecturas puras de entidades | `MovementTracker`, `EntityReadings` | Adaptadores |
 | Datos guardados: carga, memorias, estado, grupo y registros | `MemoryLoad`, `StoredMemories`, `StoredState`, `StoredGroup`, `StoredAttackRecord`, `StoredStrategyRecord` | Dominio (puerto) |
 | Persistencia JSON: repositorio, archivos, escritor seguro, versiones y formato | `JsonMemoryRepository`, `MemoryFiles`, `AtomicFileWriter`, `SchemaMigrator`, `GroupFileMapper`, `GroupFile`, `StateFile`, `MemberEntry`, `RecordEntry` | Persistencia |
 | Casos de uso nuevos | `RemoveMember`, `RecordDamageTaken`, `RecordPlayerDeath`, `ResetMemories`, `DescribeGroup`, `DescribePlayerMemory` | Aplicación |
