@@ -6,7 +6,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): aprobados por Nico y en curso en paralelo (Sonnet, worktrees), antes de la puerta E4 porque no tocan su código. Después: especificar el WP-28. Etapa E4.
+1. Puerta E3 pasada (opción A: CT-09). WP-12 mergeado (#15). WP-13 mergeado (#16). WP-14 mergeado (#17). WP-15 mergeado (#18). Próximo: WP-28 (trazas) cierra E4. WP-16 y WP-17 especificados (`wp/WP-16-runtime-configuracion-mensajes.md`, `wp/WP-17-traductor-y-fotos.md`): mergeados (#19 y #20), antes de la puerta E4 porque no tocan su código. Próximo: especificar el WP-28 (trazas), que cierra E4. Etapa E4.
 2. Pendientes de limpieza después de E3 (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
 
@@ -35,8 +35,8 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-14 | Puerto de persistencia y JSON | E4 | mergeado | Sonnet | #17 | Guardar `RegroupWindow` y el último número de plan de cada grupo (CT-07) |
 | WP-15 | Guardar, cargar, resetear y consultar | E4 | mergeado | Sonnet | #18 | Agregar al dominio la restauración del número de plan (`PlanLifecycle`) y usar `RegroupWindow.restore`; si la carga falla por versión más nueva, no guardar nunca (si no, se borran esos archivos). |
 | WP-28 | Trazas: incidentes y reproducción | E4 | pendiente | Sonnet | — | **Obligatorio:** el JSON de trazas e incidentes tiene que escribir y volver a leer `Infinity` (tiempo para matar de un jugador inmatable, WP-07), con prueba de ida y vuelta; Gson por defecto lanza una excepción con infinitos |
-| WP-16 | Runtime, configuración y mensajes | E5 | en curso | Sonnet | — | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
-| WP-17 | Traductor de versión y fotos | E5 | en curso | Sonnet | — | Incluye `MovementTracker` |
+| WP-16 | Runtime, configuración y mensajes | E5 | mergeado | Sonnet | #19 | Prueba que compare rangos del cargador con los records; `learningSpeed` por defecto 1,0 (CT-09) |
+| WP-17 | Traductor de versión y fotos | E5 | mergeado | Sonnet | #20 | Incluye `MovementTracker` |
 | WP-18 | Rastreador cuerpo a cuerpo | E5 | pendiente | Sonnet | — | |
 | WP-19 | Roles, goals y golpe frontal | E5 | pendiente | Sonnet | — | Reinstalar goals en `EntityAddToWorldEvent` |
 | WP-20 | Scheduler, guardado y arranque | E5 | pendiente | Sonnet | — | Agendar cada tick `ServerTickCounter.advance()` y `MovementTracker.sample` de los jugadores conectados (`forget` al salir); semilla de `JdkRandomSource`; `saveDefaultConfig` y `ConfigLoader`. Aplicar `LoadReport.state()` al reloj y a `RegroupWindow.restore`, y pasar el estado a `SaveMemories.capture`; usar `GuardedMemoryRepository` (WP-15). Suscribir `ClosePlan` a `PlanClosed`, con una prueba de que la suscripción existe (CT-11); recorrer los grupos con un `catch` por grupo al llamar a `TickGroups` |

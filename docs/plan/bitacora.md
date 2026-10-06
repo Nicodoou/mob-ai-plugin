@@ -143,3 +143,23 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código conforme al WP (dos comparadores con nombre agregados, aceptados), 26 pruebas, CI verde, las 4 roturas del WP mordieron (la 4, la del orden de jugadores, de forma intermitente como estaba previsto), y 2 roturas propias (reset que cuenta todos los grupos; estado sin el objetivo de reagrupamiento) hicieron fallar 2 pruebas.
 
 **Opinión del código.** Lo bueno: casos de uso finos, el candado cierra el riesgo del WP-14 y la carga tolera grupos rotos sin perder el resto. Lo flojo: `toStoredOrdersRecordsByPlayerThenAttack` muerde de forma intermitente si se rompe el orden (depende del orden de `Map.copyOf`); con el código correcto es determinista. Riesgo: un miembro guardado cuya entidad ya no existe (por ejemplo, un mob que desapareció con el server apagado) queda para siempre en su grupo; anotado en el WP-21 que los mobs del grupo de prueba no se descarten por distancia.
+
+## WP-16 — Runtime, configuración y mensajes (PR #19, Sonnet)
+
+**Qué hizo.** `ServerTickCounter` (reloj propio que sobrevive a reinicios), `JdkRandomSource`, `RandomGroupIdSource`, `config.yml` con los valores del catálogo (velocidad de aprendizaje 1,0), `ConfigLoader` con `InvalidConfigException`, y `messages.yml` con `MessageKey` y `Messages` (MiniMessage, valores insertados como texto literal).
+
+**Arquitectura.** El cargador solo valida presencia y tipo; los rangos los validan los records del dominio y su mensaje llega tal cual, así cada límite vive en un solo lugar.
+
+**Revisión.** YAML idéntico al WP, 19 pruebas, CI verde, 4 roturas del WP con su prueba, 2 roturas propias (enum que acepta cualquier texto; mensajes sin chequear faltantes) con 2 fallas.
+
+**Opinión del código.** Lo bueno: chico, mensajes de error claros y probados uno por uno, el caso `OFF` sin comillas cubierto. Lo flojo: un entero enorme en `config.yml` (por ejemplo `max-size: 99999999999`) sale como `ArithmeticException` de `Math.toIntExact` en vez de `InvalidConfigException`; el WP-21 (`/mobai reload`) tiene que atrapar cualquier excepción del cargador, no solo la propia.
+
+## WP-17 — Traductor de versión y fotos (PR #20, Sonnet + arreglo de Opus)
+
+**Qué hizo.** `VersionTranslator` (tipos de mob, efectos, atributos, Protección, daño absorbido y bloqueo), `MovementTracker` (movimiento real por tick, con límite de teleport), `EntityReadings` (mirada desde el yaw, vida acotada) y `SnapshotFactory` (foto del grupo con mobs cargados y jugadores cercanos en supervivencia o aventura).
+
+**Arquitectura.** Toda constante de Paper sensible a la versión vive en `VersionTranslator`; la foto no conoce constantes.
+
+**Revisión.** El subagente frenó bien: el `switch` sobre `EntityType` que puse en el WP generaba una clase sintética que viola la regla de ArchUnit; se cambió por `if` con `==` y quedó la lección en el manual. Agregué en la rama los `requireNonNull` que faltaban en el constructor de `SnapshotFactory`. 13 pruebas, CI verde, 4 roturas del WP con su prueba, 2 roturas propias (mismo tick sin filtrar; mapeo de esqueleto cambiado) con 2 fallas.
+
+**Opinión del código.** Lo bueno: el traductor es la única puerta a las constantes de versión, y lo puro está probado. Lo flojo y el riesgo principal: `SnapshotFactory` y la mitad de `VersionTranslator` no tienen prueba automática (sin MockBukkit por decisión D20); se verifican en la puerta E5. `EntityType` sí se pudo cargar en JUnit sin server.
