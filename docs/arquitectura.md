@@ -464,6 +464,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Rastreo cuerpo a cuerpo: apertura, golpe, intento abierto, condiciones del objetivo | `MeleeOpening`, `MeleeHit`, `OpenAttempt`, `TargetChecks` | Adaptadores |
 | Ritmo del cuerpo a cuerpo y lo que comparten los goals | `MeleeRhythm`, `GoalContext`, `GoalTools`, `GoalOrders` | Adaptadores |
 | Flanqueo y retirada: goals, puntos de destino y pose del jugador | `FlankGoal`, `RetreatGoal`, `Waypoints`, `PoseReader` | Adaptadores |
+| Retirada a cubierto: qué hace el mob y dónde esconderse | `RetreatSituation`, `RetreatMove`, `CoverFinder`, `CombatGeometry.coverCandidates` | Adaptadores y dominio |
 | Formación de flanqueo | `FlankFormation`, `FlankQuery` | Dominio |
 | Curación en retirada | `RecoveryHealer`, `HealSchedule` | Adaptadores |
 | Grupo en retirada que no planifica (CT-13) | `RetreatRule.isGroupRetreated`, `PlanLifecycle.regroupWithoutPlan` y `restartRegroupWindow`, `DecisionTrace.stillRetreated` | Dominio |

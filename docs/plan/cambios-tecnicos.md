@@ -17,6 +17,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-12](#ct-12--estado-completo-del-grupo-y-división-del-wp-28) Estado completo del grupo y división del WP-28 | 6 oct 2026 | Nico | WP-28A y WP-28B |
 | [CT-13](#ct-13--no-abrir-un-plan-con-el-grupo-todavía-en-retirada) No abrir un plan con el grupo todavía en retirada | 6 oct 2026 | Nico (puerta E5, corrida 2) | Regla elegida (opción 1); WP-22A |
 | [CT-14](#ct-14--formación-de-flanqueo-y-golpe-de-flanco-en-el-wp-22) Formación de flanqueo y golpe de flanco en el WP-22 | 7 oct 2026 | Opus (especificación del WP-22) | WP-22A y WP-22B |
+| [CT-15](#ct-15--retirada-a-cubierto) Retirada a cubierto | 7 oct 2026 | Nico | WP-22C |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -205,7 +206,7 @@ Descartada la opción 2 (abrir el plan y cerrarlo con una causa que no llega a l
 **Qué cambia.**
 1. **Formación.** `CombatGeometry.flankPoint` les daba el mismo punto a todos los flanqueadores de un lado, y chocaban. `FlankFormation` (dominio) le da a cada uno su puesto: en cada lado, del más rodeado al menos rodeado, el primero a 135° de la mirada del jugador, el segundo a 165° y los demás a 180° (justo atrás). El primero de cada lado da el mismo punto que antes. Los flanqueadores se agrupan por objetivo, no por grupo: dos grupos que flanquean al mismo jugador no se pisan.
 2. **Golpe de flanco.** `FlankGoal` golpea solo desde fuera del arco del escudo, que es exactamente el golpe de flanco del catálogo («se mueve hasta quedar a más de 90° del frente y recién ahí golpea»), y lo registra como `ZOMBIE_FLANK_STRIKE`. Ese comportamiento pasa del WP-23 al WP-22B; el WP-23 queda con el golpe paciente.
-3. **El WP-22 se divide:** WP-22A (dominio: CT-13 y formación) y WP-22B (goals, curación y armado). Junto pasaba las 400 líneas.
+3. **El WP-22 se divide:** WP-22A (dominio: CT-13 y formación) y WP-22B (flanqueo, curación y armado). Junto pasaba las 400 líneas. Con el CT-15, la retirada pasó a un WP-22C.
 
 **Por qué.** Lo pedía el tablero («repartir a los flanqueadores del mismo lado»). Y un flanqueador que no golpeara hasta el WP-23 rodearía al jugador sin pegarle: la memoria contaría planes de flanqueo sin daño.
 
@@ -217,3 +218,23 @@ Descartada la opción 2 (abrir el plan y cerrarlo con una causa que no llega a l
 - Guardar el puesto en `RoleAssignment`: cambia un record que usa todo el sistema, para un dato que el goal puede calcular con las posiciones del momento.
 
 **Riesgos.** El puesto se recalcula cada 10 ticks con las posiciones del momento: si dos flanqueadores cruzan el mismo ángulo, pueden intercambiar puestos. Con más de 3 flanqueadores de un lado, los que pasan del tercero comparten el punto de atrás.
+
+## CT-15 — Retirada a cubierto
+
+**Qué cambia.** El mob en `RETREAT` busca un lugar donde el jugador no lo vea antes de quedarse quieto (pedido de Nico). Cada 10 ticks elige un movimiento (`RetreatSituation`):
+1. escondido y a 16 bloques o más: se queda;
+2. camino a un cubierto que el jugador sigue sin ver: sigue;
+3. cada 2 s: busca cubierto entre 14 candidatos (dos anillos, a 16 y 20 bloques del jugador, en abanico de hasta 90° a cada lado de la dirección que se aleja). Salta los que el jugador ve (un rayo) y pide hasta 3 caminos; acepta el primero que llega y cuyo punto final el jugador tampoco ve;
+4. si no: se aleja en línea recta hasta 16 bloques.
+
+La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGoal`, `RetreatSituation`, `CombatGeometry.coverCandidates`).
+
+**Por qué.** Un mob que se cura a la vista del jugador es un blanco fácil (sobre todo para un arco): se aleja, pero el jugador lo encuentra y lo remata. Escondido, la retirada sirve de verdad para volver a pelear.
+
+**Impacto.** Sin cambios en el dominio de decisiones ni en la curación: la curación sigue dependiendo de la distancia (CT-07), no de la vista. Paper: `hasLineOfSight`, `findPath` y `PathResult` (riesgo medio en `actualizar-paper.md`).
+
+**Alternativas descartadas.**
+- Que la curación dependa de estar escondido: cambia una regla del dominio que el dominio no puede verificar (no conoce los bloques) y deja sin curar a los grupos en campo abierto.
+- Buscar el cubierto con un barrido de bloques alrededor: mucho más caro que 14 rayos y 3 caminos.
+
+**Riesgos.** El vidrio y las hojas tapan la vista (Minecraft corta la línea de visión en los bloques con colisión): un mob detrás de un vidrio se cree escondido. Con muchos mobs en retirada, cada búsqueda cuesta hasta 3 caminos cada 2 s por mob; se mira en la verificación en el server.

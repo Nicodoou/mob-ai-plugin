@@ -1,4 +1,4 @@
-# WP-22B — Goals de flanqueo y retirada, y curación
+# WP-22B — Goal de flanqueo y curación
 
 ## Ficha
 
@@ -7,16 +7,15 @@
 | Etapa | E6 Comportamiento completo |
 | Depende de | WP-22A (`FlankFormation`, `FlankQuery`) |
 | Modelo | Sonnet |
-| Rama | `wp-22b-goals-de-flanqueo-y-retirada` |
+| Rama | `wp-22b-flanqueo-y-curacion` |
 
 ## Objetivo
 
-Que los roles `FLANK` y `RETREAT` **hagan algo**. En la puerta E5, los mobs con esos roles se quedaban quietos, y el grupo parecía roto la mitad del tiempo:
+Que el rol `FLANK` **haga algo** y que los mobs en retirada se curen. En la puerta E5, los mobs con `FLANK` o `RETREAT` se quedaban quietos, y el grupo parecía roto la mitad del tiempo. El movimiento de la retirada (a cubierto, CT-15) llega en el WP-22C:
 
 1. `FlankGoal`: el flanqueador camina a **su** punto de la formación (WP-22A), detrás o al costado del jugador, y golpea solo desde fuera del arco del escudo. Un zombie que flanquea registra `ZOMBIE_FLANK_STRIKE` (CT-08 y CT-14); una araña, `SPIDER_BITE`.
-2. `RetreatGoal`: el mob se aleja de su objetivo hasta la distancia de retirada (16 bloques) y se queda ahí; si el jugador se acerca, se vuelve a alejar.
-3. Curación (CT-07): cada mob con la orden `recovering` recupera 1 punto de vida cada 50 ticks (el ritmo de Regeneración I), sin efecto de poción.
-4. Todos los ritmos se miden con el reloj del plugin, nunca contando llamadas a `tick()` (regla B-01: Paper llama a un goal activo cada dos ticks).
+2. Curación (CT-07): cada mob con la orden `recovering` recupera 1 punto de vida cada 50 ticks (el ritmo de Regeneración I), sin efecto de poción.
+3. Todos los ritmos se miden con el reloj del plugin, nunca contando llamadas a `tick()` (regla B-01: Paper llama a un goal activo cada dos ticks).
 
 ## Contexto a leer
 
@@ -35,22 +34,18 @@ Que los roles `FLANK` y `RETREAT` **hagan algo**. En la puerta E5, los mobs con 
 ## Reglas de negocio
 
 1. **Qué mobs reciben los goals nuevos:** los mismos que hoy reciben `PressGoal` (zombies y arañas). Los esqueletos siguen con su IA vanilla hasta el WP-24, pero **la curación sí les llega**: no depende de los goals.
-2. **Un goal activo por mob:** `PressGoal`, `FlankGoal` y `RetreatGoal` se instalan juntos, con la misma prioridad y los tipos `MOVE` y `LOOK`; cada uno corre solo mientras la orden del mob tiene **su** rol.
+2. **Un goal activo por mob:** `PressGoal` y `FlankGoal` (y `RetreatGoal` en el WP-22C) se instalan juntos, con la misma prioridad y los tipos `MOVE` y `LOOK`; cada uno corre solo mientras la orden del mob tiene **su** rol.
 3. **`FlankGoal`** se activa si la orden es `FLANK` con un objetivo válido (`TargetChecks.isValidTarget`). Mientras está activo:
    - mira al objetivo;
    - cada `REPATH_INTERVAL_TICKS` (10) ticks del reloj recalcula **su** punto con `FlankFormation`. Los flanqueadores son los mobs con orden `FLANK` y **el mismo objetivo** que están cargados en el mundo del objetivo, más él mismo. La distancia es `attack.flank-distance-blocks` (3). Después camina hacia ese punto;
    - golpea si está en alcance, pasó el intervalo de ataque **y está fuera del arco del escudo** del jugador (más de 90° de su mirada). Desde adelante no golpea: sigue rodeando.
 4. **Ataque registrado por `FlankGoal`:** `ZOMBIE_FLANK_STRIKE` para el zombie (es el golpe que el catálogo define: «se mueve hasta quedar a más de 90° del frente y recién ahí golpea») y `SPIDER_BITE` para la araña. El esqueleto nunca recibe este goal: si llega, `IllegalStateException`.
-5. **`RetreatGoal`** se activa si la orden es `RETREAT` (con objetivo o sin él). Cada 10 ticks del reloj:
-   - si el objetivo es válido y el mob está, en horizontal, a menos de `attack.retreat-distance-blocks` (16) de él, camina hasta quedar exactamente a esa distancia, en la dirección opuesta al jugador;
-   - si ya está a esa distancia o más, o no tiene objetivo válido, se queda quieto (frena el pathfinding).
-   - No golpea ni mira al jugador.
-6. **Curación** (CT-07): un mob con la orden `recovering = true` recupera `REGENERATION_HEAL_POINTS` (1) cada `REGENERATION_BASE_INTERVAL_TICKS` (50) ticks del reloj:
+5. **Curación** (CT-07): un mob con la orden `recovering = true` recupera `REGENERATION_HEAL_POINTS` (1) cada `REGENERATION_BASE_INTERVAL_TICKS` (50) ticks del reloj:
    - el primer punto llega 50 ticks después de que empieza a recuperarse, no enseguida;
    - si deja de recuperarse (un jugador se acercó o volvió a pelear), su cuenta se borra y vuelve a empezar de cero;
    - se cura con `LivingEntity.heal`, que nunca pasa la vida máxima;
    - sin poción, sin partículas: zombies y esqueletos son inmunes a Regeneración.
-7. **Quién decide `recovering`:** el dominio (`RetreatRule.canRecover`: sin jugadores vivos a menos de 12 bloques), en cada decisión. El adaptador solo lo aplica.
+6. **Quién decide `recovering`:** el dominio (`RetreatRule.canRecover`: sin jugadores vivos a menos de 12 bloques), en cada decisión. El adaptador solo lo aplica.
 
 ## Archivos
 
@@ -65,7 +60,6 @@ Que los roles `FLANK` y `RETREAT` **hagan algo**. En la puerta E5, los mobs con 
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/GoalOrders.java` |
 | Modificar | `src/main/java/io/github/nicodoou/mobai/adapter/goal/PressGoal.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/FlankGoal.java` |
-| Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/RetreatGoal.java` |
 | Modificar | `src/main/java/io/github/nicodoou/mobai/adapter/goal/RoleRegistry.java` |
 | Modificar | `src/main/java/io/github/nicodoou/mobai/adapter/goal/GoalInstaller.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/scheduler/HealSchedule.java` |
@@ -109,7 +103,7 @@ En `SnapshotFactory`: `playerSnapshot` usa `PoseReader.poseOf(player)` para la p
 ### `Waypoints.java` (`adapter.goal`, Java puro, sin Paper)
 
 ```java
-/** Where a goal walks to: a flanker's slot, or the edge of the retreat. */
+/** Where a goal walks to, computed without Paper. */
 public final class Waypoints {
   private final CombatGeometry geometry;
   private final FlankFormation formation;
@@ -123,16 +117,6 @@ public final class Waypoints {
   public Vec3 flankPoint(PlayerPose pose, MobId self, Map<MobId, Vec3> flankers) {
     return formation.pointFor(
         new FlankQuery(pose, self, flankers, settings.get().flankDistanceBlocks()));
-  }
-
-  // Empty once the mob is far enough: it holds there instead of running on forever.
-  public Optional<Vec3> retreatPoint(Vec3 mobPosition, Vec3 dangerPosition) {
-    double distance = mobPosition.minus(dangerPosition).horizontal().length();
-    double missing = settings.get().retreatDistanceBlocks() - distance;
-    if (missing <= 0) {
-      return Optional.empty();
-    }
-    return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
   }
 
   public boolean isOutsideTheShieldArc(PlayerPose pose, Vec3 mobPosition) {
@@ -193,42 +177,6 @@ Funciones privadas, una tarea cada una:
 
 `tick()` es `currentTarget().ifPresent(this::flank)`. La distancia, como en `PressGoal`: `mob.getLocation().distance(target.getLocation())`.
 
-### `RetreatGoal.java`
-
-Campos `mob`, `key` (`"retreat"`), `context` y `rhythm = new MeleeRhythm(context.tools().clock())`. Constructor `RetreatGoal(Mob mob, GoalContext context)`: no necesita el tipo de mob. `WALK_SPEED = 1.0`, tipos `MOVE` y `LOOK`. Javadoc: `/** RETREAT: walk away from the target to the retreat distance and hold there. */`.
-
-```java
-  @Override
-  public boolean shouldActivate() {
-    return currentOrder().isPresent();
-  }
-
-  @Override
-  public boolean shouldStayActive() {
-    return shouldActivate();
-  }
-
-  @Override
-  public void stop() {
-    mob.getPathfinder().stopPathfinding();
-  }
-
-  @Override
-  public void tick() {
-    if (!rhythm.shouldRepath()) {
-      return;
-    }
-    walkAwayOrHold(retreatPoint());
-    rhythm.markRepath();
-  }
-```
-
-| Función | Hace |
-| --- | --- |
-| `Optional<RoleAssignment> currentOrder()` | `GoalOrders.orderFor(mob, context.roles(), Role.RETREAT)` |
-| `Optional<Vec3> retreatPoint()` | `currentOrder().flatMap(order -> GoalOrders.validTarget(order, mob))` y, con el jugador, `context.tools().waypoints().retreatPoint(PoseReader.positionOf(mob.getLocation()), PoseReader.positionOf(player.getLocation()))` |
-| `void walkAwayOrHold(Optional<Vec3> point)` | Sin punto: `stopPathfinding()`. Con punto: `moveTo(new Location(mob.getWorld(), x, y, z), WALK_SPEED)` |
-
 ### `RoleRegistry.java`: dos métodos nuevos
 
 ```java
@@ -249,13 +197,12 @@ Campos `mob`, `key` (`"retreat"`), `context` y `rhythm = new MeleeRhythm(context
 
 ### `GoalInstaller.java`
 
-`install` agrega los tres goals, con la misma prioridad:
+`install` agrega los dos goals, con la misma prioridad:
 
 ```java
     // Only one runs at a time: each one stays active only while the order has its role.
     goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, kind.get(), context));
     goals.addGoal(mob, GOAL_PRIORITY, new FlankGoal(mob, kind.get(), context));
-    goals.addGoal(mob, GOAL_PRIORITY, new RetreatGoal(mob, context));
 ```
 
 ### `MinecraftConstants.java`
@@ -342,15 +289,12 @@ public final class RecoveryHealer {
 
 ## Pruebas obligatorias
 
-### `WaypointsTest` (5)
+### `WaypointsTest` (2)
 
-`new Waypoints(new CombatGeometry(), new FlankFormation(new CombatGeometry()), () -> TestSettings.defaults().attack())` (flanqueo a 3 bloques, retirada a 16). Tolerancia `1e-9`.
+`new Waypoints(new CombatGeometry(), new FlankFormation(new CombatGeometry()), () -> TestSettings.defaults().attack())` (flanqueo a 3 bloques). Tolerancia `1e-9`.
 
 | Prueba | Verifica |
 | --- | --- |
-| `retreatPointStopsAtTheRetreatDistance` | mob `(3,64,4)`, peligro `(0,60,0)` (5 bloques en horizontal): `(9.6, 64, 12.8)` |
-| `mobFarEnoughHoldsItsGround` | mob `(0,64,16)`, peligro `(0,64,0)`: vacío; mob `(0,64,15.9)`: `(0, 64, 16)` |
-| `retreatDistanceIgnoresHeight` | mob `(0,80,10)`, peligro `(0,64,0)`: `(0, 80, 16)` |
 | `flankPointUsesTheConfiguredDistance` | pose en el origen mirando a +Z, flanqueadores `{mob(1): (2,0,0)}`: `(2.1213203435596424, 0, -2.1213203435596424)` |
 | `onlyOutsideTheShieldArcCountsAsFlank` | pose en el origen mirando a +Z: `(0,0,-2)` `true`; `(0,0,2)` `false`; `(2,0,0)` (90° justos, dentro del arco) `false` |
 
@@ -373,14 +317,14 @@ public final class RecoveryHealer {
 | `mobsWithFiltersByRoleAndTarget` | `PRESS` de `mob(1)` sobre `player`; `FLANK` de `mob(2)` sobre `player`; `FLANK` de `mob(3)` sobre otro jugador; `FLANK` de `mob(4)` sin objetivo: `mobsWith(FLANK, player)` es exactamente `{mob(2)}` |
 | `recoveringMobsAreTheOnesBeingHealed` | `RETREAT` de `mob(1)` con `recovering` `true`, `RETREAT` de `mob(2)` con `false`, `PRESS` de `mob(3)`: `recoveringMobs()` es exactamente `{mob(1)}` |
 
-Total: **12 pruebas**. `FlankGoal`, `RetreatGoal`, `RecoveryHealer`, `GoalOrders` y `PoseReader` usan Paper y se verifican en el server (abajo).
+Total: **9 pruebas**. `FlankGoal`, `RecoveryHealer`, `GoalOrders` y `PoseReader` usan Paper y se verifican en el server (abajo).
 
 ## Pruebas que muerden
 
 | # | Rotura | Valor con la rotura | Prueba que falla |
 | --- | --- | --- | --- |
-| 1 | En `retreatPoint`, `missing < 0` en vez de `<= 0` | con 16 justos pide un punto a 0 bloques y `CombatGeometry` lanza `IllegalArgumentException` | `mobFarEnoughHoldsItsGround` |
-| 2 | En `retreatPoint`, `mobPosition.distanceTo(dangerPosition)` (con altura) | distancia 18,87: vacío | `retreatDistanceIgnoresHeight` |
+| 1 | En `isOutsideTheShieldArc`, devolver `geometry.isInShieldArc(…)` sin negar | `(0,0,-2)` da `false` | `onlyOutsideTheShieldArcCountsAsFlank` |
+| 2 | En `flankPoint`, distancia fija 1.0 en vez de la configurada | `(0.7071…, 0, -0.7071…)` | `flankPointUsesTheConfiguredDistance` |
 | 3 | En `claimIfDue`, `return true` en vez de `return next != null` | cura en el tick 1000 | `firstHealComesAWholeIntervalAfterRecoveryStarts` |
 | 4 | En `mobsWith`, no comparar el objetivo | `{mob(2), mob(3), mob(4)}` | `mobsWithFiltersByRoleAndTarget` |
 
@@ -389,20 +333,19 @@ Total: **12 pruebas**. `FlankGoal`, `RetreatGoal`, `RecoveryHealer`, `GoalOrders
 No la hace el subagente. Con `/mobai debug all full`, de noche:
 
 1. Estrategia `FLANK` (repetir `spawngroup` hasta que salga): los flanqueadores van a puntos **distintos** a los costados y atrás; desde adelante no pegan; en el `mobai-debug.log`, los zombies flanqueadores registran `attack=zombie.flank_strike`.
-2. Un mob herido (30 % o menos) se aleja a unos 16 bloques y se queda; si te acercás, se vuelve a alejar.
-3. Lejos de él (más de 12 bloques), su vida sube 1 punto cada 2,5 s; con 60 % vuelve a pelear.
+2. Un mob herido (30 % o menos) queda quieto hasta el WP-22C, pero con vos a más de 12 bloques su vida sube 1 punto cada 2,5 s; con 60 % vuelve a pelear.
 4. CT-13 (del WP-22A): con un grupo muy herido no aparecen líneas `PLAN … GROUP_RETREATED success=0.00` repetidas.
 
 ## Procedimiento
 
-1. Rama `wp-22b-goals-de-flanqueo-y-retirada` desde `origin/main` actualizado (con el WP-22A mergeado).
+1. Rama `wp-22b-flanqueo-y-curacion` desde `origin/main` actualizado (con el WP-22A mergeado).
 2. `PoseReader`, el cambio de `SnapshotFactory`, `Waypoints`, `GoalTools` (y borrar `MeleeTools`), `GoalContext`, `GoalOrders`, `PressGoal` y `WaypointsTest`. Commit: `refactor: goal tools, order reading and waypoints for every goal`.
-3. `RoleRegistry` (con sus pruebas), `FlankGoal`, `RetreatGoal`, `GoalInstaller`. Commit: `feat: flank and retreat goals`.
+3. `RoleRegistry` (con sus pruebas), `FlankGoal`, `GoalInstaller`. Commit: `feat: flank goal with the flank strike`.
 4. `MinecraftConstants`, `HealSchedule` (con sus pruebas), `RecoveryHealer`, `AdapterServices`, `PluginRuntime`. Commit: `feat: heal recovering members at the Regeneration I rhythm`.
-5. `docs/actualizar-paper.md`. Commit: `docs: map the Paper API used by the flank and retreat goals`.
+5. `docs/actualizar-paper.md`. Commit: `docs: map the Paper API used by the flank goal and healing`.
 6. Pruebas que muerden (de a una, en secuencia; sin commit).
 7. `./gradlew spotlessApply` y `./gradlew build jacocoTestReport jacocoTestCoverageVerification` en verde.
-8. Push, PR `WP-22B: flank and retreat goals, and healing`, esperar el check `build` en verde (si no aparece ninguna corrida a los 2 minutos, avisalo) e informe con la prueba exacta que falló en cada rotura.
+8. Push, PR `WP-22B: flank goal and healing`, esperar el check `build` en verde (si no aparece ninguna corrida a los 2 minutos, avisalo) e informe con la prueba exacta que falló en cada rotura.
 
 ## Correcciones permitidas
 
@@ -413,6 +356,7 @@ No la hace el subagente. Con `/mobai debug all full`, de noche:
 
 ## Fuera de alcance
 
+- `RetreatGoal` y la búsqueda de cubierto (WP-22C).
 - El golpe paciente y la elección del golpe frontal o paciente en `PressGoal` (WP-23).
 - Goals de esqueletos (WP-24) y lentitud de la araña (WP-25).
 - Cambiar reglas del dominio (WP-22A ya hizo las suyas).
@@ -420,7 +364,7 @@ No la hace el subagente. Con `/mobai debug all full`, de noche:
 ## Aceptación
 
 - [ ] Exactamente los archivos de la tabla, con las firmas especificadas.
-- [ ] Las 12 pruebas con sus nombres exactos, en verde; la suite completa en verde.
+- [ ] Las 9 pruebas con sus nombres exactos, en verde; la suite completa en verde.
 - [ ] Las 4 roturas mordieron.
 - [ ] Ningún ritmo cuenta llamadas a `tick()`: todos usan `MeleeRhythm` (reloj) o `HealSchedule` (reloj).
 - [ ] `docs/actualizar-paper.md` coincide con los imports de Paper.
