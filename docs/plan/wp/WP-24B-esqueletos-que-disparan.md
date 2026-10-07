@@ -54,7 +54,11 @@ Que los esqueletos dejen la IA vanilla y **jueguen con el grupo**. Hoy conservan
    - distraído: dispara y registra `SKELETON_OPPORTUNISTIC_SHOT`;
    - si no, espera hasta `attack.opportunistic-shot-max-wait-ticks` (60). Al vencer, no se abre un intento oportuno: dispara el directo y lo registra como `SKELETON_DIRECT_SHOT`, igual que el abandono del golpe paciente (CT-17). Después empieza una espera nueva;
    - si no puede disparar (ritmo, vista o distancia), la espera se reinicia.
-7. **La flecha:** `launchProjectile(Arrow.class, velocidad)` desde el esqueleto. No se puede juntar (`PickupStatus.DISALLOWED`, a través de `VersionTranslator`). Recién después se abre el intento con el UUID de la flecha: si el lanzamiento falla, no queda ningún intento abierto.
+7. **La flecha:** `launchProjectile(Arrow.class, velocidad, ajuste)` desde el esqueleto. El ajuste corre antes de que la flecha aparezca en el mundo:
+   - **la flecha mira hacia donde vuela** (pedido de Nico). En las pruebas del spike la flecha salía orientada como el esqueleto y viajaba «derrapando de costado» hasta que Minecraft la iba girando. La rotación sale de la velocidad, con la convención de los proyectiles de Minecraft: `yaw = atan2(vx, vz)` y `pitch = atan2(vy, √(vx² + vz²))`, en grados;
+   - no se puede juntar (`PickupStatus.DISALLOWED`, a través de `VersionTranslator`).
+
+   Recién después del lanzamiento se abre el intento con el UUID de la flecha: si el lanzamiento falla, no queda ningún intento abierto.
 8. **Instalación:** el esqueleto recibe `ShootGoal` y `RetreatGoal` (la retirada a cubierto funciona igual para él). Zombies y arañas, como hasta ahora.
 
 ## Archivos
@@ -69,6 +73,7 @@ Que los esqueletos dejen la IA vanilla y **jueguen con el grupo**. Hoy conservan
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/OpportunisticWait.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/ShotRequest.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/ShotAim.java` |
+| Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/ArrowRotation.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/ShotParts.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/BowShooter.java` |
 | Crear | `src/main/java/io/github/nicodoou/mobai/adapter/goal/Weapons.java` |
@@ -95,7 +100,8 @@ Antes de empezar, buscá con grep `tools().attacker()` y `new GoalTools(` en `sr
 ## Especificación
 
 API de Paper verificada con `javap` contra `paper-api 26.3.build.151-beta`:
-- `ProjectileSource.launchProjectile(Class, Vector)`;
+- `ProjectileSource.launchProjectile(Class, Vector, Consumer)`;
+- `Projectile.setRotation(float, float)`;
 - `AbstractArrow.setPickupStatus(PickupStatus)`, sin deprecar; el deprecado es `setPickupRule`;
 - `PickupStatus.DISALLOWED`;
 - `LivingEntity.getEyeLocation()` y `hasLineOfSight(Entity)`;
@@ -221,6 +227,15 @@ public final class ShotAim {
     return geometry.leadShotVelocity(request.eye(), aimPoint(request));
   }
 
+  // Minecraft's projectile convention (the one its own shots use): yaw 0 flies towards +Z and
+  // grows towards +X. An arrow facing anywhere else drifts sideways until the game turns it.
+  public ArrowRotation rotationOf(Vec3 velocity) {
+    double horizontal = velocity.horizontal().length();
+    return new ArrowRotation(
+        (float) Math.toDegrees(Math.atan2(velocity.x(), velocity.z())),
+        (float) Math.toDegrees(Math.atan2(velocity.y(), horizontal)));
+  }
+
   // The opportunistic shot is about when to shoot, not how: it aims like the lead shot.
   private Vec3 aimPoint(ShotRequest request) {
     return switch (request.attack()) {
@@ -236,6 +251,11 @@ public final class ShotAim {
 ```
 
 `Attack` es un enum del dominio, no de Paper: el `switch` está permitido.
+
+```java
+/** Which way an arrow faces when it is launched, in degrees. */
+public record ArrowRotation(float yaw, float pitch) {}
+```
 
 ### `ShotParts.java`, `BowShooter.java` y `Weapons.java`
 
@@ -267,9 +287,12 @@ public final class BowShooter {
                 PoseReader.positionOf(shooter.getEyeLocation()),
                 centerOf(target),
                 parts.movement().movementPerTick(targetId)));
+    ArrowRotation rotation = parts.aim().rotationOf(velocity);
     Arrow arrow =
-        shooter.launchProjectile(Arrow.class, new Vector(velocity.x(), velocity.y(), velocity.z()));
-    parts.translator().forbidPickup(arrow);
+        shooter.launchProjectile(
+            Arrow.class,
+            new Vector(velocity.x(), velocity.y(), velocity.z()),
+            launched -> prepare(launched, rotation));
     tracker.openProjectile(
         new ProjectileOpening(
             arrow.getUniqueId(),
@@ -278,6 +301,12 @@ public final class BowShooter {
             attack,
             clock.currentTick(),
             TargetChecks.isInvulnerable(target)));
+  }
+
+  // Runs before the arrow enters the world, so players never see it facing the wrong way.
+  private void prepare(Arrow arrow, ArrowRotation rotation) {
+    arrow.setRotation(rotation.yaw(), rotation.pitch());
+    parts.translator().forbidPickup(arrow);
   }
 
   private static Vec3 centerOf(Player target) {
@@ -438,7 +467,7 @@ Espera máxima 60.
 | `resetStartsTheWaitAgain` | `ON_SHOOTER`, 1000; `reset()`; `ON_SHOOTER` en 1050, 1100 y 1110 | `WAIT`; `WAIT`, `WAIT`, `GIVE_UP` |
 | `aBusyTargetEndsTheWait` | `ON_SHOOTER`, 1000; `ELSEWHERE`, 1030; `ON_SHOOTER` en 1080 y 1139 | `WAIT`; `SHOOT_OPPORTUNISTIC`; `WAIT` (espera nueva, desde 1080); `WAIT` (1139 − 1080 = 59) |
 
-### `ShotAimTest` (5)
+### `ShotAimTest` (7)
 
 `aim = new ShotAim(geometry)` con `geometry = new CombatGeometry()`. Ojo `(0, 65.6, 0)`, centro del jugador `(10, 64.9, 0)`, movimiento `(0, 0, 0.2)` por tick. Tolerancia `1e-9`.
 
@@ -448,6 +477,8 @@ Espera máxima 60.
 | `leadShotAimsWhereTheTargetWillBe` | igual a `geometry.leadShotVelocity(ojo, geometry.predictedAimPoint(ojo, centro, movimiento))`, y distinto del directo |
 | `opportunisticShotAimsLikeTheLeadShot` | igual al anticipado |
 | `everyShotFliesAtArrowSpeed` | el largo de las tres velocidades es `MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK` |
+| `arrowFacesWhereItFliesHorizontally` | `rotationOf((0, 0, 1.6))`: yaw 0; `(1.6, 0, 0)`: yaw 90; `(-1.6, 0, 0)`: yaw −90; `(0, 0, -1.6)`: yaw 180; pitch 0 en las cuatro (tolerancia `1e-4`) |
+| `arrowFacesUpAndDownWithItsFlight` | `rotationOf((0, 1, 1))`: pitch 45; `(0, -1, 1)`: pitch −45; yaw 0 en las dos |
 | `meleeAttacksAreNotShots` | `ZOMBIE_FRONT_STRIKE`: `IllegalArgumentException` con `ShotAim: ZOMBIE_FRONT_STRIKE is not a skeleton shot` |
 
 ### `WaypointsTest` (+1)
@@ -456,7 +487,7 @@ Espera máxima 60.
 | --- | --- |
 | `backOffPointReachesTheMinimumRange` | mob `(3,64,4)`, peligro `(0,64,0)` (5 bloques), mínimo 8: `(4.8, 64, 6.4)` |
 
-Total: **19 pruebas**. `ShootGoal`, `BowShooter`, `GoalInstaller` y `forbidPickup` usan Paper y se verifican en el server.
+Total: **21 pruebas**. `ShootGoal`, `BowShooter`, `GoalInstaller` y `forbidPickup` usan Paper y se verifican en el server.
 
 ## Pruebas que muerden
 
@@ -466,6 +497,7 @@ Total: **19 pruebas**. `ShootGoal`, `BowShooter`, `GoalInstaller` y `forbidPicku
 | 2 | En `ShotRhythm.markShot`, `MELEE_ATTACK_INTERVAL_TICKS` (20) | a los 20 ya puede | `waitsTheSkeletonAttackInterval` |
 | 3 | En `aimPoint`, el directo también anticipa | igual al anticipado | `directShotAimsWhereTheTargetIs` |
 | 4 | En `OpportunisticWait`, al disparar no reiniciar la espera | en 1080 da `GIVE_UP` (desde 1000) | `aBusyTargetEndsTheWait` |
+| 5 | En `rotationOf`, `atan2(velocity.z(), velocity.x())` (ejes cruzados) | `(1.6, 0, 0)` da yaw 0 | `arrowFacesWhereItFliesHorizontally` |
 
 ## Verificación en el server (Nico, después del merge)
 
@@ -475,7 +507,8 @@ Con `/mobai debug all full`, de noche:
 2. Disparan cada 2 s más o menos. En el `mobai-debug.log` aparecen `attack=skeleton.direct_shot`, `skeleton.lead_shot` y `skeleton.opportunistic_shot`, con `HIT rule=6`, `MISS rule=8` o `PARTIAL rule=7` (escudo).
 3. Caminando de costado, el tiro anticipado te pega más que el directo (hallazgo 5: 8 de 9 contra 1 de 5).
 4. Las flechas no se pueden juntar.
-5. Un grupo de solo esqueletos ya no cierra planes con éxito 0 si te pegan (nota de la puerta E5).
+5. **La flecha vuela mirando hacia donde va**, desde que sale, sin derrapar de costado (pedido de Nico). La documentación de Paper no aclara si `Projectile.setRotation` usa la convención de los proyectiles o la de las entidades (que tiene el yaw y el pitch con el signo invertido). Si la flecha sale de costado o al revés, es eso: se arregla negando el yaw y el pitch en `rotationOf`, por el proceso de bugs.
+6. Un grupo de solo esqueletos ya no cierra planes con éxito 0 si te pegan (nota de la puerta E5).
 
 ## Procedimiento
 
@@ -503,9 +536,9 @@ Con `/mobai debug all full`, de noche:
 ## Aceptación
 
 - [ ] Exactamente los archivos de la tabla, con las firmas especificadas.
-- [ ] Las 19 pruebas con sus nombres exactos, en verde; la suite completa en verde.
-- [ ] Las 4 roturas mordieron.
+- [ ] Las 21 pruebas con sus nombres exactos, en verde; la suite completa en verde.
+- [ ] Las 5 roturas mordieron.
 - [ ] Ningún ritmo cuenta llamadas a `tick()`: repath con `MeleeRhythm`, tiros con `ShotRhythm`.
-- [ ] Cada flecha abre su intento después del lanzamiento, con el ataque ejecutado.
+- [ ] Cada flecha abre su intento después del lanzamiento, con el ataque ejecutado, y sale rotada hacia su velocidad.
 - [ ] `docs/actualizar-paper.md` coincide con los imports de Paper.
 - [ ] Build, cobertura y CI en verde.
