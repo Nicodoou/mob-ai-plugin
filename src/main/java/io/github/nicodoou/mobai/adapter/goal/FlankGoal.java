@@ -22,7 +22,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
-/** FLANK: walk round to this flanker's slot and strike only from outside the shield arc. */
+/** FLANK: sidestep out of the player's sight, then close in on its slot and strike from behind. */
 public final class FlankGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
   private static final double WALK_SPEED = 1.0;
@@ -80,14 +80,15 @@ public final class FlankGoal implements Goal<Mob> {
     PlayerPose pose = PoseReader.poseOf(target);
     mob.lookAt(target);
     walkRoundIfDue(target, pose);
-    strikeIfOutsideTheShield(target, pose);
+    strikeIfOutOfSight(target, pose);
   }
 
   private void walkRoundIfDue(Player target, PlayerPose pose) {
     if (!rhythm.shouldRepath()) {
       return;
     }
-    Vec3 point = context.tools().waypoints().flankPoint(pose, self(), flankerPositions(target));
+    Vec3 point =
+        context.tools().waypoints().flankStep(pose, self(), flankerPositions(target)).waypoint();
     mob.getPathfinder()
         .moveTo(new Location(target.getWorld(), point.x(), point.y(), point.z()), WALK_SPEED);
     rhythm.markRepath();
@@ -107,18 +108,18 @@ public final class FlankGoal implements Goal<Mob> {
     return positions;
   }
 
-  private void strikeIfOutsideTheShield(Player target, PlayerPose pose) {
+  private void strikeIfOutOfSight(Player target, PlayerPose pose) {
     double distanceBlocks = mob.getLocation().distance(target.getLocation());
     Vec3 position = PoseReader.positionOf(mob.getLocation());
     if (!rhythm.canStrike(distanceBlocks)
-        || !context.tools().waypoints().isOutsideTheShieldArc(pose, position)) {
+        || !context.tools().waypoints().isOutOfSight(pose, position)) {
       return;
     }
     context.tools().attacker().strike(mob, target, executedAttack());
     rhythm.markStrike();
   }
 
-  // A flanker strikes from outside the shield arc, which is what the flank strike is (CT-08).
+  // A flanker strikes from out of the player's sight, which is what the flank strike is (CT-16).
   private Attack executedAttack() {
     return switch (kind) {
       case ZOMBIE -> Attack.ZOMBIE_FLANK_STRIKE;

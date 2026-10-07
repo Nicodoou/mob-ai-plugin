@@ -46,6 +46,7 @@ import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.geometry.FlankFormation;
+import io.github.nicodoou.mobai.domain.geometry.FlankManeuver;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -157,7 +158,9 @@ public record AdapterServices(
     CombatGeometry geometry = new CombatGeometry();
     Waypoints waypoints =
         new Waypoints(
-            geometry, new FlankFormation(geometry), core.settings().section(MobAiSettings::attack));
+            geometry,
+            new FlankManeuver(geometry, new FlankFormation(geometry)),
+            core.settings().section(MobAiSettings::attack));
     GoalTools tools = new GoalTools(attacker, core.clock(), waypoints);
     return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
   }
