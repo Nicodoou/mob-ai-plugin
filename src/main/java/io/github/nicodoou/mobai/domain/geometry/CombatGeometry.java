@@ -10,6 +10,10 @@ public final class CombatGeometry {
   private static final double FLANK_MARGIN_DEGREES = 45.0;
   static final double FLANK_ANGLE_DEGREES =
       MinecraftConstants.SHIELD_HALF_ARC_DEGREES + FLANK_MARGIN_DEGREES;
+  // 90° of shield arc plus a margin, so a small turn of the mouse does not reveal a flanker.
+  private static final double VISION_MARGIN_DEGREES = 30.0;
+  static final double VISION_HALF_ANGLE_DEGREES =
+      MinecraftConstants.SHIELD_HALF_ARC_DEGREES + VISION_MARGIN_DEGREES;
   // Without horizontal separation there is no "away"; any fixed direction keeps it deterministic.
   private static final Vec3 DEFAULT_RETREAT_DIRECTION = new Vec3(1, 0, 0);
   private static final int POSITIVE_SIDE = 1;
@@ -31,6 +35,10 @@ public final class CombatGeometry {
   public boolean isInShieldArc(PlayerPose pose, Vec3 attackerPosition) {
     return angleFromFacingDegrees(pose, attackerPosition)
         <= MinecraftConstants.SHIELD_HALF_ARC_DEGREES;
+  }
+
+  public boolean isOutOfSight(PlayerPose pose, Vec3 mobPosition) {
+    return angleFromFacingDegrees(pose, mobPosition) > VISION_HALF_ANGLE_DEGREES;
   }
 
   public Vec3 flankPoint(PlayerPose pose, Vec3 mobPosition, double distanceBlocks) {
