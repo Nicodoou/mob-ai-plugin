@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -105,6 +106,41 @@ class CombatGeometryTest {
   @Test
   void retreatPointWithoutHorizontalSeparationGoesTowardsPositiveX() {
     assertVec(geometry.retreatPoint(new Vec3(5, 64, 5), new Vec3(5, 70, 5), 16), 21, 64, 5);
+  }
+
+  @Test
+  void coverCandidatesFanOutFromStraightAway() {
+    List<Vec3> candidates = geometry.coverCandidates(new Vec3(0, 64, 5), new Vec3(0, 64, 0), 16);
+
+    assertThat(candidates).hasSize(14);
+    assertVec(candidates.get(0), 0, 64, 16);
+    assertVec(candidates.get(1), -8, 64, 13.85640646055102);
+    assertVec(candidates.get(2), 8, 64, 13.85640646055102);
+    assertVec(candidates.get(5), -16, 64, 0);
+    assertVec(candidates.get(6), 16, 64, 0);
+    assertVec(candidates.get(7), 0, 64, 20);
+  }
+
+  @Test
+  void coverCandidatesStayAtTheMobsHeight() {
+    List<Vec3> candidates = geometry.coverCandidates(new Vec3(0, 70, 5), new Vec3(0, 64, 0), 16);
+
+    assertThat(candidates).hasSize(14);
+    assertThat(candidates).allSatisfy(candidate -> assertThat(candidate.y()).isEqualTo(70));
+  }
+
+  @Test
+  void coverCandidatesWithoutSeparationGoTowardsPositiveX() {
+    List<Vec3> candidates = geometry.coverCandidates(new Vec3(3, 64, 3), new Vec3(3, 60, 3), 16);
+
+    assertVec(candidates.get(0), 19, 64, 3);
+  }
+
+  @Test
+  void rejectsNonPositiveCoverRadius() {
+    assertThatThrownBy(() -> geometry.coverCandidates(Vec3.ZERO, new Vec3(1, 0, 1), 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("CombatGeometry.distanceBlocks must be a positive number, got 0.0");
   }
 
   @Test

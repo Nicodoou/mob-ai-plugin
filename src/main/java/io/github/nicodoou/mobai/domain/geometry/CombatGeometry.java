@@ -2,6 +2,8 @@ package io.github.nicodoou.mobai.domain.geometry;
 
 import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class CombatGeometry {
   // A flanker stands well outside the shield arc so a small turn of the player does not cover it.
@@ -12,6 +14,11 @@ public final class CombatGeometry {
   private static final Vec3 DEFAULT_RETREAT_DIRECTION = new Vec3(1, 0, 0);
   private static final int POSITIVE_SIDE = 1;
   private static final int NEGATIVE_SIDE = -1;
+  // Past 90° from straight away, the mob would walk back past the danger.
+  private static final List<Double> COVER_FAN_DEGREES =
+      List.of(0.0, 30.0, -30.0, 60.0, -60.0, 90.0, -90.0);
+  // A second, wider ring for when the first one is all open ground.
+  private static final double COVER_OUTER_RING_EXTRA_BLOCKS = 4.0;
 
   public double angleFromFacingDegrees(PlayerPose pose, Vec3 point) {
     Vec3 offset = point.minus(pose.position()).horizontal();
@@ -38,6 +45,15 @@ public final class CombatGeometry {
     requirePositiveDistance(distanceBlocks);
     Vec3 away = awayDirection(mobPosition, dangerPosition);
     return mobPosition.plus(away.times(distanceBlocks));
+  }
+
+  public List<Vec3> coverCandidates(Vec3 mobPosition, Vec3 dangerPosition, double radiusBlocks) {
+    requirePositiveDistance(radiusBlocks);
+    Vec3 away = awayDirection(mobPosition, dangerPosition);
+    Vec3 center = new Vec3(dangerPosition.x(), mobPosition.y(), dangerPosition.z());
+    List<Vec3> candidates = new ArrayList<>(coverRing(away, center, radiusBlocks));
+    candidates.addAll(coverRing(away, center, radiusBlocks + COVER_OUTER_RING_EXTRA_BLOCKS));
+    return List.copyOf(candidates);
   }
 
   public Vec3 predictedAimPoint(Vec3 shooterEye, Vec3 aimPoint, Vec3 movementPerTick) {
@@ -78,6 +94,12 @@ public final class CombatGeometry {
       return DEFAULT_RETREAT_DIRECTION;
     }
     return away.normalized();
+  }
+
+  private static List<Vec3> coverRing(Vec3 away, Vec3 center, double radiusBlocks) {
+    return COVER_FAN_DEGREES.stream()
+        .map(degrees -> center.plus(rotateAroundVertical(away, degrees).times(radiusBlocks)))
+        .toList();
   }
 
   private static void requirePositiveDistance(double distanceBlocks) {
