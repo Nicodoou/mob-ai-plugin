@@ -314,7 +314,7 @@ En el constructor de la prueba se suma `activeGroups.join(groupId(1), mob(2), Mo
 | `arrowInFlightStaysOpenUntilTheTimeout` | sin contacto: `closeProjectiles(TICK + 59, 60, VALID)` vacío y `openAttempts()` 1; en `TICK + 60`: `Miss`, regla 8, con `trace().facts().timedOut()` `true` |
 | `lateLandingAfterTheTimeoutIsIgnored` | cerrado por plazo en `TICK + 60`; después `recordProjectileContact(arrow(1), TARGET)` devuelve `false` y `targetOf(arrow(1))` está vacío |
 | `damageToAnotherPlayerIsNotRecorded` | `recordProjectileHit(arrow(1), otherPlayer, 4.0, false, false)` devuelve `false`; contacto `OTHER_ENTITY`: `Miss`, regla 8 |
-| `invalidTargetIsNeutral` | contacto `TARGET` y daño 4.0, `closeProjectiles` con `(mob, target) -> false`: `Neutral(TARGET_INVALID)`, regla 1 |
+| `invalidTargetOfAnArrowIsNeutral` | contacto `TARGET` y daño 4.0, `closeProjectiles` con `(mob, target) -> false`: `Neutral(TARGET_INVALID)`, regla 1 |
 | `severalArrowsCloseInOpeningOrder` | `arrow(1)` y `arrow(2)` abiertas en ese orden, las dos con contacto `BLOCK`: dos clausuras, la primera con `trace().facts().attemptId()` menor que la segunda |
 | `onlyTheFirstContactCounts` | contacto `ALLY` y después `TARGET`, con daño 4.0 al objetivo: `Neutral(ALLY_HIT)`, regla 4 (el primer contacto manda) |
 | `sameArrowCannotOpenTwice` | segundo `openProjectile(shot(arrow(1), false))`: `IllegalStateException` con `Projectile 00000000-0000-0003-0000-000000000001 already has an open attempt` |

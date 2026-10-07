@@ -313,3 +313,11 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código idéntico a la especificación. 691 pruebas, con `BrainInvariantsTest` en verde. Las 3 roturas del WP mordieron (la primera por una excepción: con la regla vieja el cupo de zombies da negativo; mi tabla esperaba otro valor, pero la prueba falla igual). Las mías también: un zombie de menos (`halfOfEachKindFlanksTheMostSideways` y otras) y redondear las arañas para arriba (`anOddOneOutFlankerIsAZombie`). CI verde.
 
 **Opinión del código.** Lo bueno: la regla cabe en dos líneas y las referencias del WP la cubren entera, incluido el sobrante. Lo flojo: nada relevante. Riesgo: se juzga en el juego junto con el golpe paciente.
+
+## WP-24A — Rastreo de flechas (PR #38, Sonnet)
+
+**Qué hizo.** `AttackTracker` sigue intentos de proyectil por el UUID de la flecha (`openProjectile`, `recordProjectileContact`, `recordProjectileHit`, `targetOf`, `closeProjectiles`), con `OpenProjectile`, `ProjectileOpening`, `ProjectileHit`, `ProjectileClosure` y `TargetValidity`. `ProjectileListener` anota contacto (objetivo, bloque, aliado u otra entidad) y daño; `ProjectileResolver` cierra en cada tick las flechas que cayeron o vencieron y las manda a la traza.
+
+**Revisión.** Código conforme. Un desvío aceptado: la prueba `invalidTargetIsNeutral` chocaba con una del cuerpo a cuerpo con el mismo nombre (error mío de especificación); se llama `invalidTargetOfAnArrowIsNeutral` y corregí el WP. 702 pruebas; las 4 roturas del WP mordieron y las mías también: no sacar el intento al cerrar (`lateLandingAfterTheTimeoutIsIgnored`), perder la marca de vencida (`arrowInFlightStaysOpenUntilTheTimeout`) y abrir dos veces la misma flecha (`sameArrowCannotOpenTwice`). CI verde.
+
+**Opinión del código.** Lo bueno: el dominio no cambió; las flechas usan las mismas reglas y el mismo registro que el cuerpo a cuerpo, y lo que se puede probar sin Paper está probado. Lo flojo: `closeProjectiles` arma un `Resolution` por intento (trivial). Riesgo: el listener y el cierre recién se ven en el juego con el WP-24B.
