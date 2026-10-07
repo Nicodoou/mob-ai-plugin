@@ -470,6 +470,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Curación en retirada | `RecoveryHealer`, `HealSchedule` | Adaptadores |
 | Golpe paciente y tiempos de los goals | `PatientWait`, `PatientMove`, `PlayerStance`, `GoalTiming` | Adaptadores |
 | Formación de tiradores y línea de tiro | `ShooterFormation`, `ShooterQuery`, `CombatGeometry.isLineOfFireClear`, `clearLane` | Dominio |
+| Esqueletos en altura | `HighGroundFinder`, `HighGroundRanking`, `PerchRequest`, `CombatGeometry.perchCandidates` | Adaptadores y dominio |
 | Rastreo de flechas | `ProjectileOpening`, `ProjectileHit`, `ProjectileClosure`, `TargetValidity`, `OpenProjectile`, `ProjectileListener`, `ProjectileResolver` | Adaptadores |
 | Esqueletos: distancia, ritmo, tiro oportuno, puntería y armas | `ShootGoal`, `RangeSituation`, `RangeMove`, `ShotRhythm`, `OpportunisticWait`, `OpportunisticMove`, `TargetFocus`, `ShotAim`, `ShotRequest`, `ShotParts`, `BowShooter`, `Weapons` | Adaptadores |
 | Grupo en retirada que no planifica (CT-13) | `RetreatRule.isGroupRetreated`, `PlanLifecycle.regroupWithoutPlan` y `restartRegroupWindow`, `DecisionTrace.stillRetreated` | Dominio |
