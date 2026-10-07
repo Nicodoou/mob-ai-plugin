@@ -1,12 +1,10 @@
 package io.github.nicodoou.mobai.adapter.snapshot;
 
 import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
-import io.github.nicodoou.mobai.domain.geometry.PlayerPose;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.Member;
 import io.github.nicodoou.mobai.domain.settings.GroupSettings;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
-import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
@@ -20,7 +18,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -64,7 +61,7 @@ public final class SnapshotFactory {
     return new MobSnapshot(
         mob.member().id(),
         mob.member().kind(),
-        position(mob.entity().getLocation()),
+        PoseReader.positionOf(mob.entity().getLocation()),
         EntityReadings.clampHealth(mob.entity().getHealth(), maxHealth),
         maxHealth);
   }
@@ -94,12 +91,10 @@ public final class SnapshotFactory {
 
   private PlayerSnapshot playerSnapshot(Player player) {
     PlayerId id = new PlayerId(player.getUniqueId());
-    Vec3 position = position(player.getLocation());
-    Vec3 facing = EntityReadings.facingFromYaw(player.getLocation().getYaw());
     double maxHealth = translator.maxHealth(player);
     return new PlayerSnapshot(
         id,
-        new PlayerPose(position, facing),
+        PoseReader.poseOf(player),
         movement.movementPerTick(id),
         EntityReadings.clampHealth(player.getHealth(), maxHealth),
         player.getAbsorptionAmount(),
@@ -109,10 +104,6 @@ public final class SnapshotFactory {
         translator.protectionFactor(player),
         translator.effectLevels(player),
         player.isBlocking());
-  }
-
-  private static Vec3 position(Location location) {
-    return new Vec3(location.getX(), location.getY(), location.getZ());
   }
 
   private record LoadedMob(Member member, Mob entity) {}

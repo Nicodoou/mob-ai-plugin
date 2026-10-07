@@ -21,9 +21,10 @@ import io.github.nicodoou.mobai.adapter.debug.TraceWriter;
 import io.github.nicodoou.mobai.adapter.debug.WitnessParts;
 import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
+import io.github.nicodoou.mobai.adapter.goal.GoalTools;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
-import io.github.nicodoou.mobai.adapter.goal.MeleeTools;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
+import io.github.nicodoou.mobai.adapter.goal.Waypoints;
 import io.github.nicodoou.mobai.adapter.listener.DamageListener;
 import io.github.nicodoou.mobai.adapter.listener.DeathListener;
 import io.github.nicodoou.mobai.adapter.listener.EntityLifecycleListener;
@@ -41,6 +42,8 @@ import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
 import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
 import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
+import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
+import io.github.nicodoou.mobai.domain.geometry.FlankFormation;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -147,8 +150,12 @@ public record AdapterServices(
 
   private static GoalInstaller goalInstaller(Plugin plugin, CoreServices core, SharedParts parts) {
     MeleeAttacker attacker = new MeleeAttacker(parts.tracker(), core.clock(), parts.debug().hub());
-    MeleeTools melee = new MeleeTools(attacker, core.clock());
-    return new GoalInstaller(new GoalContext(plugin, parts.roles(), melee), parts.translator());
+    CombatGeometry geometry = new CombatGeometry();
+    Waypoints waypoints =
+        new Waypoints(
+            geometry, new FlankFormation(geometry), core.settings().section(MobAiSettings::attack));
+    GoalTools tools = new GoalTools(attacker, core.clock(), waypoints);
+    return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
   }
 
   private static DecisionScheduler decisionScheduler(
