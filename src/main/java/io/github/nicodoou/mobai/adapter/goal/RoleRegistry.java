@@ -1,11 +1,14 @@
 package io.github.nicodoou.mobai.adapter.goal;
 
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.MobId;
+import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /** The order each mob follows until the next decision; goals only read it. */
 public final class RoleRegistry {
@@ -17,6 +20,20 @@ public final class RoleRegistry {
 
   public Optional<RoleAssignment> assignmentOf(MobId mob) {
     return Optional.ofNullable(assignments.get(mob));
+  }
+
+  public Set<MobId> mobsWith(Role role, PlayerId target) {
+    return assignments.values().stream()
+        .filter(order -> order.role() == role && order.target().equals(Optional.of(target)))
+        .map(RoleAssignment::mob)
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
+  public Set<MobId> recoveringMobs() {
+    return assignments.values().stream()
+        .filter(RoleAssignment::recovering)
+        .map(RoleAssignment::mob)
+        .collect(Collectors.toUnmodifiableSet());
   }
 
   public void clear(MobId mob) {

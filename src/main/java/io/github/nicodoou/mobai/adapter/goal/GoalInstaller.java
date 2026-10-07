@@ -31,7 +31,9 @@ public final class GoalInstaller {
     goals.removeAllGoals(mob, GoalType.MOVE);
     goals.removeAllGoals(mob, GoalType.LOOK);
     goals.removeAllGoals(mob, GoalType.TARGET);
+    // Only one runs at a time: each one stays active only while the order has its role.
     goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, kind.get(), context));
+    goals.addGoal(mob, GOAL_PRIORITY, new FlankGoal(mob, kind.get(), context));
     return true;
   }
 

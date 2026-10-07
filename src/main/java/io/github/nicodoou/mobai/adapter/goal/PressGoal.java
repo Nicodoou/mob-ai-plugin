@@ -3,17 +3,12 @@ package io.github.nicodoou.mobai.adapter.goal;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
-import io.github.nicodoou.mobai.adapter.tracker.TargetChecks;
-import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.Attack;
-import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
-import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -34,7 +29,7 @@ public final class PressGoal implements Goal<Mob> {
     this.kind = Objects.requireNonNull(kind, "PressGoal.kind");
     this.context = Objects.requireNonNull(context, "PressGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "press"));
-    this.rhythm = new MeleeRhythm(context.melee().clock());
+    this.rhythm = new MeleeRhythm(context.tools().clock());
   }
 
   @Override
@@ -68,14 +63,8 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private Optional<Player> currentTarget() {
-    return context
-        .roles()
-        .assignmentOf(new MobId(mob.getUniqueId()))
-        .filter(order -> order.role() == Role.PRESS)
-        .flatMap(RoleAssignment::target)
-        .map(PlayerId::value)
-        .map(Bukkit::getPlayer)
-        .filter(player -> TargetChecks.isValidTarget(player, mob));
+    return GoalOrders.orderFor(mob, context.roles(), Role.PRESS)
+        .flatMap(order -> GoalOrders.validTarget(order, mob));
   }
 
   private void pressOn(Player target) {
@@ -97,7 +86,7 @@ public final class PressGoal implements Goal<Mob> {
     if (!rhythm.canStrike(distanceBlocks)) {
       return;
     }
-    context.melee().attacker().strike(mob, target, executedAttack());
+    context.tools().attacker().strike(mob, target, executedAttack());
     rhythm.markStrike();
   }
 

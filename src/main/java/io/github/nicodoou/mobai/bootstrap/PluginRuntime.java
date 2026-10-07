@@ -69,6 +69,7 @@ public final class PluginRuntime {
     long now = core.clock().currentTick();
     adapters.movementSampler().sampleOnlinePlayers();
     adapters.decisionScheduler().tick(now);
+    adapters.recoveryHealer().tick(now);
     adapters
         .persistenceScheduler()
         .tick(now, core.settings().current().persistence().saveIntervalTicks());
