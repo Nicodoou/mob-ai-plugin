@@ -138,7 +138,8 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-27 | Validación del MVP | Puerta E6 | Nico + Opus | Sesiones de prueba, medición con Spark e informe para G1 |
 | WP-28A | Estado completo y azar grabado | WP-15 | Opus | `GroupCapture`, captura y restauración del ciclo y la amenaza, `RecordingRandomSource`, `ReplayRandomSource`, `BrainParts.standard` (CT-12) |
 | WP-28B | Incidente, JSON y reproducción | WP-28A | Sonnet | `IncidentReport`, `IncidentJson` y `TraceReplay`; cierra la etapa E4 |
-| WP-29 | Trazas en el server | WP-21 | Sonnet | `TraceWriter`, `FlightRecorder`, `IncidentWriter`, `RecordingRandomSource`, `/mobai debug`; cierra la etapa E5 |
+| WP-29A | Incidentes en el server | WP-20B | Sonnet | `DecisionWitness`, `FlightRecorder`, `TraceHub`, `IncidentWriter` |
+| WP-29B | Trazas y log de debug | WP-29A, WP-21 | Sonnet | `TraceWriter`, `DebugLog`, niveles por grupo, `/mobai debug`; cierra la etapa E5 |
 
 ```mermaid
 flowchart LR

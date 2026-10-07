@@ -207,3 +207,11 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código conforme al WP, 10 pruebas, CI verde, 4 roturas del WP con su prueba y 2 propias (sin chequeo de alcance; registro que no reemplaza órdenes) que fallaron.
 
 **Opinión del código.** Lo bueno: chico y legible; ningún intento queda abierto aunque `attack()` falle. Lo flojo: `executedAttack` mapea `SKELETON` a golpe frontal para cubrir el `switch`, aunque nunca pasa (el instalador no le da el goal); es inalcanzable pero confuso. Riesgo: nada de esto se ve sin server; la puerta E5 lo verifica.
+
+## WP-20A — Schedulers y aplicador de decisiones (PR #26, Sonnet)
+
+**Qué hizo.** `DecisionCadence` (cada grupo decide una vez por ventana, con un desfase fijo que reparte la carga), `DecisionApplier`, `DecisionParts`, `GroupDecider` (una falla de un grupo no frena a los demás), `DecisionScheduler`, `PersistenceScheduler` (copia en el hilo principal, escritura en un hilo propio, último guardado al apagar) y `MovementSampler`; `RoleRegistry.retainOnly`.
+
+**Revisión.** El trabajo quedó cortado por un apagado de la PC con los commits ya pusheados; el subagente retomó desde las roturas. Código conforme al WP; 13 pruebas; las 4 roturas del WP y 2 propias (aplicador que no indexa las órdenes; escritura que relanza el error) fallaron. `groupsAreSpreadOverTheWindow` quedó en 10 ticks distintos con los UUID reales (corrección permitida). CI verde.
+
+**Opinión del código.** Lo bueno: el guardado es seguro entre hilos (la copia son records inmutables) y nunca puede tumbar el server. Lo flojo: `GroupDecider`, `DecisionScheduler` y `MovementSampler` no tienen prueba sin server. Riesgo: el reparto usa `hashCode` del UUID; con muchos grupos de UUID parecidos podría agruparse, pero con UUID aleatorios (v4) se reparte bien.
