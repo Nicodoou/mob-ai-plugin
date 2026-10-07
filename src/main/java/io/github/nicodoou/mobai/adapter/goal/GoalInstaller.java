@@ -34,6 +34,7 @@ public final class GoalInstaller {
     // Only one runs at a time: each one stays active only while the order has its role.
     goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, kind.get(), context));
     goals.addGoal(mob, GOAL_PRIORITY, new FlankGoal(mob, kind.get(), context));
+    goals.addGoal(mob, GOAL_PRIORITY, new RetreatGoal(mob, context));
     return true;
   }
 
