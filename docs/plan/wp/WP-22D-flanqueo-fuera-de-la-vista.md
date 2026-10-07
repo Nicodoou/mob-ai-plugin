@@ -55,6 +55,7 @@ Por qué fallaba (`verificacion-e6.md`, corrida 1):
 | Modificar | `src/main/java/io/github/nicodoou/mobai/bootstrap/AdapterServices.java` |
 | Modificar | `src/main/resources/config.yml` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/testsupport/TestSettings.java` |
+| Modificar | `src/test/java/io/github/nicodoou/mobai/adapter/config/ConfigLoaderTest.java` (solo el `3.0` de `flankDistanceBlocks` del valor esperado pasa a `4.0`: compara contra el `config.yml` incluido) |
 | Crear | `src/test/java/io/github/nicodoou/mobai/domain/geometry/FlankManeuverTest.java` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/domain/geometry/CombatGeometryTest.java` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/adapter/goal/WaypointsTest.java` |
