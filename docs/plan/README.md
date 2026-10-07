@@ -377,6 +377,7 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D30. Calibración** (CT-09, puerta E3, 5 de octubre). Velocidad de aprendizaje 1,0 y vida media 12.000 ticks.
 - **D31. Ids de grupo por puerto** (CT-10, WP-12). `GroupIdSource` da los ids de grupo nuevos, sin gastar tiradas de `RandomSource`.
 - **D33. Reproducción exacta** (CT-12, WP-28A/B). El dominio copia y restaura el estado completo de un grupo; el azar se graba y se repite; `BrainParts.standard` es el único armado del cerebro.
+- **D34. Sin planes con el grupo en retirada** (CT-13, WP-22). Un grupo que sale de reagrupar sin haberse recuperado no abre un plan que la memoria registre como fracaso.
 - **D32. Resultado del plan por evento** (CT-11, WP-13). Todo plan cerrado llega a la memoria por `PlanClosed` → `ClosePlan`; `RemoveMember` distingue muerte de despawn para la ventana de reagrupamiento.
 
 ## 8. Partes siguientes
