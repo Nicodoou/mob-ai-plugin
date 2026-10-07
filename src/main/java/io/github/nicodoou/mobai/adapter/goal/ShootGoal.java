@@ -8,23 +8,33 @@ import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
+import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
+import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
-/** SHOOT: keep the target in bow range and in sight, and loose the shot the brain chose. */
+/** SHOOT: hold its place in the ring round the target, and loose the shot the brain chose. */
 public final class ShootGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
   private static final double WALK_SPEED = 1.0;
 
   // Paper's attack cooldown is 1 once the player's weapon has fully recharged.
   private static final float FULL_ATTACK_COOLDOWN = 1.0f;
+
+  // Close enough to its place: walking the last blocks only makes it wobble.
+  private static final double SLOT_TOLERANCE_BLOCKS = 2.0;
 
   private final Mob mob;
   private final GoalKey<Mob> key;
@@ -83,34 +93,79 @@ public final class ShootGoal implements Goal<Mob> {
 
   private void engage(RoleAssignment order, Player target) {
     mob.lookAt(target);
-    keepInRangeIfDue(target);
+    keepPositionIfDue(target);
     shootIfReady(order, target);
   }
 
-  private void keepInRangeIfDue(Player target) {
+  private void keepPositionIfDue(Player target) {
     if (!rhythm.shouldRepath()) {
       return;
     }
-    AttackSettings attack = attack();
-    RangeSituation situation = new RangeSituation(distanceTo(target), mob.hasLineOfSight(target));
-    switch (situation.nextMove(attack.shootMinDistanceBlocks(), attack.shootMaxDistanceBlocks())) {
-      case APPROACH -> mob.getPathfinder().moveTo(target, WALK_SPEED);
-      case BACK_OFF -> backOffFrom(target);
-      case HOLD -> mob.getPathfinder().stopPathfinding();
+    if (mob.hasLineOfSight(target)) {
+      walkToFiringSpot(target);
+    } else {
+      mob.getPathfinder().moveTo(target, WALK_SPEED);
     }
     rhythm.markRepath();
   }
 
-  private void backOffFrom(Player target) {
-    Vec3 point = context.tools().waypoints().backOffPoint(mobPosition(), position(target));
+  private void walkToFiringSpot(Player target) {
+    Vec3 spot = firingSpotFor(target);
+    if (mobPosition().minus(spot).horizontal().length() <= SLOT_TOLERANCE_BLOCKS) {
+      mob.getPathfinder().stopPathfinding();
+      return;
+    }
     mob.getPathfinder()
-        .moveTo(new Location(mob.getWorld(), point.x(), point.y(), point.z()), WALK_SPEED);
+        .moveTo(new Location(mob.getWorld(), spot.x(), spot.y(), spot.z()), WALK_SPEED);
+  }
+
+  // Its place in the ring, or the nearest lane round the target where no ally is in the way.
+  private Vec3 firingSpotFor(Player target) {
+    Vec3 slot = waypoints().shooterSlot(position(target), self(), shooterPositions(target));
+    Vec3 eyeSlot = new Vec3(slot.x(), slot.y() + mob.getEyeHeight(), slot.z());
+    return waypoints()
+        .clearLane(eyeSlot, PoseReader.bodyCenterOf(target), allyCenters(target))
+        .map(lane -> new Vec3(lane.x(), lane.y() - mob.getEyeHeight(), lane.z()))
+        .orElse(slot);
+  }
+
+  // Every shooter of this target loaded in its world, this mob included.
+  private Map<MobId, Vec3> shooterPositions(Player target) {
+    Map<MobId, Vec3> positions = new HashMap<>();
+    for (MobId id : context.roles().mobsWith(Role.SHOOT, new PlayerId(target.getUniqueId()))) {
+      if (Bukkit.getEntity(id.value()) instanceof Mob shooter
+          && shooter.isValid()
+          && shooter.getWorld().equals(target.getWorld())) {
+        positions.put(id, PoseReader.positionOf(shooter.getLocation()));
+      }
+    }
+    positions.put(self(), mobPosition());
+    return positions;
+  }
+
+  // Every other mob ordered against this target: any of them can take the arrow.
+  private List<Vec3> allyCenters(Player target) {
+    List<Vec3> centers = new ArrayList<>();
+    for (MobId id : context.roles().mobsTargeting(new PlayerId(target.getUniqueId()))) {
+      if (!id.equals(self())
+          && Bukkit.getEntity(id.value()) instanceof Mob ally
+          && ally.isValid()
+          && ally.getWorld().equals(target.getWorld())) {
+        centers.add(PoseReader.bodyCenterOf(ally));
+      }
+    }
+    return centers;
   }
 
   private void shootIfReady(RoleAssignment order, Player target) {
     if (!shots.canShoot()
         || !mob.hasLineOfSight(target)
-        || distanceTo(target) > attack().shootMaxDistanceBlocks()) {
+        || distanceTo(target) > attack().shootMaxDistanceBlocks()
+        || !waypoints()
+            .isLineOfFireClear(
+                PoseReader.positionOf(mob.getEyeLocation()),
+                PoseReader.bodyCenterOf(target),
+                allyCenters(target))) {
       opportunism.reset();
       return;
     }
@@ -149,6 +204,14 @@ public final class ShootGoal implements Goal<Mob> {
       return TargetFocus.ELSEWHERE;
     }
     return TargetFocus.ON_SHOOTER;
+  }
+
+  private MobId self() {
+    return new MobId(mob.getUniqueId());
+  }
+
+  private Waypoints waypoints() {
+    return context.tools().waypoints();
   }
 
   private AttackSettings attack() {

@@ -10,7 +10,6 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.Objects;
-import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -18,9 +17,6 @@ import org.bukkit.util.Vector;
 
 /** The only place that looses arrows; every arrow opens an attempt in the attack tracker. */
 public final class BowShooter {
-  // The middle of the player's body: arrows aimed at the feet hit the ground first.
-  private static final double BODY_CENTER_FRACTION = 0.5;
-
   private final AttackTracker tracker;
   private final ServerClock clock;
   private final ShotParts parts;
@@ -40,7 +36,7 @@ public final class BowShooter {
                 new ShotRequest(
                     attack,
                     PoseReader.positionOf(shooter.getEyeLocation()),
-                    centerOf(target),
+                    PoseReader.bodyCenterOf(target),
                     parts.movement().movementPerTick(targetId)));
     ArrowRotation rotation = parts.aim().rotationOf(velocity);
     Arrow arrow =
@@ -62,11 +58,5 @@ public final class BowShooter {
   private void prepare(Arrow arrow, ArrowRotation rotation) {
     arrow.setRotation(rotation.yaw(), rotation.pitch());
     parts.translator().forbidPickup(arrow);
-  }
-
-  private static Vec3 centerOf(Player target) {
-    Location feet = target.getLocation();
-    return new Vec3(
-        feet.getX(), feet.getY() + target.getHeight() * BODY_CENTER_FRACTION, feet.getZ());
   }
 }

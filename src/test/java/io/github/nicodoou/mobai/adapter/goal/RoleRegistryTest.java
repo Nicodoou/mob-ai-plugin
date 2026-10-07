@@ -81,6 +81,19 @@ class RoleRegistryTest {
   }
 
   @Test
+  void mobsTargetingIncludesEveryRole() {
+    PlayerId other = new PlayerId(new UUID(2, 2));
+    registry.assign(pressOrder(mob(1)));
+    registry.assign(shootOrder(mob(2)));
+    registry.assign(retreatOrder(mob(3), false));
+    registry.assign(flankOrder(mob(4), Optional.of(other)));
+
+    Set<MobId> targeting = registry.mobsTargeting(player);
+
+    assertThat(targeting).containsExactlyInAnyOrder(mob(1), mob(2));
+  }
+
+  @Test
   void recoveringMobsAreTheOnesBeingHealed() {
     registry.assign(retreatOrder(mob(1), true));
     registry.assign(retreatOrder(mob(2), false));
@@ -94,6 +107,11 @@ class RoleRegistryTest {
   private RoleAssignment flankOrder(MobId mob, Optional<PlayerId> target) {
     return new RoleAssignment(
         mob, Role.FLANK, target, Optional.of(Attack.ZOMBIE_FLANK_STRIKE), false);
+  }
+
+  private RoleAssignment shootOrder(MobId mob) {
+    return new RoleAssignment(
+        mob, Role.SHOOT, Optional.of(player), Optional.of(Attack.SKELETON_DIRECT_SHOT), false);
   }
 
   private RoleAssignment retreatOrder(MobId mob, boolean recovering) {

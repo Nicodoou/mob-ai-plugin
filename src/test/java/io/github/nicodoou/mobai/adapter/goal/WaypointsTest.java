@@ -72,12 +72,27 @@ class WaypointsTest {
   }
 
   @Test
-  void backOffPointReachesTheMinimumRange() {
-    Vec3 point = waypoints.backOffPoint(new Vec3(3, 64, 4), new Vec3(0, 64, 0));
+  void shooterSlotSitsMidwayInTheBowRange() {
+    Map<MobId, Vec3> shooters = Map.of(mob(1), new Vec3(0, 64, 5));
 
-    assertThat(point.x()).isCloseTo(4.8, within(TOLERANCE));
-    assertThat(point.y()).isCloseTo(64, within(TOLERANCE));
-    assertThat(point.z()).isCloseTo(6.4, within(TOLERANCE));
+    Vec3 slot = waypoints.shooterSlot(new Vec3(0, 64, 0), mob(1), shooters);
+
+    assertThat(slot.x()).isCloseTo(0, within(TOLERANCE));
+    assertThat(slot.y()).isCloseTo(64, within(TOLERANCE));
+    assertThat(slot.z()).isCloseTo(11.5, within(TOLERANCE));
+  }
+
+  @Test
+  void lineOfFireAndLanesComeFromTheGeometry() {
+    List<Vec3> blocking = List.of(new Vec3(0, 0, 10));
+    List<Vec3> allies = List.of(new Vec3(0, 65, 12));
+
+    Vec3 lane = waypoints.clearLane(new Vec3(0, 65, 25), new Vec3(0, 65, 0), allies).orElseThrow();
+
+    assertThat(waypoints.isLineOfFireClear(Vec3.ZERO, new Vec3(0, 0, 20), blocking)).isFalse();
+    assertThat(lane.x()).isCloseTo(-12.499999999999998, within(TOLERANCE));
+    assertThat(lane.y()).isCloseTo(65, within(TOLERANCE));
+    assertThat(lane.z()).isCloseTo(21.65063509461097, within(TOLERANCE));
   }
 
   @Test

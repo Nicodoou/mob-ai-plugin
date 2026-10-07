@@ -5,6 +5,8 @@ import io.github.nicodoou.mobai.domain.geometry.FlankManeuver;
 import io.github.nicodoou.mobai.domain.geometry.FlankQuery;
 import io.github.nicodoou.mobai.domain.geometry.FlankStep;
 import io.github.nicodoou.mobai.domain.geometry.PlayerPose;
+import io.github.nicodoou.mobai.domain.geometry.ShooterFormation;
+import io.github.nicodoou.mobai.domain.geometry.ShooterQuery;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
@@ -19,6 +21,7 @@ public final class Waypoints {
   private final CombatGeometry geometry;
   private final FlankManeuver maneuver;
   private final Supplier<AttackSettings> settings;
+  private final ShooterFormation formation = new ShooterFormation();
 
   public Waypoints(
       CombatGeometry geometry, FlankManeuver maneuver, Supplier<AttackSettings> settings) {
@@ -46,11 +49,18 @@ public final class Waypoints {
     return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
   }
 
-  /** Only for a mob closer than the minimum bow range: the point that takes it back to it. */
-  public Vec3 backOffPoint(Vec3 mobPosition, Vec3 dangerPosition) {
-    double missing =
-        settings.get().shootMinDistanceBlocks() - horizontalDistance(mobPosition, dangerPosition);
-    return geometry.retreatPoint(mobPosition, dangerPosition, missing);
+  public Vec3 shooterSlot(Vec3 center, MobId self, Map<MobId, Vec3> shooters) {
+    AttackSettings attack = settings.get();
+    double radius = (attack.shootMinDistanceBlocks() + attack.shootMaxDistanceBlocks()) / 2;
+    return formation.pointFor(new ShooterQuery(center, self, shooters, radius));
+  }
+
+  public Optional<Vec3> clearLane(Vec3 slot, Vec3 target, List<Vec3> allies) {
+    return geometry.clearLane(slot, target, allies);
+  }
+
+  public boolean isLineOfFireClear(Vec3 from, Vec3 to, List<Vec3> allies) {
+    return geometry.isLineOfFireClear(from, to, allies);
   }
 
   public List<Vec3> coverCandidates(Vec3 mobPosition, Vec3 dangerPosition) {
