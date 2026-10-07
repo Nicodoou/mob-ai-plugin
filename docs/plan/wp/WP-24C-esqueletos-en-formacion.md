@@ -40,7 +40,7 @@ La búsqueda de altura (CT-22) es el WP-24D y la andanada (CT-23), un WP propio.
    - el **ancla** es el tirador con el `MobId` más bajo: su puesto queda en la dirección en la que ya está respecto del jugador (rumbo horizontal: 0° hacia +Z, 90° hacia +X);
    - los demás siguen, en el orden en que ya están alrededor del jugador, girando desde el ancla; a igual rumbo, por `MobId`. Así nadie cruza por delante de otro;
    - el puesto `k` (el ancla es 0) está a `rumbo del ancla + k · 360° / n`, a la distancia del radio, a la altura del jugador.
-3. **Línea de tiro limpia:** la línea entre el ojo del tirador y el centro del cuerpo del jugador está limpia si **ningún aliado** está a menos de `LINE_OF_FIRE_CLEARANCE_BLOCKS` (1) de ese segmento. Se mide desde el centro del cuerpo del aliado. Aliados son todos los mobs con alguna orden contra ese mismo jugador (`RoleRegistry.mobsTargeting`), menos el tirador.
+3. **Línea de tiro limpia:** la línea va del ojo del tirador hasta **medio bloque antes** del centro del cuerpo del jugador (`ARROW_STOP_SHORT_BLOCKS`, 0,5: ahí la flecha ya chocó con su cuerpo). Está limpia si **ningún aliado** está a menos de `LINE_OF_FIRE_CLEARANCE_BLOCKS` (0,75) de ese segmento. Corrección de la revisión: con el segmento hasta el centro y 1 bloque de margen, un zombie pegado al jugador al costado o detrás bloqueaba todas las líneas, y los esqueletos no disparaban nunca. Se mide desde el centro del cuerpo del aliado. Aliados son todos los mobs con alguna orden contra ese mismo jugador (`RoleRegistry.mobsTargeting`), menos el tirador.
 4. **Carril libre:** si desde su puesto la línea no está limpia, el tirador prueba el puesto girado alrededor del jugador 30°, −30°, 60°, −60°, 90° y −90°, en ese orden, a la misma distancia y altura. Va al primero con la línea limpia. Si no hay ninguno, va a su puesto igual y no dispara.
 5. **Movimiento** (cada 10 ticks del reloj):
    - si no ve al jugador, se acerca a él, como hasta ahora;
@@ -157,15 +157,27 @@ El ancla siempre es el primero de la lista (su giro desde sí mismo es 0). Si do
 ### `CombatGeometry.java`: línea de tiro y carril libre
 
 ```java
-  // An ally this close to the line between a shooter's eye and its target would take the arrow.
-  static final double LINE_OF_FIRE_CLEARANCE_BLOCKS = 1.0;
+  // An ally this close to the line between a shooter's eye and its target would take the arrow
+  // (a mob's half width plus an arrow's, with room to spare).
+  static final double LINE_OF_FIRE_CLEARANCE_BLOCKS = 0.75;
+  // The arrow meets the target's body before its center: allies beside or behind it are safe.
+  static final double ARROW_STOP_SHORT_BLOCKS = 0.5;
   // Turns tried around the target, nearest first, to find a lane without allies.
   private static final List<Double> LANE_TURNS_DEGREES =
       List.of(0.0, 30.0, -30.0, 60.0, -60.0, 90.0, -90.0);
 
   public boolean isLineOfFireClear(Vec3 from, Vec3 to, List<Vec3> allies) {
+    Vec3 impact = shortOf(from, to);
     return allies.stream()
-        .noneMatch(ally -> distanceToSegment(ally, from, to) < LINE_OF_FIRE_CLEARANCE_BLOCKS);
+        .noneMatch(ally -> distanceToSegment(ally, from, impact) < LINE_OF_FIRE_CLEARANCE_BLOCKS);
+  }
+
+  private static Vec3 shortOf(Vec3 from, Vec3 to) {
+    Vec3 line = to.minus(from);
+    if (line.length() <= ARROW_STOP_SHORT_BLOCKS) {
+      return from;
+    }
+    return to.minus(line.normalized().times(ARROW_STOP_SHORT_BLOCKS));
   }
 
   /** The first spot round the target, from {@code slot}, with a clear line of fire to it. */
@@ -300,14 +312,16 @@ Jugador en `(0,64,0)`, radio 25, tolerancia `1e-9`. `mob(n)` = `new MobId(new UU
 | `queryRejectsASelfThatIsNotAShooter` | `self` `mob(9)`, tiradores `{mob(1)}` | `IllegalArgumentException`: `ShooterQuery.self must be one of the shooters, got 00000000-0000-0000-0000-000000000009` |
 | `queryRejectsNonPositiveRadius` | radio 0 | `IllegalArgumentException`: `ShooterQuery.radiusBlocks must be a positive number, got 0.0` |
 
-### `CombatGeometryTest` (+6)
+### `CombatGeometryTest` (+8)
 
 | Prueba | Verifica |
 | --- | --- |
 | `lineWithoutAlliesIsClear` | de `(0,0,0)` a `(0,0,20)`, sin aliados: `true` |
 | `allyOnTheLineBlocksIt` | aliado en `(0,0,10)`: `false` |
 | `allyBesideTheLineDoesNotBlockIt` | aliado en `(1.2,0,10)`: `true` |
-| `allyHuggingTheTargetBlocksTheLine` | aliado en `(0.5,0,19.5)`: `false` |
+| `allyHuggingTheTargetBlocksTheLine` | aliado en `(0.5,0,19.5)` (delante del jugador): `false` |
+| `allyBesideTheTargetDoesNotBlock` | aliado en `(0.7,0,20)` (al costado del jugador; a 0,86 del segmento): `true` |
+| `allyBehindTheTargetDoesNotBlock` | aliado en `(0,0,20.7)` (detrás del jugador; a 1,2 del segmento): `true` |
 | `clearLaneTurnsAroundTheTarget` | puesto `(0,65,25)`, objetivo `(0,65,0)`, aliado en `(0,65,12)`: `(-12.499999999999998, 65, 21.65063509461097)` (el giro de 30°) |
 | `noClearLaneWhenAnAllyStandsOnTheTarget` | aliado en `(0,65,0.5)`: vacío |
 
@@ -326,7 +340,7 @@ Con `TestSettings` (mínimo 8, máximo 15: radio 11,5).
 | --- | --- |
 | `mobsTargetingIncludesEveryRole` | `PRESS` de `mob(1)` y `SHOOT` de `mob(2)` sobre `player`, `RETREAT` de `mob(3)` sin objetivo, `FLANK` de `mob(4)` sobre otro jugador: `mobsTargeting(player)` es exactamente `{mob(1), mob(2)}` |
 
-Total: **16 pruebas nuevas**, 1 borrada en `WaypointsTest` y el archivo `RangeSituationTest` borrado.
+Total: **18 pruebas nuevas**, 1 borrada en `WaypointsTest` y el archivo `RangeSituationTest` borrado.
 
 ## Pruebas que muerden
 
@@ -373,7 +387,7 @@ Con `/mobai debug all full`, de noche, con `spawngroup`:
 ## Aceptación
 
 - [ ] Exactamente los archivos de la tabla, con las firmas especificadas.
-- [ ] Las 16 pruebas nuevas con sus nombres exactos, en verde; la suite completa en verde.
+- [ ] Las 18 pruebas nuevas con sus nombres exactos, en verde; la suite completa en verde.
 - [ ] Las 4 roturas mordieron.
 - [ ] `docs/actualizar-paper.md` coincide con los imports de Paper.
 - [ ] Build, cobertura y CI en verde.
