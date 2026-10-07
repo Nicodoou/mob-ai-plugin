@@ -67,6 +67,39 @@ class RoleRegistryTest {
     assertThat(registry.size()).isEqualTo(1);
   }
 
+  @Test
+  void mobsWithFiltersByRoleAndTarget() {
+    PlayerId other = new PlayerId(new UUID(2, 2));
+    registry.assign(pressOrder(mob(1)));
+    registry.assign(flankOrder(mob(2), Optional.of(player)));
+    registry.assign(flankOrder(mob(3), Optional.of(other)));
+    registry.assign(flankOrder(mob(4), Optional.empty()));
+
+    Set<MobId> flankers = registry.mobsWith(Role.FLANK, player);
+
+    assertThat(flankers).containsExactlyInAnyOrder(mob(2));
+  }
+
+  @Test
+  void recoveringMobsAreTheOnesBeingHealed() {
+    registry.assign(retreatOrder(mob(1), true));
+    registry.assign(retreatOrder(mob(2), false));
+    registry.assign(pressOrder(mob(3)));
+
+    Set<MobId> recovering = registry.recoveringMobs();
+
+    assertThat(recovering).containsExactlyInAnyOrder(mob(1));
+  }
+
+  private RoleAssignment flankOrder(MobId mob, Optional<PlayerId> target) {
+    return new RoleAssignment(
+        mob, Role.FLANK, target, Optional.of(Attack.ZOMBIE_FLANK_STRIKE), false);
+  }
+
+  private RoleAssignment retreatOrder(MobId mob, boolean recovering) {
+    return new RoleAssignment(mob, Role.RETREAT, Optional.empty(), Optional.empty(), recovering);
+  }
+
   private RoleAssignment pressOrder(MobId mob) {
     return new RoleAssignment(
         mob, Role.PRESS, Optional.of(player), Optional.of(Attack.ZOMBIE_FRONT_STRIKE), false);
