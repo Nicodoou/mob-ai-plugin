@@ -16,4 +16,12 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
 - **Ninguno de los tres registró un solo ataque mientras flanqueaba.** En `mobai-debug.log` hay 0 líneas `zombie.flank_strike`.
 - La traza no tiene posiciones: no se puede saber si los flanqueadores se movían.
 
-**Estado.** B-02 abierto: los flanqueadores no golpean nunca. Faltan datos para separar las hipótesis (ver la respuesta a Nico del 7 oct). Además, Nico describió cómo tiene que ser el flanqueo: dos comportamientos, uno «triangular» moviéndose alrededor del jugador y otro buscando la espalda.
+### B-02 — Los flanqueadores nunca golpean
+
+- **Hipótesis.**
+  - **H1 (confirmada por Nico: los zombies nunca se quedaron quietos, pero nunca parecían flanquear):** el punto de flanqueo se calcula según la mirada del jugador; si el jugador gira para seguir al mob, el punto gira con él y el mob da vueltas sin salir nunca del arco del escudo.
+  - H2 (descartada por lo mismo): el goal de flanqueo nunca arranca; los flanqueadores se quedarían quietos.
+  - H3 (descartada por lo mismo): el camino al punto falla; se quedarían quietos o darían pasitos.
+  - **H4 (encontrada al releer el código):** el punto de flanqueo está a 3 bloques y el alcance de golpe es de 2: un flanqueador que llega a su punto no puede golpear.
+- **Diseño nuevo (Nico):** el jugador tiene un abanico de vista y alcance. El flanqueador primero sale de la vista por el camino más corto sin meterse en el alcance, y recién fuera de la vista busca la espalda. La vista son los 90° más un margen para un movimiento corto del mouse.
+- **Arreglo:** WP-22D (CT-16). La regresión de la H4 es `FlankManeuverTest.closeInPointIsWithinStrikeReach`.

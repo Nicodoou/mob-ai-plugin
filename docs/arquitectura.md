@@ -466,6 +466,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Flanqueo y retirada: goals, puntos de destino y pose del jugador | `FlankGoal`, `RetreatGoal`, `Waypoints`, `PoseReader` | Adaptadores |
 | Retirada a cubierto: qué hace el mob y dónde esconderse | `RetreatSituation`, `RetreatMove`, `CoverFinder`, `CombatGeometry.coverCandidates` | Adaptadores y dominio |
 | Formación de flanqueo | `FlankFormation`, `FlankQuery` | Dominio |
+| Flanqueo fuera de la vista (CT-16) | `FlankManeuver`, `FlankStep`, `CombatGeometry.isOutOfSight` | Dominio |
 | Curación en retirada | `RecoveryHealer`, `HealSchedule` | Adaptadores |
 | Grupo en retirada que no planifica (CT-13) | `RetreatRule.isGroupRetreated`, `PlanLifecycle.regroupWithoutPlan` y `restartRegroupWindow`, `DecisionTrace.stillRetreated` | Dominio |
 | Reparto de decisiones, decidir un grupo, muestreo de movimiento | `DecisionCadence`, `DecisionParts`, `GroupDecider`, `MovementSampler` | Adaptadores |

@@ -34,7 +34,7 @@ Cada ataque es una forma distinta de enfrentar al jugador, así la memoria apren
 | Ataque (código) | Cómo es | Por qué existe |
 | --- | --- | --- |
 | Golpe frontal (`zombie.front_strike`) | Va directo y golpea apenas está en alcance | Es lo más rápido; funciona contra jugadores que no bloquean |
-| Golpe de flanco (`zombie.flank_strike`) | Se mueve hasta quedar a más de 90° del frente del jugador y recién ahí golpea | El escudo solo cubre el frente |
+| Golpe de flanco (`zombie.flank_strike`) | Esquiva fuera de la vista del jugador (más de 120° de su mirada) sin meterse en su alcance, y recién ahí se le pega a la espalda y golpea (CT-16) | El escudo solo cubre el frente, y lo que no ve no lo bloquea |
 | Golpe paciente (`zombie.patient_strike`) | Se queda en alcance y golpea cuando el jugador baja el escudo o termina su propio ataque, con espera máxima de 3 s | Castiga al jugador que alterna bloquear y atacar |
 
 ### Esqueleto

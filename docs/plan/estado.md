@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. **Falta la verificación en el juego de 22B y 22C** (la hace Nico; guion en la sección «Verificación en el server» de cada WP). Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
+2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D especificado, esperando la aprobación de Nico.** Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -48,6 +48,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-29B | Trazas y log de debug | E5 | mergeado | Sonnet | #30 | Niveles por grupo, `TraceWriter` JSON Lines, `DebugLog` legible para contar (catálogo), `/mobai debug <grupo|all> <nivel>`; se cuelga de `TraceHub` (WP-29A) |
 | WP-22A | Sin planes con el grupo en retirada y formación de flanqueo | E6 | mergeado | Sonnet | [#32](https://github.com/Nicodoou/mob-ai-plugin/pull/32) | CT-13 (opción 1) y CT-14 |
 | WP-22B | Goal de flanqueo y curación | E6 | mergeado | Sonnet | [#33](https://github.com/Nicodoou/mob-ai-plugin/pull/33) | Después del WP-22A. Golpe de flanco en `FlankGoal` (CT-14). Verificación en el server por Opus. Los goals miden el tiempo con el reloj del plugin (B-01) |
+| WP-22D | Flanqueo fuera de la vista | E6 | especificado | Sonnet | — | Arregla B-02 con el modelo de Nico (CT-16). Verificación en el juego por Nico |
 | WP-22C | Retirada a cubierto | E6 | mergeado | Sonnet | [#34](https://github.com/Nicodoou/mob-ai-plugin/pull/34) | Después del WP-22B. CT-15 (pedido de Nico). Verificación en el server por Opus, incluido el costo con varios mobs en retirada |
 | WP-23 | Golpe paciente | E6 | pendiente | Sonnet | — | El golpe de flanco ya llega en el WP-22B (CT-14). `PressGoal` registra `ZOMBIE_FRONT_STRIKE` (lo que ejecuta, no lo sugerido; WP-19): al agregar el golpe paciente, registrar el ataque ejecutado |
 | WP-24 | Esqueletos y proyectiles | E6 | pendiente | Sonnet | — | Hasta acá los esqueletos conservan sus goals vanilla (WP-19): `GoalInstaller` tiene que pasar a instalarles los nuestros. Mientras no registren, un grupo de solo esqueletos cierra planes con éxito 0 (puerta E5, corrida 5): verificar que deje de pasar. Ignorar impactos que llegan después del plazo |

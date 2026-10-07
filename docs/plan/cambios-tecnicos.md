@@ -18,6 +18,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-13](#ct-13--no-abrir-un-plan-con-el-grupo-todavía-en-retirada) No abrir un plan con el grupo todavía en retirada | 6 oct 2026 | Nico (puerta E5, corrida 2) | Regla elegida (opción 1); WP-22A |
 | [CT-14](#ct-14--formación-de-flanqueo-y-golpe-de-flanco-en-el-wp-22) Formación de flanqueo y golpe de flanco en el WP-22 | 7 oct 2026 | Opus (especificación del WP-22) | WP-22A y WP-22B |
 | [CT-15](#ct-15--retirada-a-cubierto) Retirada a cubierto | 7 oct 2026 | Nico | WP-22C |
+| [CT-16](#ct-16--flanqueo-fuera-de-la-vista) Flanqueo fuera de la vista | 7 oct 2026 | Nico (verificación del WP-22B, B-02) | WP-22D |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -238,3 +239,22 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 - Buscar el cubierto con un barrido de bloques alrededor: mucho más caro que 14 rayos y 3 caminos.
 
 **Riesgos.** El vidrio y las hojas tapan la vista (Minecraft corta la línea de visión en los bloques con colisión): un mob detrás de un vidrio se cree escondido. Con muchos mobs en retirada, cada búsqueda cuesta hasta 3 caminos cada 2 s por mob; se mira en la verificación en el server.
+
+## CT-16 — Flanqueo fuera de la vista
+
+**Qué cambia.** El modelo de flanqueo de Nico. El jugador tiene un abanico de vista y alcance; el flanqueador lo evita:
+1. **Vista:** el mob está a la vista si su ángulo respecto de la mirada del jugador es de 120° o menos (90° del escudo más 30° de margen para un movimiento corto del mouse).
+2. **Mientras lo ven, esquiva:** cada 10 ticks camina hacia la dirección 45° más allá de la suya (como máximo hasta 135°), de su mismo lado, al pie de la perpendicular, sin acercarse a menos de `attack.flank-distance-blocks` (ahora 4 por defecto, uno más que el alcance del jugador). Las patas sucesivas arman el recorrido «triangular».
+3. **Fuera de la vista, busca la espalda:** va a su puesto de la formación (CT-14) a 1,5 bloques, dentro del alcance de golpe.
+4. **Golpea solo fuera de la vista** (antes, fuera del arco del escudo: más de 90°). El golpe de flanco del catálogo pasa a ser «se mueve hasta quedar fuera de la vista del jugador (más de 120° de su mirada) y recién ahí golpea».
+
+**Por qué.** Bug B-02 (`verificacion-e6.md`): los flanqueadores nunca golpeaban. Dos causas: el punto de flanqueo giraba con la mirada del jugador (el mob daba vueltas sin salir del arco del escudo) y estaba a 3 bloques, fuera del alcance de golpe (2). El modelo de Nico resuelve las dos y además evita que el flanqueador se meta en el alcance del jugador.
+
+**Impacto.** Dominio: `CombatGeometry.isOutOfSight` y `VISION_HALF_ANGLE_DEGREES`, `FlankManeuver`, `FlankStep`. Adaptadores: `Waypoints.flankStep` e `isOutOfSight` (reemplazan a `flankPoint` e `isOutsideTheShieldArc`), `FlankGoal`. Configuración: `flank-distance-blocks` cambia de sentido (distancia que mantiene mientras lo ven) y de valor por defecto (3 → 4). Catálogo: el golpe de flanco. CT-08 sin cambios.
+
+**Alternativas descartadas.**
+- Un punto fijo detrás del jugador sin esquivar: cruza por delante y se mete en su alcance.
+- Planear el rodeo entero de una vez: se vuelve viejo apenas el jugador gira; recalcular cada 10 ticks es más simple y reacciona solo.
+- Usar la línea de visión con bloques también para el flanqueo: más caro y no es lo que pide el modelo (un abanico geométrico).
+
+**Riesgos.** Un jugador que gira constantemente hacia el flanqueador lo mantiene esquivando: el plan cierra por tiempo y la memoria aprende que flanquear a ese jugador sirve poco (es lo que tiene que aprender). Los servers que ya tienen `config.yml` conservan `flank-distance-blocks: 3.0` hasta que lo cambien.
