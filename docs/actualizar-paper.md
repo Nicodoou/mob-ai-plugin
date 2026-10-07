@@ -41,6 +41,8 @@ Riesgo: **alto** = API marcada como deprecada o que cambió en versiones recient
 | `adapter/listener/TargetListener` | `EntityTargetEvent` | Bajo | — |
 | `adapter/config/ConfigLoader` | `ConfigurationSection` | Bajo | — |
 | `adapter/config/Messages` | Adventure: `Component`, `MiniMessage`, `Placeholder`, `TagResolver` | Bajo | Que Paper siga trayendo Adventure con MiniMessage |
+| `adapter/scheduler/MovementSampler` | `Bukkit.getOnlinePlayers()`, `Player.getLocation()`, `PlayerQuitEvent` | Bajo | — |
+| `adapter/scheduler/GroupDecider`, `PersistenceScheduler` | `org.slf4j.Logger` (viene con Paper) | Bajo | Que Paper siga exponiendo SLF4J |
 | `bootstrap/MobAiPlugin` | `JavaPlugin` | Bajo | — |
 
 ## 4. Bibliotecas que vienen con Paper

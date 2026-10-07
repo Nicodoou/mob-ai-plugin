@@ -5,6 +5,7 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /** The order each mob follows until the next decision; goals only read it. */
 public final class RoleRegistry {
@@ -20,6 +21,10 @@ public final class RoleRegistry {
 
   public void clear(MobId mob) {
     assignments.remove(mob);
+  }
+
+  public void retainOnly(Set<MobId> members) {
+    assignments.keySet().retainAll(members);
   }
 
   public int size() {
