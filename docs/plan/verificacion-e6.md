@@ -25,3 +25,7 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
   - **H4 (encontrada al releer el código):** el punto de flanqueo está a 3 bloques y el alcance de golpe es de 2: un flanqueador que llega a su punto no puede golpear.
 - **Diseño nuevo (Nico):** el jugador tiene un abanico de vista y alcance. El flanqueador primero sale de la vista por el camino más corto sin meterse en el alcance, y recién fuera de la vista busca la espalda. La vista son los 90° más un margen para un movimiento corto del mouse.
 - **Arreglo:** WP-22D (CT-16). La regresión de la H4 es `FlankManeuverTest.closeInPointIsWithinStrikeReach`.
+
+## WP-22D — 7 oct 2026, corrida 2
+
+**Qué vio Nico:** todo funciona. El flanqueador esquiva fuera de la vista y golpea por la espalda; la retirada a cubierto y la curación siguen andando. **B-02 cerrado.** Los WP-22A a WP-22D quedan verificados en el juego.

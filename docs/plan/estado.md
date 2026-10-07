@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D mergeado (#35); falta verificarlo en el juego (Nico).** Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
+2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D mergeado (#35) y verificado en el juego por Nico: B-02 cerrado; WP-22A a 22D completos.** Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
