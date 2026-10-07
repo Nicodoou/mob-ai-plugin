@@ -36,12 +36,19 @@ public final class ShootGoal implements Goal<Mob> {
   // Close enough to its place: walking the last blocks only makes it wobble.
   private static final double SLOT_TOLERANCE_BLOCKS = 2.0;
 
+  // Looking for high ground costs a few columns, rays and up to three paths; every 2 s is enough.
+  static final long PERCH_SEARCH_INTERVAL_TICKS = 40;
+
   private final Mob mob;
   private final GoalKey<Mob> key;
   private final GoalContext context;
   private final MeleeRhythm rhythm;
   private final ShotRhythm shots;
   private final OpportunisticWait opportunism = new OpportunisticWait();
+  private final HighGroundFinder highGround;
+  // The higher spot the shooter is heading for; empty when it has none.
+  private Optional<Vec3> perch = Optional.empty();
+  private long nextPerchSearchTick = Long.MIN_VALUE;
 
   public ShootGoal(Mob mob, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "ShootGoal.mob");
@@ -49,6 +56,7 @@ public final class ShootGoal implements Goal<Mob> {
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "shoot"));
     this.rhythm = new MeleeRhythm(context.tools().timing().clock());
     this.shots = new ShotRhythm(context.tools().timing().clock());
+    this.highGround = new HighGroundFinder(context.tools().waypoints());
   }
 
   @Override
@@ -104,6 +112,7 @@ public final class ShootGoal implements Goal<Mob> {
     if (mob.hasLineOfSight(target)) {
       walkToFiringSpot(target);
     } else {
+      perch = Optional.empty();
       mob.getPathfinder().moveTo(target, WALK_SPEED);
     }
     rhythm.markRepath();
@@ -111,12 +120,35 @@ public final class ShootGoal implements Goal<Mob> {
 
   private void walkToFiringSpot(Player target) {
     Vec3 spot = firingSpotFor(target);
-    if (mobPosition().minus(spot).horizontal().length() <= SLOT_TOLERANCE_BLOCKS) {
+    searchPerchIfDue(target, spot);
+    Vec3 destination = currentPerch(target).orElse(spot);
+    if (mobPosition().minus(destination).horizontal().length() <= SLOT_TOLERANCE_BLOCKS) {
       mob.getPathfinder().stopPathfinding();
       return;
     }
     mob.getPathfinder()
-        .moveTo(new Location(mob.getWorld(), spot.x(), spot.y(), spot.z()), WALK_SPEED);
+        .moveTo(
+            new Location(mob.getWorld(), destination.x(), destination.y(), destination.z()),
+            WALK_SPEED);
+  }
+
+  private void searchPerchIfDue(Player target, Vec3 spot) {
+    long now = context.tools().timing().clock().currentTick();
+    if (now < nextPerchSearchTick) {
+      return;
+    }
+    nextPerchSearchTick = now + PERCH_SEARCH_INTERVAL_TICKS;
+    perch = highGround.find(mob, target, new PerchRequest(spot, allyCenters(target)));
+  }
+
+  private Optional<Vec3> currentPerch(Player target) {
+    perch.ifPresent(
+        spot -> {
+          if (!CoverFinder.isSeenBy(target, mob, spot)) {
+            perch = Optional.empty();
+          }
+        });
+    return perch;
   }
 
   // Its place in the ring, or the nearest lane round the target where no ally is in the way.
