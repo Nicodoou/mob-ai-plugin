@@ -464,6 +464,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Rastreo cuerpo a cuerpo: apertura, golpe, intento abierto, condiciones del objetivo | `MeleeOpening`, `MeleeHit`, `OpenAttempt`, `TargetChecks` | Adaptadores |
 | Ritmo del cuerpo a cuerpo y lo que comparten los goals | `MeleeRhythm`, `GoalContext` | Adaptadores |
 | Reparto de decisiones, decidir un grupo, muestreo de movimiento | `DecisionCadence`, `DecisionParts`, `GroupDecider`, `MovementSampler` | Adaptadores |
+| Comandos de administración y grupo de prueba | `MobAiCommand`, `Subcommand`, `SpawnGroupCommand`, `StatusCommand`, `ResetCommand`, `ReloadCommand`, `GroupSpawner`, `SpawnRing` | Adaptadores |
 | Armado y ciclo de vida del plugin | `CoreServices`, `AdapterServices`, `PluginRuntime` | Arranque |
 | Listeners de daño, amenaza y muertes | `DamageListener`, `ThreatListener`, `DeathListener` | Adaptadores |
 | Reloj propio, azar e ids de grupo reales | `ServerTickCounter`, `JdkRandomSource`, `RandomGroupIdSource` | Adaptadores |

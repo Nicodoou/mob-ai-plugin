@@ -129,7 +129,7 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-19 | Roles, goals y golpe frontal | WP-18 | Sonnet | `RoleRegistry`, `GoalInstaller`, `PressGoal`, `MeleeAttacker`, listeners de carga y de objetivo |
 | WP-20A | Schedulers y aplicador | WP-19 | Sonnet | `DecisionScheduler`, `DecisionApplier`, `PersistenceScheduler`, `MovementSampler` |
 | WP-20B | Arranque del plugin | WP-20A | Opus | `CoreServices`, `AdapterServices`, `PluginRuntime`, `MobAiPlugin` armado |
-| WP-21 | Comandos y log de debug | WP-20 | Sonnet | `/mobai spawngroup`, `status`, `reset`, `reload`; `DebugLog` |
+| WP-21 | Comandos | WP-20B | Sonnet | `/mobai spawngroup`, `status`, `reset`, `reload` (el `DebugLog` pasó al WP-29) |
 | WP-22 | Flanqueo y retirada | Puerta E5 | Sonnet | `FlankGoal`, `RetreatGoal` |
 | WP-23 | Golpes de flanco y paciente | WP-22 | Sonnet | Dos estilos más en `MeleeAttacker` |
 | WP-24 | Esqueletos y proyectiles | WP-23 | Sonnet | `ShootGoal`, `BowShooter`, rastreo de flechas |
@@ -242,8 +242,10 @@ io.github.nicodoou.mobai
 │   │               ShootGoal, BowShooter                                              WP-24
 │   ├── scheduler   DecisionScheduler, DecisionApplier, PersistenceScheduler,
 │   │               DecisionCadence, DecisionParts, GroupDecider, MovementSampler      WP-20A
-│   ├── command     MobAiCommand                                      WP-21 (memory: WP-26)
-│   └── debug       DebugLog                                                           WP-21
+│   ├── command     MobAiCommand, Subcommand, SpawnGroupCommand, StatusCommand,
+│   │               ResetCommand, ReloadCommand, GroupSpawner, SpawnRing
+│   │                                                                 WP-21 (memory: WP-26)
+│   └── debug       DebugLog                                                           WP-29
 └── bootstrap       MobAiPlugin, CoreServices, AdapterServices, PluginRuntime
                                                     WP-00 vacío, WP-20B armado
 ```
