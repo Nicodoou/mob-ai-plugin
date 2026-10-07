@@ -115,7 +115,7 @@ public final class FlankGoal implements Goal<Mob> {
         || !context.tools().waypoints().isOutOfSight(pose, position)) {
       return;
     }
-    context.tools().attacker().strike(mob, target, executedAttack());
+    context.tools().weapons().melee().strike(mob, target, executedAttack());
     rhythm.markStrike();
   }
 

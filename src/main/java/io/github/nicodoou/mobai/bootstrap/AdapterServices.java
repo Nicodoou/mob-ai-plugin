@@ -19,13 +19,17 @@ import io.github.nicodoou.mobai.adapter.debug.TraceHub;
 import io.github.nicodoou.mobai.adapter.debug.TraceLevels;
 import io.github.nicodoou.mobai.adapter.debug.TraceWriter;
 import io.github.nicodoou.mobai.adapter.debug.WitnessParts;
+import io.github.nicodoou.mobai.adapter.goal.BowShooter;
 import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
 import io.github.nicodoou.mobai.adapter.goal.GoalTiming;
 import io.github.nicodoou.mobai.adapter.goal.GoalTools;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
+import io.github.nicodoou.mobai.adapter.goal.ShotAim;
+import io.github.nicodoou.mobai.adapter.goal.ShotParts;
 import io.github.nicodoou.mobai.adapter.goal.Waypoints;
+import io.github.nicodoou.mobai.adapter.goal.Weapons;
 import io.github.nicodoou.mobai.adapter.listener.DamageListener;
 import io.github.nicodoou.mobai.adapter.listener.DeathListener;
 import io.github.nicodoou.mobai.adapter.listener.EntityLifecycleListener;
@@ -167,9 +171,14 @@ public record AdapterServices(
             geometry,
             new FlankManeuver(geometry, new FlankFormation(geometry)),
             core.settings().section(MobAiSettings::attack));
+    BowShooter bow =
+        new BowShooter(
+            parts.tracker(),
+            core.clock(),
+            new ShotParts(new ShotAim(geometry), parts.movement(), parts.translator()));
     GoalTools tools =
         new GoalTools(
-            attacker,
+            new Weapons(attacker, bow),
             new GoalTiming(core.clock(), core.settings().section(MobAiSettings::attack)),
             waypoints);
     return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
