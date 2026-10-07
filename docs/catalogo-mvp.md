@@ -11,7 +11,7 @@ Tres estrategias alcanzan para que el grupo tenga decisiones distintas que apren
 | Estrategia (código) | Qué hace | Requisito mínimo | Roles que reparte |
 | --- | --- | --- | --- |
 | Ataque directo (`DIRECT_ASSAULT`) | Todos van al objetivo por el camino más corto | Ninguno; es la estrategia por defecto | Cuerpo a cuerpo: `PRESS`; esqueletos: `SHOOT` |
-| Flanqueo (`FLANK`) | Una parte presiona de frente y el resto rodea hacia los costados y la espalda | Al menos 3 mobs cuerpo a cuerpo (zombies o arañas) | Mitad `PRESS`, mitad `FLANK` (las arañas van primero a flanco); esqueletos: `SHOOT` |
+| Flanqueo (`FLANK`) | Una parte presiona de frente y el resto rodea hacia los costados y la espalda | Al menos 3 mobs cuerpo a cuerpo (zombies o arañas) | Mitad `PRESS`, mitad `FLANK`: flanquea la mitad de cada tipo, y si sobra uno es un zombie (CT-18); esqueletos: `SHOOT` |
 | Contener y disparar (`PIN_AND_SHOOT`) | Los zombies frenan al objetivo a media distancia y los esqueletos disparan mientras está ocupado | Al menos 2 zombies y 2 esqueletos | Zombies: `PRESS` con distancia corta; esqueletos: `SHOOT`; arañas: `FLANK` |
 
 ### Roles

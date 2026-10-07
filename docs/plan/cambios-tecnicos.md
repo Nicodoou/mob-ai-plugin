@@ -20,6 +20,8 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-15](#ct-15--retirada-a-cubierto) Retirada a cubierto | 7 oct 2026 | Nico | WP-22C |
 | [CT-16](#ct-16--flanqueo-fuera-de-la-vista) Flanqueo fuera de la vista | 7 oct 2026 | Nico (verificación del WP-22B, B-02) | WP-22D |
 | [CT-17](#ct-17--apertura-y-abandono-del-golpe-paciente) Apertura y abandono del golpe paciente | 7 oct 2026 | Opus (especificación del WP-23) | WP-23 |
+| [CT-18](#ct-18--flanqueadores-proporcionales) Flanqueadores proporcionales | 7 oct 2026 | Nico (prueba del WP-23) | WP-22E |
+| [CT-19](#ct-19--golpe-esquivo) Golpe esquivo | 7 oct 2026 | Nico | WP-23B (por especificar, después del WP-24) |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -273,3 +275,27 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 **Alternativas descartadas.** Contar la espera vencida como fallo del golpe paciente: contradice el catálogo y castiga al ataque por algo que el jugador no hizo. Considerar apertura a cualquier jugador que no bloquea: el golpe paciente sería idéntico al frontal contra quien no usa escudo.
 
 **Riesgos.** `getAttackCooldown()` también baja al cambiar de ítem en la mano: un jugador que cambia de arma abre una apertura. Es raro y no le hace daño a nadie.
+
+## CT-18 — Flanqueadores proporcionales
+
+**Qué cambia.** En la estrategia de flanqueo, flanquea la mitad de las arañas (para abajo) y el resto de la mitad del cuerpo a cuerpo son zombies; un sobrante impar va a un zombie. Antes flanqueaban primero las arañas. Con el grupo de prueba (4 zombies, 2 arañas): 2 zombies y 1 araña, en vez de 2 arañas y 1 zombie.
+
+**Por qué.** Nico vio en el juego que los zombies casi siempre atacaban de frente: aun con la estrategia de flanqueo, flanqueaba un solo zombie de cuatro.
+
+**Impacto.** `FlankStrategy` (WP-22E) y el texto del catálogo. La frecuencia de la estrategia de flanqueo no cambia: la sigue eligiendo la memoria.
+
+**Alternativas descartadas.** Que los zombies también flanqueen en «contener y disparar» (cambia la idea de esa estrategia) y que el flanqueo arranque con más chances (va contra el aprendizaje). Nico no las pidió.
+
+**Riesgos.** Cambian los sorteos de las pruebas del cerebro que usan el flanqueo (un zombie más usa el golpe de flanco sin sorteo).
+
+## CT-19 — Golpe esquivo
+
+**Qué cambia.** Un ataque nuevo de zombie, `zombie.evasive_strike`, que la memoria aprende como los otros (opción 2 de Nico). El zombie que lo tiene asignado lee la carga del arma del jugador (`getAttackCooldown()`): si el jugador lo mira (está dentro de su vista de 120°), lo tiene a su alcance (3 bloques) y su carga está por llegar al tope (80 % o más), retrocede lo justo para quedar fuera del alcance (unos 3,5 bloques). Cuando el jugador pega al aire y su carga cae, vuelve a entrar y pega mientras el arma se recarga.
+
+**Por qué.** Pedido de Nico: que el mob evite el golpe cargado. Como ataque aprendible (y no como comportamiento fijo), la memoria descubre contra quién conviene: rinde contra armas lentas como el hacha, poco contra quien pega rápido sin cargar.
+
+**Impacto.** Dominio: un valor nuevo de `Attack` (su identificador se guarda en las memorias; las memorias viejas siguen sirviendo). Adaptadores: el comportamiento en `PressGoal`, con la decisión en una clase pura como `PatientWait`. Configuración: umbral de carga (0,8) y distancia de esquive (3,5). Catálogo: la fila del ataque nuevo. Se especifica como WP-23B, después del WP-24.
+
+**Alternativas descartadas.** Un comportamiento fijo de todos los que presionan (puede volver injusto al grupo y la memoria no aprende nada) y sumarlo al golpe paciente (mezcla escudo y carga en un mismo ataque y la memoria no las distingue).
+
+**Riesgos.** El zombie camina más lento que el jugador: contra uno que corre hacia él, el esquive no alcanza. Con espada (0,6 s de carga) la ventana es corta.
