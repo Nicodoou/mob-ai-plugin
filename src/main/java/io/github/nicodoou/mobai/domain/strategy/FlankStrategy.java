@@ -13,13 +13,13 @@ import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public final class FlankStrategy implements GroupStrategy {
   public static final StrategyId ID = new StrategyId("FLANK");
@@ -58,19 +58,19 @@ public final class FlankStrategy implements GroupStrategy {
   }
 
   private Set<MobId> flankers(GroupSnapshot snapshot, PlayerId target) {
-    int count = GroupComposition.of(snapshot).melee() / FLANKER_DIVISOR;
-    return flankerCandidates(snapshot, target).stream()
-        .limit(count)
-        .map(MobSnapshot::id)
-        .collect(Collectors.toSet());
+    Optional<PlayerPose> pose = snapshot.player(target).map(PlayerSnapshot::pose);
+    List<MobSnapshot> spiders = mobsOfKind(snapshot, MobKind.SPIDER);
+    List<MobSnapshot> zombies = mobsOfKind(snapshot, MobKind.ZOMBIE);
+    int spiderFlankers = spiders.size() / FLANKER_DIVISOR;
+    // Zombies take the rest of half the melee mobs, so an odd one out goes to a zombie.
+    int zombieFlankers = (spiders.size() + zombies.size()) / FLANKER_DIVISOR - spiderFlankers;
+    Set<MobId> flankers = new HashSet<>(mostSideways(spiders, pose, spiderFlankers));
+    flankers.addAll(mostSideways(zombies, pose, zombieFlankers));
+    return flankers;
   }
 
-  private List<MobSnapshot> flankerCandidates(GroupSnapshot snapshot, PlayerId target) {
-    Optional<PlayerPose> pose = snapshot.player(target).map(PlayerSnapshot::pose);
-    List<MobSnapshot> candidates = new ArrayList<>();
-    candidates.addAll(sideFirst(mobsOfKind(snapshot, MobKind.SPIDER), pose));
-    candidates.addAll(sideFirst(mobsOfKind(snapshot, MobKind.ZOMBIE), pose));
-    return candidates;
+  private List<MobId> mostSideways(List<MobSnapshot> mobs, Optional<PlayerPose> pose, int count) {
+    return sideFirst(mobs, pose).stream().limit(count).map(MobSnapshot::id).toList();
   }
 
   private static List<MobSnapshot> mobsOfKind(GroupSnapshot snapshot, MobKind kind) {
