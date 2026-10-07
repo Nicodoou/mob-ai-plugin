@@ -21,6 +21,7 @@ import io.github.nicodoou.mobai.adapter.debug.TraceWriter;
 import io.github.nicodoou.mobai.adapter.debug.WitnessParts;
 import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
+import io.github.nicodoou.mobai.adapter.goal.GoalTiming;
 import io.github.nicodoou.mobai.adapter.goal.GoalTools;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
@@ -161,7 +162,11 @@ public record AdapterServices(
             geometry,
             new FlankManeuver(geometry, new FlankFormation(geometry)),
             core.settings().section(MobAiSettings::attack));
-    GoalTools tools = new GoalTools(attacker, core.clock(), waypoints);
+    GoalTools tools =
+        new GoalTools(
+            attacker,
+            new GoalTiming(core.clock(), core.settings().section(MobAiSettings::attack)),
+            waypoints);
     return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
   }
 

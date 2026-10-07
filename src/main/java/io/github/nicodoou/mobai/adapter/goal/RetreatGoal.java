@@ -36,7 +36,7 @@ public final class RetreatGoal implements Goal<Mob> {
     this.mob = Objects.requireNonNull(mob, "RetreatGoal.mob");
     this.context = Objects.requireNonNull(context, "RetreatGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "retreat"));
-    this.rhythm = new MeleeRhythm(context.tools().clock());
+    this.rhythm = new MeleeRhythm(context.tools().timing().clock());
   }
 
   @Override
@@ -97,11 +97,12 @@ public final class RetreatGoal implements Goal<Mob> {
         !danger.hasLineOfSight(mob),
         waypoints().retreatPoint(mobPosition(), position(danger)).isEmpty(),
         coverSpot.filter(spot -> !CoverFinder.isSeenBy(danger, mob, spot)).isPresent(),
-        context.tools().clock().currentTick() >= nextCoverSearchTick);
+        context.tools().timing().clock().currentTick() >= nextCoverSearchTick);
   }
 
   private void searchCover(Player danger) {
-    nextCoverSearchTick = context.tools().clock().currentTick() + COVER_SEARCH_INTERVAL_TICKS;
+    nextCoverSearchTick =
+        context.tools().timing().clock().currentTick() + COVER_SEARCH_INTERVAL_TICKS;
     Optional<PathResult> path =
         finder.find(mob, danger, waypoints().coverCandidates(mobPosition(), position(danger)));
     if (path.isEmpty()) {
