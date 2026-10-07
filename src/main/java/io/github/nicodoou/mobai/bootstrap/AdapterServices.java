@@ -29,6 +29,7 @@ import io.github.nicodoou.mobai.adapter.goal.Waypoints;
 import io.github.nicodoou.mobai.adapter.listener.DamageListener;
 import io.github.nicodoou.mobai.adapter.listener.DeathListener;
 import io.github.nicodoou.mobai.adapter.listener.EntityLifecycleListener;
+import io.github.nicodoou.mobai.adapter.listener.ProjectileListener;
 import io.github.nicodoou.mobai.adapter.listener.TargetListener;
 import io.github.nicodoou.mobai.adapter.listener.ThreatListener;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionApplier;
@@ -38,6 +39,7 @@ import io.github.nicodoou.mobai.adapter.scheduler.GroupDecider;
 import io.github.nicodoou.mobai.adapter.scheduler.HealSchedule;
 import io.github.nicodoou.mobai.adapter.scheduler.MovementSampler;
 import io.github.nicodoou.mobai.adapter.scheduler.PersistenceScheduler;
+import io.github.nicodoou.mobai.adapter.scheduler.ProjectileResolver;
 import io.github.nicodoou.mobai.adapter.scheduler.RecoveryHealer;
 import io.github.nicodoou.mobai.adapter.snapshot.MovementTracker;
 import io.github.nicodoou.mobai.adapter.snapshot.SnapshotFactory;
@@ -70,7 +72,8 @@ public record AdapterServices(
     IncidentWriter incidentWriter,
     TraceWriter traceWriter,
     DebugLog debugLog,
-    RecoveryHealer recoveryHealer) {
+    RecoveryHealer recoveryHealer,
+    ProjectileResolver projectileResolver) {
   private static final String DEBUG_FOLDER = "debug";
   private static final String TRACE_FILE_PREFIX = "trace-";
   private static final String TRACE_FILE_SUFFIX = ".jsonl";
@@ -98,7 +101,9 @@ public record AdapterServices(
         parts.debug().writer(),
         parts.debug().outputs().traceWriter(),
         parts.debug().outputs().debugLog(),
-        new RecoveryHealer(parts.roles(), new HealSchedule()));
+        new RecoveryHealer(parts.roles(), new HealSchedule()),
+        new ProjectileResolver(
+            parts.tracker(), parts.debug().hub(), core.settings().section(MobAiSettings::attack)));
   }
 
   private static MobAiCommand mobAiCommand(Plugin plugin, CoreServices core, CommandParts command) {
@@ -187,6 +192,7 @@ public record AdapterServices(
       CoreServices core, SharedParts parts, GoalInstaller goalInstaller) {
     return List.of(
         new DamageListener(parts.tracker(), parts.translator()),
+        new ProjectileListener(parts.tracker(), parts.translator(), core.activeGroups()),
         new ThreatListener(core.recordDamageTaken(), core.clock()),
         new DeathListener(core.removeMember(), core.recordPlayerDeath(), core.clock()),
         new EntityLifecycleListener(core.activeGroups(), goalInstaller, parts.tracker()),
