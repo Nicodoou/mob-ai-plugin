@@ -6,9 +6,11 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. **Puerta E4 pasada** (6 oct): WP-12 a WP-15, WP-28A y WP-28B mergeados; WP-16 y WP-17 (de E5) también. WP-18 mergeado (#23). WP-19 mergeado (#24). Arreglo de `PressGoal` para esqueletos mergeado (#25). WP-20 dividido por tamaño en WP-20A (Sonnet) y WP-20B (Opus), aprobados por Nico. WP-20A mergeado (#26). WP-20B mergeado (#27), verificado en el server (arranca, guarda al apagar, se deshabilita con configuración inválida y el reloj sigue de 160 a 349 tras reiniciar). WP-21 mergeado (#28), comandos verificados desde la consola. WP-29A mergeado (#29). WP-29B mergeado (#30). **Todos los WPs de E5 mergeados: falta la puerta E5 (Nico, guion `docs/plan/puerta-e5.md`).** Después: compactar y especificar E6 (WP-22). WP-29B (trazas y log de debug) especificado: esperando la aprobación de Nico; va después del WP-29A. El 6 oct hubo un apagado de la PC: `.git/config` quedó en ceros y se reconstruyó; también la referencia remota de la rama del WP-20A (caché, se volvió a bajar). `git fsck` limpio. `docs/actualizar-paper.md` se actualiza en cada WP que toque Paper. Etapa E5.
-2. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
-3. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir.
+1. **Puerta E5 pendiente: la hace Nico en el server con el guion `docs/plan/puerta-e5.md`** (11 pasos). Todos los WPs de E5 están mergeados (WP-16 a WP-21, WP-20A/B, WP-29A/B; último merge #30). Nico tiene que reiniciar `runServer` antes de empezar (el que tenía abierto arrancó antes del WP-29B). Al recibir sus resultados: lo que no coincida va por `docs/resolucion-de-bugs.md` (prueba que reproduce, hipótesis aprobadas, un cambio por hipótesis); si todo coincide, marcar E5 «pasada» con la evidencia en la tabla de puertas.
+2. Lo que el guion verifica además de lo pedido por el plan está en la fila E5 de «Puertas de etapa» (riesgos de WP-17, WP-18, WP-19, WP-21 y WP-29B que solo se ven en el server; tildes en el chat; `/mobai debug` no se probó en el server).
+3. Después de la puerta: especificar la etapa E6 empezando por el WP-22 (flanqueo y retirada, con curación de los que se retiran y reparto de flanqueadores del mismo lado; ver notas de WP-22 a WP-25 en la tabla).
+4. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
+5. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
 ## WPs
 
