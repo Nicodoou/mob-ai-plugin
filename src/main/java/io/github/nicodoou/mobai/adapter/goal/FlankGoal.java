@@ -38,7 +38,7 @@ public final class FlankGoal implements Goal<Mob> {
     this.kind = Objects.requireNonNull(kind, "FlankGoal.kind");
     this.context = Objects.requireNonNull(context, "FlankGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "flank"));
-    this.rhythm = new MeleeRhythm(context.tools().clock());
+    this.rhythm = new MeleeRhythm(context.tools().timing().clock());
   }
 
   @Override
