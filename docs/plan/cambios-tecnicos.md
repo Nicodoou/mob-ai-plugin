@@ -15,7 +15,8 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-10](#ct-10--puerto-groupidsource) Puerto `GroupIdSource` | 5 oct 2026 | Opus (especificación del WP-12) | WP-12 crea el puerto y el fake; WP-16, la implementación real |
 | [CT-11](#ct-11--un-solo-camino-para-el-resultado-del-plan-y-causa-de-salida) Un solo camino para el resultado del plan y causa de salida | 5 oct 2026 | Opus (cierre del WP-12, especificación del WP-13) | WP-13 |
 | [CT-12](#ct-12--estado-completo-del-grupo-y-división-del-wp-28) Estado completo del grupo y división del WP-28 | 6 oct 2026 | Nico | WP-28A y WP-28B |
-| [CT-13](#ct-13--no-abrir-un-plan-con-el-grupo-todavía-en-retirada) No abrir un plan con el grupo todavía en retirada | 6 oct 2026 | Nico (puerta E5, corrida 2) | Aprobado; se especifica en el WP-22 |
+| [CT-13](#ct-13--no-abrir-un-plan-con-el-grupo-todavía-en-retirada) No abrir un plan con el grupo todavía en retirada | 6 oct 2026 | Nico (puerta E5, corrida 2) | Regla elegida (opción 1); WP-22A |
+| [CT-14](#ct-14--formación-de-flanqueo-y-golpe-de-flanco-en-el-wp-22) Formación de flanqueo y golpe de flanco en el WP-22 | 7 oct 2026 | Opus (especificación del WP-22) | WP-22A y WP-22B |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -184,14 +185,35 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 
 ## CT-13 — No abrir un plan con el grupo todavía en retirada
 
-**Qué cambia.** Un grupo que sale de `REGROUPING` (CT-07) no abre un plan nuevo si ya cumple la condición de `GROUP_RETREATED` (más de la mitad de los presentes en `RETREAT`). La regla exacta se elige al especificar el WP-22, entre:
-1. seguir reagrupando otra ventana, sin abrir plan y sin tocar la ventana adaptativa; o
-2. abrir el plan pero cerrarlo con una causa que no llega a la memoria.
+**Qué cambia.** Se eligió la opción 1 (al especificar el WP-22A). Un grupo está «en retirada» si más de la mitad de los mobs presentes tiene 30 % de vida o menos (`RetreatRule.isGroupRetreated`). Entonces:
+1. **Al observar,** con objetivo y en retirada, no planifica: pasa a `REGROUPING` sin abrir plan (`PlanLifecycle.regroupWithoutPlan`).
+2. **Al reagrupar,** si la ventana vence y el grupo sigue en retirada, sigue reagrupando con la ventana reiniciada (`PlanLifecycle.restartRegroupWindow`), y la ventana adaptativa no cambia: solo aprende de los reagrupamientos que terminan.
+3. La traza lo muestra con `DecisionTrace.stillRetreated`.
+
+Descartada la opción 2 (abrir el plan y cerrarlo con una causa que no llega a la memoria): igual gasta números de plan y llena las trazas de planes que no existieron.
 
 **Por qué.** En la puerta E5 (corrida 2, `puerta-e5-registro.md`), una araña sola con poca vida abrió y cerró cinco planes seguidos con `GROUP_RETREATED` y éxito 0,00, sin atacar nunca. La memoria aprendía que `DIRECT_ASSAULT` falla contra el jugador por planes que no se jugaron. La curación del WP-22 no alcanza: solo cura sin jugadores a menos de 12 bloques, así que con el jugador cerca el ciclo se repite.
 
-**Impacto.** Dominio: `RegroupRule` o `PlanLifecycle` (WP-22). Sin cambios de persistencia.
+**Impacto.** Dominio: `RetreatRule`, `PlanLifecycle` (2 métodos públicos, 18 en total), `Brain`, `DecisionTrace` y `TraceDraft` (WP-22A). Sin cambios de persistencia: el estado `REGROUPING` sin plan ya era válido para `LifecycleCapture`.
 
 **Alternativas descartadas.** Esperar a la curación del WP-22: no cubre al jugador que se queda cerca. Disolver el grupo: pierde la memoria de un grupo que puede recuperarse.
 
-**Riesgos.** Con la opción 1, un grupo herido con el jugador al lado no ataca nunca; es coherente con la retirada, pero se mira en la validación.
+**Riesgos.** Un grupo herido con el jugador al lado no ataca nunca: huye (`RetreatGoal`, WP-22B) y no se cura mientras el jugador esté a menos de 12 bloques. Es coherente con la retirada, pero se mira en la validación. Si el jugador lo mata mientras se reagrupa, la ventana global baja 50 (CT-07), aunque el grupo nunca haya peleado.
+
+## CT-14 — Formación de flanqueo y golpe de flanco en el WP-22
+
+**Qué cambia.**
+1. **Formación.** `CombatGeometry.flankPoint` les daba el mismo punto a todos los flanqueadores de un lado, y chocaban. `FlankFormation` (dominio) le da a cada uno su puesto: en cada lado, del más rodeado al menos rodeado, el primero a 135° de la mirada del jugador, el segundo a 165° y los demás a 180° (justo atrás). El primero de cada lado da el mismo punto que antes. Los flanqueadores se agrupan por objetivo, no por grupo: dos grupos que flanquean al mismo jugador no se pisan.
+2. **Golpe de flanco.** `FlankGoal` golpea solo desde fuera del arco del escudo, que es exactamente el golpe de flanco del catálogo («se mueve hasta quedar a más de 90° del frente y recién ahí golpea»), y lo registra como `ZOMBIE_FLANK_STRIKE`. Ese comportamiento pasa del WP-23 al WP-22B; el WP-23 queda con el golpe paciente.
+3. **El WP-22 se divide:** WP-22A (dominio: CT-13 y formación) y WP-22B (goals, curación y armado). Junto pasaba las 400 líneas.
+
+**Por qué.** Lo pedía el tablero («repartir a los flanqueadores del mismo lado»). Y un flanqueador que no golpeara hasta el WP-23 rodearía al jugador sin pegarle: la memoria contaría planes de flanqueo sin daño.
+
+**Impacto.** Dominio: `FlankFormation`, `FlankQuery`; `CombatGeometry` expone a su paquete el ángulo, el lado y la rotación. Adaptadores: `FlankGoal`, `Waypoints`. Catálogo y CT-08 sin cambios.
+
+**Alternativas descartadas.**
+- Alternar lados (izquierda, derecha, izquierda): manda mobs a cruzar por delante del jugador.
+- Un desvío al azar por mob: no garantiza separación y rompe la reproducción exacta.
+- Guardar el puesto en `RoleAssignment`: cambia un record que usa todo el sistema, para un dato que el goal puede calcular con las posiciones del momento.
+
+**Riesgos.** El puesto se recalcula cada 10 ticks con las posiciones del momento: si dos flanqueadores cruzan el mismo ángulo, pueden intercambiar puestos. Con más de 3 flanqueadores de un lado, los que pasan del tercero comparten el punto de atrás.

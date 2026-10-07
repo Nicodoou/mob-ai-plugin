@@ -462,7 +462,11 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Resultado de un intento, daño recibido, causa de salida, publicador de eventos de un grupo | `AttackResolution`, `DamageTaken`, `RemovalCause`, `GroupEvents` | Aplicación |
 | Guardar, cargar y consultar: conversión, candado de guardado, informe de carga, vistas | `StoredMemoriesMapper`, `GuardedMemoryRepository`, `LoadReport`, `GroupStatusView`, `PlayerMemoryView` | Aplicación |
 | Rastreo cuerpo a cuerpo: apertura, golpe, intento abierto, condiciones del objetivo | `MeleeOpening`, `MeleeHit`, `OpenAttempt`, `TargetChecks` | Adaptadores |
-| Ritmo del cuerpo a cuerpo y lo que comparten los goals | `MeleeRhythm`, `GoalContext` | Adaptadores |
+| Ritmo del cuerpo a cuerpo y lo que comparten los goals | `MeleeRhythm`, `GoalContext`, `GoalTools`, `GoalOrders` | Adaptadores |
+| Flanqueo y retirada: goals, puntos de destino y pose del jugador | `FlankGoal`, `RetreatGoal`, `Waypoints`, `PoseReader` | Adaptadores |
+| Formación de flanqueo | `FlankFormation`, `FlankQuery` | Dominio |
+| Curación en retirada | `RecoveryHealer`, `HealSchedule` | Adaptadores |
+| Grupo en retirada que no planifica (CT-13) | `RetreatRule.isGroupRetreated`, `PlanLifecycle.regroupWithoutPlan` y `restartRegroupWindow`, `DecisionTrace.stillRetreated` | Dominio |
 | Reparto de decisiones, decidir un grupo, muestreo de movimiento | `DecisionCadence`, `DecisionParts`, `GroupDecider`, `MovementSampler` | Adaptadores |
 | Comandos de administración y grupo de prueba | `MobAiCommand`, `Subcommand`, `SpawnGroupCommand`, `StatusCommand`, `ResetCommand`, `ReloadCommand`, `GroupSpawner`, `SpawnRing` | Adaptadores |
 | Incidentes en el server: testigo de cada decisión, caja negra, entrada única de trazas | `DecisionWitness`, `WitnessParts`, `Observation`, `FlightRecorder`, `TraceHub`, `TraceEvent`, `IncidentWriter`, `DebugGson` | Adaptadores |

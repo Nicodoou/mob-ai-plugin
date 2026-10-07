@@ -130,8 +130,9 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-20A | Schedulers y aplicador | WP-19 | Sonnet | `DecisionScheduler`, `DecisionApplier`, `PersistenceScheduler`, `MovementSampler` |
 | WP-20B | Arranque del plugin | WP-20A | Opus | `CoreServices`, `AdapterServices`, `PluginRuntime`, `MobAiPlugin` armado |
 | WP-21 | Comandos | WP-20B | Sonnet | `/mobai spawngroup`, `status`, `reset`, `reload` (el `DebugLog` pasó al WP-29) |
-| WP-22 | Flanqueo y retirada | Puerta E5 | Sonnet | `FlankGoal`, `RetreatGoal` |
-| WP-23 | Golpes de flanco y paciente | WP-22 | Sonnet | Dos estilos más en `MeleeAttacker` |
+| WP-22A | Sin planes con el grupo en retirada y formación de flanqueo | Puerta E5 | Sonnet | CT-13, `FlankFormation` |
+| WP-22B | Goals de flanqueo y retirada, y curación | WP-22A | Sonnet | `FlankGoal` (con golpe de flanco), `RetreatGoal`, `RecoveryHealer` |
+| WP-23 | Golpe paciente | WP-22B | Sonnet | El golpe de flanco pasó al WP-22B (CT-14) |
 | WP-24 | Esqueletos y proyectiles | WP-23 | Sonnet | `ShootGoal`, `BowShooter`, rastreo de flechas |
 | WP-25 | Arañas | WP-24 | Sonnet | Mordida con lentitud |
 | WP-26 | Consulta de memoria y métricas | WP-25 | Sonnet | `/mobai memory` y líneas de métricas para contar |
@@ -377,7 +378,8 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D30. Calibración** (CT-09, puerta E3, 5 de octubre). Velocidad de aprendizaje 1,0 y vida media 12.000 ticks.
 - **D31. Ids de grupo por puerto** (CT-10, WP-12). `GroupIdSource` da los ids de grupo nuevos, sin gastar tiradas de `RandomSource`.
 - **D33. Reproducción exacta** (CT-12, WP-28A/B). El dominio copia y restaura el estado completo de un grupo; el azar se graba y se repite; `BrainParts.standard` es el único armado del cerebro.
-- **D34. Sin planes con el grupo en retirada** (CT-13, WP-22). Un grupo que sale de reagrupar sin haberse recuperado no abre un plan que la memoria registre como fracaso.
+- **D34. Sin planes con el grupo en retirada** (CT-13, WP-22A). Un grupo con más de la mitad de los mobs en 30 % de vida o menos no planifica: reagrupa, y si la ventana vence sigue reagrupando sin que la ventana aprenda.
+- **D35. Formación de flanqueo** (CT-14, WP-22A/B). Cada flanqueador de un lado tiene su puesto (135°, 165°, 180°); el golpe de flanco llega con `FlankGoal` en el WP-22B y el WP-23 queda con el golpe paciente.
 - **D32. Resultado del plan por evento** (CT-11, WP-13). Todo plan cerrado llega a la memoria por `PlanClosed` → `ClosePlan`; `RemoveMember` distingue muerte de despawn para la ventana de reagrupamiento.
 
 ## 8. Partes siguientes
