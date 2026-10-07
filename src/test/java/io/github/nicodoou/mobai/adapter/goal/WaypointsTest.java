@@ -104,6 +104,20 @@ class WaypointsTest {
     assertThat(candidates.get(7).z()).isCloseTo(20, within(TOLERANCE));
   }
 
+  @Test
+  void perchCandidatesStayWithinBowRange() {
+    Vec3 target = new Vec3(0, 64, 0);
+
+    List<Vec3> candidates = waypoints.perchCandidates(new Vec3(0, 64, 12), target);
+
+    assertThat(candidates).hasSize(5);
+    assertThat(candidates)
+        .allSatisfy(
+            candidate ->
+                assertThat(candidate.minus(target).horizontal().length())
+                    .isCloseTo(12.0, within(TOLERANCE)));
+  }
+
   private static MobId mob(long id) {
     return new MobId(new UUID(1, id));
   }
