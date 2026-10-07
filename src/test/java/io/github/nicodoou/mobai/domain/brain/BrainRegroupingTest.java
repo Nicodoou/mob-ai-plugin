@@ -21,6 +21,7 @@ class BrainRegroupingTest {
   private static final int WOUNDED_MOBS = 5;
   private static final double LOW_HEALTH = 5;
   private static final double RECOVERED_HEALTH = 12;
+  private static final double PARTLY_RECOVERED_HEALTH = 8;
   private static final long REGROUP_START_TICK = START_TICK + 10;
   private static final long INITIAL_WINDOW_TICKS = 600;
   private static final long LENGTHENED_WINDOW_TICKS = 650;
@@ -86,15 +87,36 @@ class BrainRegroupingTest {
   }
 
   @Test
-  void expiredWindowEndsRegrouping() {
-    BrainResult beforeExpiry =
-        fixture.decide(REGROUP_START_TICK + INITIAL_WINDOW_TICKS - 10, wounded, alice());
-
+  void expiredWindowWithTheGroupStillRetreatedKeepsRegrouping() {
     BrainResult result =
         fixture.decide(REGROUP_START_TICK + INITIAL_WINDOW_TICKS, wounded, alice());
 
-    assertThat(beforeExpiry.decision().state()).isEqualTo(GroupState.REGROUPING);
     assertThat(result.trace().regroupEnd()).contains(RegroupEndReason.WINDOW_EXPIRED);
+    assertThat(result.trace().stillRetreated()).isTrue();
+    assertThat(result.decision().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(result.decision().assignments())
+        .hasSize(mobs.size())
+        .allSatisfy(order -> assertThat(order.role()).isEqualTo(Role.RETREAT));
+    assertThat(fixture.group().lifecycle().regroupStartTick())
+        .hasValue(REGROUP_START_TICK + INITIAL_WINDOW_TICKS);
+    assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
+
+    BrainResult next =
+        fixture.decide(REGROUP_START_TICK + INITIAL_WINDOW_TICKS + 590, wounded, alice());
+
+    assertThat(next.decision().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(next.trace().regroupEnd()).isEmpty();
+  }
+
+  @Test
+  void expiredWindowEndsRegroupingOnceTheGroupCanFight() {
+    List<MobSnapshot> canFight = withHealth(wounded, WOUNDED_MOBS - 1, PARTLY_RECOVERED_HEALTH);
+
+    BrainResult result =
+        fixture.decide(REGROUP_START_TICK + INITIAL_WINDOW_TICKS, canFight, alice());
+
+    assertThat(result.trace().regroupEnd()).contains(RegroupEndReason.WINDOW_EXPIRED);
+    assertThat(result.trace().stillRetreated()).isFalse();
     assertThat(result.decision().state()).isEqualTo(GroupState.OBSERVING);
     assertThat(result.decision().assignments()).isEmpty();
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(LENGTHENED_WINDOW_TICKS);

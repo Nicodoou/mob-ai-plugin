@@ -6,7 +6,7 @@ import io.github.nicodoou.mobai.domain.shared.Vec3;
 public final class CombatGeometry {
   // A flanker stands well outside the shield arc so a small turn of the player does not cover it.
   private static final double FLANK_MARGIN_DEGREES = 45.0;
-  private static final double FLANK_ANGLE_DEGREES =
+  static final double FLANK_ANGLE_DEGREES =
       MinecraftConstants.SHIELD_HALF_ARC_DEGREES + FLANK_MARGIN_DEGREES;
   // Without horizontal separation there is no "away"; any fixed direction keeps it deterministic.
   private static final Vec3 DEFAULT_RETREAT_DIRECTION = new Vec3(1, 0, 0);
@@ -57,12 +57,12 @@ public final class CombatGeometry {
     return raised.normalized().times(MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK);
   }
 
-  private static int sideOf(Vec3 facing, Vec3 offset) {
+  static int sideOf(Vec3 facing, Vec3 offset) {
     double determinant = facing.x() * offset.z() - facing.z() * offset.x();
     return determinant >= 0 ? POSITIVE_SIDE : NEGATIVE_SIDE;
   }
 
-  private static Vec3 rotateAroundVertical(Vec3 direction, double degrees) {
+  static Vec3 rotateAroundVertical(Vec3 direction, double degrees) {
     double radians = Math.toRadians(degrees);
     double cosine = Math.cos(radians);
     double sine = Math.sin(radians);

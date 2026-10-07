@@ -145,6 +145,27 @@ public final class PlanLifecycle {
     regroupStartTick = NO_REGROUP;
   }
 
+  // CT-13: a group too hurt to fight regroups without opening a plan.
+  public void regroupWithoutPlan(long tick) {
+    requireState(GroupState.OBSERVING, "regroup without a plan");
+    requireTick(tick);
+    state = GroupState.REGROUPING;
+    regroupStartTick = tick;
+  }
+
+  public void restartRegroupWindow(long tick) {
+    requireState(GroupState.REGROUPING, "restart the regroup window");
+    requireTick(tick);
+    regroupStartTick = tick;
+  }
+
+  private static void requireTick(long tick) {
+    if (tick < 0) {
+      throw new IllegalArgumentException(
+          "PlanLifecycle.tick must be zero or positive, got " + tick);
+    }
+  }
+
   void dropMember(MobId mobId) {
     plan = plan == null ? null : plan.withoutMember(mobId);
   }
