@@ -125,6 +125,20 @@ class DecisionWitnessTest {
     assertThat(Files.readString(file)).contains("\"DecisionEvent\"");
   }
 
+  @Test
+  void incidentKeepsTheCopyFromBeforeTheDecision() {
+    GroupSnapshot snapshot = snapshotWithStranger();
+    Observation observation = witness.before(group, snapshot);
+    group.threat().recordDamage(ALICE, 2.0, MID_PLAN_TICK);
+
+    IncidentReport report =
+        witness.failed(group, observation, new IllegalStateException("failed half way"));
+    writer.shutdown();
+
+    assertThat(report.before()).isEqualTo(observation.before());
+    assertThat(report.after()).isNotEqualTo(report.before());
+  }
+
   private IncidentReport failedIncident() {
     GroupSnapshot snapshot = snapshotWithStranger();
     Observation observation = witness.before(group, snapshot);
