@@ -72,6 +72,15 @@ class WaypointsTest {
   }
 
   @Test
+  void backOffPointReachesTheMinimumRange() {
+    Vec3 point = waypoints.backOffPoint(new Vec3(3, 64, 4), new Vec3(0, 64, 0));
+
+    assertThat(point.x()).isCloseTo(4.8, within(TOLERANCE));
+    assertThat(point.y()).isCloseTo(64, within(TOLERANCE));
+    assertThat(point.z()).isCloseTo(6.4, within(TOLERANCE));
+  }
+
+  @Test
   void coverCandidatesUseTheRetreatDistance() {
     List<Vec3> candidates = waypoints.coverCandidates(new Vec3(0, 64, 5), new Vec3(0, 64, 0));
 

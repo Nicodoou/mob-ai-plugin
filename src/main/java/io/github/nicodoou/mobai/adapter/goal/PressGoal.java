@@ -103,7 +103,7 @@ public final class PressGoal implements Goal<Mob> {
     attackNow(order, target)
         .ifPresent(
             attack -> {
-              context.tools().attacker().strike(mob, target, attack);
+              context.tools().weapons().melee().strike(mob, target, attack);
               rhythm.markStrike();
             });
   }

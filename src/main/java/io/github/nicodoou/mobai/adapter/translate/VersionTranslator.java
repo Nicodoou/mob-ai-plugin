@@ -9,6 +9,7 @@ import java.util.OptionalDouble;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -106,6 +107,11 @@ public final class VersionTranslator {
   public boolean wasBlocked(EntityDamageEvent event) {
     return event.isApplicable(DamageModifier.BLOCKING)
         && event.getDamage(DamageModifier.BLOCKING) != 0;
+  }
+
+  // Skeleton arrows cannot be picked up in vanilla either; launched arrows default to allowed.
+  public void forbidPickup(AbstractArrow arrow) {
+    arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
   }
 
   private Optional<EffectKind> effectKindOf(PotionEffectType type) {

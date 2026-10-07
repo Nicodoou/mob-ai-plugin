@@ -23,7 +23,7 @@ public final class GoalInstaller {
   }
 
   public boolean install(Mob mob) {
-    Optional<MobKind> kind = meleeKindOf(mob);
+    Optional<MobKind> kind = translator.mobKindOf(mob.getType());
     if (kind.isEmpty()) {
       return false;
     }
@@ -32,14 +32,13 @@ public final class GoalInstaller {
     goals.removeAllGoals(mob, GoalType.LOOK);
     goals.removeAllGoals(mob, GoalType.TARGET);
     // Only one runs at a time: each one stays active only while the order has its role.
-    goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, kind.get(), context));
-    goals.addGoal(mob, GOAL_PRIORITY, new FlankGoal(mob, kind.get(), context));
+    if (kind.get().isMelee()) {
+      goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, kind.get(), context));
+      goals.addGoal(mob, GOAL_PRIORITY, new FlankGoal(mob, kind.get(), context));
+    } else {
+      goals.addGoal(mob, GOAL_PRIORITY, new ShootGoal(mob, context));
+    }
     goals.addGoal(mob, GOAL_PRIORITY, new RetreatGoal(mob, context));
     return true;
-  }
-
-  // Skeletons keep their vanilla goals until ShootGoal exists (WP-24).
-  private Optional<MobKind> meleeKindOf(Mob mob) {
-    return translator.mobKindOf(mob.getType()).filter(MobKind::isMelee);
   }
 }
