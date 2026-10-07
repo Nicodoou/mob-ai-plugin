@@ -45,6 +45,7 @@ class CoreServicesTest {
 
     core.recordPlayerDeath().execute(PLAYER, 160);
 
+    assertThat(group.memory().strategyRecords()).containsKey(PLAYER);
     assertThat(group.memory().strategyRecords().get(PLAYER).get(STRATEGY).successes())
         .isEqualTo(1.0, within(1e-9));
   }
