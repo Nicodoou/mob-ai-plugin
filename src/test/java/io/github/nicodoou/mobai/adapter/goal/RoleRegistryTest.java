@@ -8,6 +8,7 @@ import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -52,6 +53,18 @@ class RoleRegistryTest {
 
     assertThat(registry.assignmentOf(mob(1))).isEmpty();
     assertThat(registry.size()).isZero();
+  }
+
+  @Test
+  void retainOnlyDropsOrdersOfOtherMobs() {
+    registry.assign(pressOrder(mob(1)));
+    registry.assign(pressOrder(mob(2)));
+
+    registry.retainOnly(Set.of(mob(1)));
+
+    assertThat(registry.assignmentOf(mob(1))).isPresent();
+    assertThat(registry.assignmentOf(mob(2))).isEmpty();
+    assertThat(registry.size()).isEqualTo(1);
   }
 
   private RoleAssignment pressOrder(MobId mob) {
