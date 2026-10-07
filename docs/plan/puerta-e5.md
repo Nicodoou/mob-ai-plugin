@@ -26,7 +26,7 @@ Esta etapa es el **esqueleto vivo**: el grupo existe, decide, persigue y golpea 
 
 2. En la consola tendrías que ver, en este orden: `MobAI random seed …`, `MobAI memories: … groups loaded …` y `MobAI 0.1.0-SNAPSHOT enabled`. **Anotá** si aparece cualquier `ERROR` con `MobAI`.
 3. Entrá con `papu123` (`localhost`). Ponete en supervivencia, de día, en un lugar plano: `/gamemode survival`, `/time set day`.
-4. Activá la traza completa para todo: `/mobai debug all FULL`. Respuesta esperada: «Todos los grupos: traza en FULL.»
+4. Si el server ya estaba levantado desde antes del WP-29B (#30), reinicialo para tener las trazas. Activá la traza completa para todo: `/mobai debug all full`. Respuesta esperada: «Todos los grupos: traza en full.»
 
 ## Pasos
 
@@ -105,7 +105,7 @@ Si en algún momento aparece `NEUTRAL:TARGET_INVULNERABLE` sin que estés en cre
 ### 10. Trazas
 
 - **Esperado:** en `run/plugins/MobAI/debug/` hay un archivo `trace-<número>.jsonl` con una línea por decisión, plan y ataque (estás en `FULL`).
-- `/mobai debug all OFF`: después de eso, el `.jsonl` deja de crecer, pero el `mobai-debug.log` sigue sumando líneas.
+- `/mobai debug all off`: después de eso, el `.jsonl` deja de crecer, pero el `mobai-debug.log` sigue sumando líneas.
 
 ### 11. Consola
 
