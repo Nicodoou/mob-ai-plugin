@@ -46,6 +46,13 @@ public final class Waypoints {
     return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
   }
 
+  /** Only for a mob closer than the minimum bow range: the point that takes it back to it. */
+  public Vec3 backOffPoint(Vec3 mobPosition, Vec3 dangerPosition) {
+    double missing =
+        settings.get().shootMinDistanceBlocks() - horizontalDistance(mobPosition, dangerPosition);
+    return geometry.retreatPoint(mobPosition, dangerPosition, missing);
+  }
+
   public List<Vec3> coverCandidates(Vec3 mobPosition, Vec3 dangerPosition) {
     return geometry.coverCandidates(
         mobPosition, dangerPosition, settings.get().retreatDistanceBlocks());
