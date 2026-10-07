@@ -305,3 +305,11 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código idéntico a la especificación. 690 pruebas; las 4 roturas del WP mordieron y las mías también: sin la apertura por golpe del jugador (`strikesRightAfterThePlayersSwing`), recordar la postura antes de evaluar la apertura (`strikesWhenTheShieldComesDown`) y la espera corrida un tick (`givesUpWhenTheWaitRunsOut`). CI verde. **Verificación en el juego pendiente.**
 
 **Opinión del código.** Lo bueno: la decisión es una máquina chica, pura y probada en cada transición; el goal solo traduce la postura de Paper. Lo flojo: cuando el zombie se cansa de esperar no queda rastro en el log (fuera de alcance); para la validación puede hacer falta contarlo. Riesgo: `getAttackCooldown` también baja al cambiar de ítem (CT-17), y el cerebro sigue sugiriendo el golpe de flanco a quien presiona (decisión abierta).
+
+## WP-22E — Flanqueadores proporcionales (PR #37, Sonnet)
+
+**Qué hizo.** CT-18: `FlankStrategy` elige la mitad de las arañas y completa la mitad del cuerpo a cuerpo con zombies (un sobrante impar va a un zombie), cada tipo por los más a los costados. Con el grupo de prueba flanquean 2 zombies y 1 araña.
+
+**Revisión.** Código idéntico a la especificación. 691 pruebas, con `BrainInvariantsTest` en verde. Las 3 roturas del WP mordieron (la primera por una excepción: con la regla vieja el cupo de zombies da negativo; mi tabla esperaba otro valor, pero la prueba falla igual). Las mías también: un zombie de menos (`halfOfEachKindFlanksTheMostSideways` y otras) y redondear las arañas para arriba (`anOddOneOutFlankerIsAZombie`). CI verde.
+
+**Opinión del código.** Lo bueno: la regla cabe en dos líneas y las referencias del WP la cubren entera, incluido el sobrante. Lo flojo: nada relevante. Riesgo: se juzga en el juego junto con el golpe paciente.
