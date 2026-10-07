@@ -70,7 +70,7 @@ class DecisionWitnessTest {
   @BeforeEach
   void decideTwiceAndTakeDamage() {
     FlightRecorder recorder = new FlightRecorder(settings::debug);
-    hub = new TraceHub(activeGroups, recorder);
+    hub = new TraceHub(activeGroups, destinations(recorder));
     writer = new IncidentWriter(folder, NOPLogger.NOP_LOGGER);
     witness =
         new DecisionWitness(new WitnessParts(groupEvents, draws, window, holder), hub, writer);
@@ -137,6 +137,18 @@ class DecisionWitnessTest {
 
     assertThat(report.before()).isEqualTo(observation.before());
     assertThat(report.after()).isNotEqualTo(report.before());
+  }
+
+  private TraceDestinations destinations(FlightRecorder recorder) {
+    LineFileWriter traceLines =
+        new LineFileWriter(folder.resolve("trace.jsonl"), NOPLogger.NOP_LOGGER);
+    LineFileWriter debugLines =
+        new LineFileWriter(folder.resolve("debug.log"), NOPLogger.NOP_LOGGER);
+    return new TraceDestinations(
+        recorder,
+        new TraceLevels(settings::debug),
+        new TraceWriter(traceLines),
+        new DebugLog(debugLines));
   }
 
   private IncidentReport failedIncident() {

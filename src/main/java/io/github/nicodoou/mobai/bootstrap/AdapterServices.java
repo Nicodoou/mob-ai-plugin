@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.bootstrap;
 
+import io.github.nicodoou.mobai.adapter.command.DebugCommand;
 import io.github.nicodoou.mobai.adapter.command.GroupSpawner;
 import io.github.nicodoou.mobai.adapter.command.MobAiCommand;
 import io.github.nicodoou.mobai.adapter.command.ReloadCommand;
@@ -8,10 +9,15 @@ import io.github.nicodoou.mobai.adapter.command.SpawnGroupCommand;
 import io.github.nicodoou.mobai.adapter.command.StatusCommand;
 import io.github.nicodoou.mobai.adapter.command.Subcommand;
 import io.github.nicodoou.mobai.adapter.config.Messages;
+import io.github.nicodoou.mobai.adapter.debug.DebugLog;
 import io.github.nicodoou.mobai.adapter.debug.DecisionWitness;
 import io.github.nicodoou.mobai.adapter.debug.FlightRecorder;
 import io.github.nicodoou.mobai.adapter.debug.IncidentWriter;
+import io.github.nicodoou.mobai.adapter.debug.LineFileWriter;
+import io.github.nicodoou.mobai.adapter.debug.TraceDestinations;
 import io.github.nicodoou.mobai.adapter.debug.TraceHub;
+import io.github.nicodoou.mobai.adapter.debug.TraceLevels;
+import io.github.nicodoou.mobai.adapter.debug.TraceWriter;
 import io.github.nicodoou.mobai.adapter.debug.WitnessParts;
 import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
@@ -35,6 +41,7 @@ import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
 import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +59,13 @@ public record AdapterServices(
     List<Listener> listeners,
     MobAiCommand mobAiCommand,
     TraceHub traceHub,
-    IncidentWriter incidentWriter) {
+    IncidentWriter incidentWriter,
+    TraceWriter traceWriter,
+    DebugLog debugLog) {
   private static final String DEBUG_FOLDER = "debug";
+  private static final String TRACE_FILE_PREFIX = "trace-";
+  private static final String TRACE_FILE_SUFFIX = ".jsonl";
+  private static final String DEBUG_LOG_FILE = "mobai-debug.log";
 
   public static AdapterServices create(Plugin plugin, CoreServices core, Messages messages) {
     Logger logger = plugin.getSLF4JLogger();
@@ -69,33 +81,56 @@ public record AdapterServices(
         mobAiCommand(
             plugin,
             core,
-            messages,
-            new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator())),
+            new CommandParts(
+                messages,
+                new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator()),
+                parts.debug().outputs().levels())),
         parts.debug().hub(),
-        parts.debug().writer());
+        parts.debug().writer(),
+        parts.debug().outputs().traceWriter(),
+        parts.debug().outputs().debugLog());
   }
 
-  private static MobAiCommand mobAiCommand(
-      Plugin plugin, CoreServices core, Messages messages, GroupSpawner spawner) {
+  private static MobAiCommand mobAiCommand(Plugin plugin, CoreServices core, CommandParts command) {
+    Messages messages = command.messages();
     Map<String, Subcommand> subcommands = new LinkedHashMap<>();
-    subcommands.put("spawngroup", new SpawnGroupCommand(spawner, core.settings(), messages));
+    subcommands.put(
+        "spawngroup", new SpawnGroupCommand(command.spawner(), core.settings(), messages));
     subcommands.put("status", new StatusCommand(core.describeGroup(), messages));
     subcommands.put("reset", new ResetCommand(core.resetMemories(), messages));
     subcommands.put("reload", new ReloadCommand(plugin, core.settings(), messages));
+    subcommands.put("debug", new DebugCommand(command.levels(), core.describeGroup(), messages));
     return new MobAiCommand(subcommands, messages);
   }
 
   private static DebugParts debugParts(Plugin plugin, CoreServices core, Logger logger) {
-    TraceHub hub =
-        new TraceHub(
-            core.activeGroups(), new FlightRecorder(core.settings().section(MobAiSettings::debug)));
+    Path folder = plugin.getDataFolder().toPath().resolve(DEBUG_FOLDER);
+    TraceOutputs outputs = traceOutputs(core, folder, logger);
+    TraceHub hub = traceHub(core, outputs);
     core.events().subscribe(PlanClosed.class, hub::planClosed);
-    IncidentWriter writer =
-        new IncidentWriter(plugin.getDataFolder().toPath().resolve(DEBUG_FOLDER), logger);
+    IncidentWriter writer = new IncidentWriter(folder, logger);
     WitnessParts witnessParts =
         new WitnessParts(
             core.groupEvents(), core.randomDraws(), core.regroupWindow(), core.settings());
-    return new DebugParts(hub, writer, new DecisionWitness(witnessParts, hub, writer));
+    return new DebugParts(hub, writer, new DecisionWitness(witnessParts, hub, writer), outputs);
+  }
+
+  // The trace file is named after the tick the server starts from, so sessions do not mix.
+  private static TraceOutputs traceOutputs(CoreServices core, Path folder, Logger logger) {
+    Path traceFile =
+        folder.resolve(TRACE_FILE_PREFIX + core.clock().currentTick() + TRACE_FILE_SUFFIX);
+    return new TraceOutputs(
+        new TraceLevels(core.settings().section(MobAiSettings::debug)),
+        new TraceWriter(new LineFileWriter(traceFile, logger)),
+        new DebugLog(new LineFileWriter(folder.resolve(DEBUG_LOG_FILE), logger)));
+  }
+
+  private static TraceHub traceHub(CoreServices core, TraceOutputs outputs) {
+    FlightRecorder recorder = new FlightRecorder(core.settings().section(MobAiSettings::debug));
+    return new TraceHub(
+        core.activeGroups(),
+        new TraceDestinations(
+            recorder, outputs.levels(), outputs.traceWriter(), outputs.debugLog()));
   }
 
   private static SharedParts sharedParts(CoreServices core, DebugParts debug) {
@@ -146,5 +181,10 @@ public record AdapterServices(
       MovementSampler movementSampler,
       DebugParts debug) {}
 
-  private record DebugParts(TraceHub hub, IncidentWriter writer, DecisionWitness witness) {}
+  private record DebugParts(
+      TraceHub hub, IncidentWriter writer, DecisionWitness witness, TraceOutputs outputs) {}
+
+  private record TraceOutputs(TraceLevels levels, TraceWriter traceWriter, DebugLog debugLog) {}
+
+  private record CommandParts(Messages messages, GroupSpawner spawner, TraceLevels levels) {}
 }
