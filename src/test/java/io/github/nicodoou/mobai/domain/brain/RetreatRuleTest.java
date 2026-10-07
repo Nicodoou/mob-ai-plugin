@@ -2,6 +2,7 @@ package io.github.nicodoou.mobai.domain.brain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
@@ -10,6 +11,7 @@ import io.github.nicodoou.mobai.testsupport.GroupSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RetreatRuleTest {
@@ -55,6 +57,39 @@ class RetreatRuleTest {
     assertThat(rule.canRecover(mob, snapshotWithPlayerAt(new Vec3(0, 64, 11.9), 20))).isFalse();
     assertThat(rule.canRecover(mob, snapshotWithPlayerAt(new Vec3(0, 64, 1), 0))).isTrue();
     assertThat(rule.canRecover(mob, new GroupSnapshotBuilder().build())).isTrue();
+  }
+
+  @Test
+  void groupIsRetreatedWhenMoreThanHalfAreLow() {
+    GroupSnapshot snapshot = zombiesWithHealth(6, 6, 20);
+
+    assertThat(rule.isGroupRetreated(snapshot)).isTrue();
+  }
+
+  @Test
+  void halfIsNotEnoughForAGroupRetreat() {
+    GroupSnapshot snapshot = zombiesWithHealth(6, 6, 20, 20);
+
+    assertThat(rule.isGroupRetreated(snapshot)).isFalse();
+  }
+
+  @Test
+  void emptyGroupIsNotRetreated() {
+    assertThat(rule.isGroupRetreated(new GroupSnapshotBuilder().build())).isFalse();
+  }
+
+  private static GroupSnapshot zombiesWithHealth(double... healths) {
+    GroupSnapshotBuilder builder = new GroupSnapshotBuilder();
+    for (int index = 0; index < healths.length; index++) {
+      builder.withMob(
+          new MobSnapshotBuilder()
+              .withId(new MobId(new UUID(2, index)))
+              .withKind(MobKind.ZOMBIE)
+              .withHealth(healths[index])
+              .withMaxHealth(ZOMBIE_MAX_HEALTH)
+              .build());
+    }
+    return builder.build();
   }
 
   private static MobSnapshot zombieWithHealth(double health) {

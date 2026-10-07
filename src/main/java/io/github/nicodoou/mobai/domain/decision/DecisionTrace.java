@@ -27,6 +27,7 @@ public record DecisionTrace(
     List<MobId> returningFromRetreat,
     Optional<PlanEndReason> endReason,
     Optional<RegroupEndReason> regroupEnd,
+    boolean stillRetreated,
     List<AttackChoice> attackChoices) {
   public DecisionTrace {
     Objects.requireNonNull(group, "DecisionTrace.group");

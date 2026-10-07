@@ -96,11 +96,22 @@ public final class Brain {
     if (target.isEmpty()) {
       return Outcome.idle();
     }
+    if (parts.retreatRule().isGroupRetreated(turn.snapshot())) {
+      return holdBack(turn);
+    }
     turn.lifecycle().beginPlanning();
     GroupStrategy strategy = chooseStrategy(turn, target.get());
     startPlan(turn, strategy, target.get());
     retreatLowHealth(turn);
     return Outcome.withOrders(planOrders(turn));
+  }
+
+  // CT-13: a plan opened now would close at once with GROUP_RETREATED and teach the memory a
+  // failure that was never fought.
+  private Outcome holdBack(Turn turn) {
+    turn.lifecycle().regroupWithoutPlan(turn.snapshot().tick());
+    turn.draft().stillRetreated();
+    return Outcome.withOrders(regroupOrders(turn));
   }
 
   private Optional<PlayerId> chooseTarget(Turn turn) {
@@ -269,10 +280,22 @@ public final class Brain {
   // The group observes again and plans in the next decision.
   private Outcome regroup(Turn turn) {
     Optional<RegroupEndReason> regroupEnd = detectRegroupEnd(turn);
-    if (regroupEnd.isPresent()) {
-      endRegrouping(turn);
-      return Outcome.idle();
+    if (regroupEnd.isEmpty()) {
+      return Outcome.withOrders(regroupOrders(turn));
     }
+    if (regroupEnd.get() == RegroupEndReason.WINDOW_EXPIRED
+        && parts.retreatRule().isGroupRetreated(turn.snapshot())) {
+      return keepRegrouping(turn);
+    }
+    endRegrouping(turn);
+    return Outcome.idle();
+  }
+
+  // CT-13: the window ran out but the group still cannot fight; the adaptive window only learns
+  // from regroups that end.
+  private Outcome keepRegrouping(Turn turn) {
+    turn.lifecycle().restartRegroupWindow(turn.snapshot().tick());
+    turn.draft().stillRetreated();
     return Outcome.withOrders(regroupOrders(turn));
   }
 

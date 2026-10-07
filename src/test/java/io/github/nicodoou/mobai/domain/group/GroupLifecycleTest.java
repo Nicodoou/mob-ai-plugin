@@ -244,6 +244,52 @@ class GroupLifecycleTest {
   }
 
   @Test
+  void tooHurtGroupRegroupsWithoutAPlan() {
+    group.lifecycle().regroupWithoutPlan(500);
+
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(group.lifecycle().regroupStartTick()).hasValue(500);
+    assertThat(group.lifecycle().plan()).isEmpty();
+    assertThat(group.lifecycle().planSequence()).isZero();
+    assertThat(group.lifecycle().committedTarget()).isEmpty();
+
+    group.lifecycle().finishRegrouping();
+
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+  }
+
+  @Test
+  void regroupWindowRestartsAtTheGivenTick() {
+    group.lifecycle().regroupWithoutPlan(500);
+
+    group.lifecycle().restartRegroupWindow(1100);
+
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(group.lifecycle().regroupStartTick()).hasValue(1100);
+  }
+
+  @Test
+  void newRegroupTransitionsAreGuarded() {
+    assertThatThrownBy(() -> group.lifecycle().restartRegroupWindow(10))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Group 00000000 cannot restart the regroup window while OBSERVING");
+
+    enterExecuting();
+
+    assertThatThrownBy(() -> group.lifecycle().regroupWithoutPlan(10))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Group 00000000 cannot regroup without a plan while EXECUTING");
+  }
+
+  @Test
+  void regroupTicksMustNotBeNegative() {
+    assertThatThrownBy(() -> group.lifecycle().regroupWithoutPlan(-1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("PlanLifecycle.tick must be zero or positive, got -1");
+    assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+  }
+
+  @Test
   void markTargetSeenUpdatesThePlan() {
     enterExecuting();
 

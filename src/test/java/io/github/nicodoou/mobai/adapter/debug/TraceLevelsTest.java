@@ -107,6 +107,7 @@ class TraceLevelsTest {
             List.of(),
             Optional.empty(),
             Optional.empty(),
+            false,
             List.of());
     return new TraceEvent.DecisionEvent(groupId(1), TICK, decision, trace);
   }

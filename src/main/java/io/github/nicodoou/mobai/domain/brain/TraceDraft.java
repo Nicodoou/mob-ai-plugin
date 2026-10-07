@@ -28,6 +28,7 @@ final class TraceDraft {
   private final List<MobId> returningFromRetreat = new ArrayList<>();
   private Optional<PlanEndReason> endReason = Optional.empty();
   private Optional<RegroupEndReason> regroupEnd = Optional.empty();
+  private boolean stillRetreated;
   private final List<AttackChoice> attackChoices = new ArrayList<>();
 
   TraceDraft(GroupId group, long tick, GroupState stateBefore) {
@@ -60,6 +61,10 @@ final class TraceDraft {
     regroupEnd = Optional.of(value);
   }
 
+  void stillRetreated() {
+    stillRetreated = true;
+  }
+
   void addNewlyRetreating(MobId mob) {
     newlyRetreating.add(mob);
   }
@@ -86,6 +91,7 @@ final class TraceDraft {
         returningFromRetreat,
         endReason,
         regroupEnd,
+        stillRetreated,
         attackChoices);
   }
 }

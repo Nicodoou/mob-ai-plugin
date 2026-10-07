@@ -39,6 +39,9 @@ import org.junit.jupiter.api.Test;
 class BrainObservingTest {
   private static final int FIRST_ZOMBIE = 0;
   private static final double LOW_HEALTH = 5;
+  private static final int HURT_MAJORITY = 5;
+  private static final int HURT_HALF = 4;
+  private static final long INITIAL_WINDOW_TICKS = 600;
 
   @Test
   void withoutPlayersTheGroupStaysIdle() {
@@ -162,6 +165,50 @@ class BrainObservingTest {
     Plan plan = fixture.group().lifecycle().plan().orElseThrow();
     assertThat(plan.roleOf(wounded)).contains(Role.RETREAT);
     assertThat(plan.startingRoleOf(wounded)).contains(Role.PRESS);
+  }
+
+  @Test
+  void badlyHurtGroupRegroupsInsteadOfPlanning() {
+    BrainFixture fixture = BrainFixture.choosingStrategy(0);
+    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_MAJORITY);
+
+    BrainResult result = fixture.decide(START_TICK, mobs, alice());
+
+    assertThat(result.decision().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(result.decision().plan()).isEmpty();
+    assertThat(result.trace().stillRetreated()).isTrue();
+    assertThat(result.trace().strategySelection()).isEmpty();
+    assertThat(result.closedPlan()).isEmpty();
+    assertThat(result.decision().assignments())
+        .hasSize(9)
+        .allSatisfy(
+            order -> {
+              assertThat(order.role()).isEqualTo(Role.RETREAT);
+              assertThat(order.target()).isEmpty();
+              assertThat(order.suggestedAttack()).isEmpty();
+            });
+    assertThat(fixture.group().lifecycle().planSequence()).isZero();
+    assertThat(fixture.group().lifecycle().regroupStartTick()).hasValue(START_TICK);
+    assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
+  }
+
+  @Test
+  void halfHurtGroupStillPlans() {
+    BrainFixture fixture = BrainFixture.choosingStrategy(0);
+    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_HALF);
+
+    BrainResult result = fixture.decide(START_TICK, mobs, alice());
+
+    assertThat(result.decision().state()).isEqualTo(GroupState.EXECUTING);
+    assertThat(result.trace().stillRetreated()).isFalse();
+  }
+
+  private static List<MobSnapshot> hurt(List<MobSnapshot> mobs, int count) {
+    List<MobSnapshot> changed = mobs;
+    for (int index = 0; index < count; index++) {
+      changed = BrainFixture.withHealth(changed, index, LOW_HEALTH);
+    }
+    return changed;
   }
 
   @Test
