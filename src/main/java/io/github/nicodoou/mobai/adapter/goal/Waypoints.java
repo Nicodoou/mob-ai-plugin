@@ -22,6 +22,7 @@ public final class Waypoints {
   private final FlankManeuver maneuver;
   private final Supplier<AttackSettings> settings;
   private final ShooterFormation formation = new ShooterFormation();
+  private final HighGroundRanking ranking = new HighGroundRanking();
 
   public Waypoints(
       CombatGeometry geometry, FlankManeuver maneuver, Supplier<AttackSettings> settings) {
@@ -66,6 +67,18 @@ public final class Waypoints {
   public List<Vec3> coverCandidates(Vec3 mobPosition, Vec3 dangerPosition) {
     return geometry.coverCandidates(
         mobPosition, dangerPosition, settings.get().retreatDistanceBlocks());
+  }
+
+  /** High-ground candidates near a shooter's spot that stay within bow range. */
+  public List<Vec3> perchCandidates(Vec3 spot, Vec3 target) {
+    double maxRange = settings.get().shootMaxDistanceBlocks();
+    return geometry.perchCandidates(spot, target).stream()
+        .filter(candidate -> horizontalDistance(candidate, target) <= maxRange)
+        .toList();
+  }
+
+  public List<Vec3> rankPerches(List<Vec3> grounded, double currentGroundY) {
+    return ranking.rank(grounded, currentGroundY);
   }
 
   private static double horizontalDistance(Vec3 from, Vec3 to) {

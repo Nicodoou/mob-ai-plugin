@@ -295,6 +295,28 @@ class CombatGeometryTest {
     assertThat(geometry.clearLane(new Vec3(0, 65, 25), new Vec3(0, 65, 0), allies)).isEmpty();
   }
 
+  @Test
+  void perchCandidatesSurroundTheSpot() {
+    List<Vec3> candidates = geometry.perchCandidates(new Vec3(0, 64, 25), new Vec3(0, 64, 0));
+
+    assertThat(candidates).hasSize(10);
+    assertVec(candidates.get(0), 0, 64, 25);
+    assertVec(candidates.get(1), -6.4704761275630185, 64, 24.148145657226706);
+    assertVec(candidates.get(2), 6.4704761275630185, 64, 24.148145657226706);
+    assertVec(candidates.get(3), -12.499999999999998, 64, 21.65063509461097);
+    assertVec(candidates.get(5), 0, 64, 29);
+    assertVec(candidates.get(6), -7.5057523079731014, 64, 28.01184896238298);
+  }
+
+  @Test
+  void perchCandidatesStayAtTheSpotsHeight() {
+    List<Vec3> candidates = geometry.perchCandidates(new Vec3(0, 70, 25), new Vec3(0, 64, 0));
+
+    assertThat(candidates)
+        .hasSize(10)
+        .allSatisfy(candidate -> assertThat(candidate.y()).isEqualTo(70));
+  }
+
   private static Vec3 attackerAt(double degrees) {
     double radians = Math.toRadians(degrees);
     return new Vec3(

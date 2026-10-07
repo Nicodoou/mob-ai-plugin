@@ -41,6 +41,10 @@ public final class CombatGeometry {
   // Turns tried around the target, nearest first, to find a lane without allies.
   private static final List<Double> LANE_TURNS_DEGREES =
       List.of(0.0, 30.0, -30.0, 60.0, -60.0, 90.0, -90.0);
+  // Turns tried round the target from a shooter's spot when looking for high ground.
+  private static final List<Double> PERCH_TURNS_DEGREES = List.of(0.0, 15.0, -15.0, 30.0, -30.0);
+  // A second ring a little farther out, where a hill or a wall often is.
+  private static final double PERCH_OUTER_EXTRA_BLOCKS = 4.0;
 
   public double angleFromFacingDegrees(PlayerPose pose, Vec3 point) {
     Vec3 offset = point.minus(pose.position()).horizontal();
@@ -104,6 +108,25 @@ public final class CombatGeometry {
         .map(turned -> new Vec3(target.x() + turned.x(), slot.y(), target.z() + turned.z()))
         .filter(spot -> isLineOfFireClear(spot, target, allies))
         .findFirst();
+  }
+
+  /** Spots round the target near {@code spot}, nearest ring first, at the spot's height. */
+  public List<Vec3> perchCandidates(Vec3 spot, Vec3 target) {
+    Vec3 offset = spot.minus(target).horizontal();
+    double distance = offset.length();
+    List<Vec3> candidates = new ArrayList<>(perchRing(offset, target, spot.y()));
+    if (distance > 0) {
+      Vec3 farther = offset.times((distance + PERCH_OUTER_EXTRA_BLOCKS) / distance);
+      candidates.addAll(perchRing(farther, target, spot.y()));
+    }
+    return List.copyOf(candidates);
+  }
+
+  private static List<Vec3> perchRing(Vec3 offset, Vec3 target, double height) {
+    return PERCH_TURNS_DEGREES.stream()
+        .map(turn -> rotateAroundVertical(offset, turn))
+        .map(turned -> new Vec3(target.x() + turned.x(), height, target.z() + turned.z()))
+        .toList();
   }
 
   public Vec3 predictedAimPoint(Vec3 shooterEye, Vec3 aimPoint, Vec3 movementPerTick) {
