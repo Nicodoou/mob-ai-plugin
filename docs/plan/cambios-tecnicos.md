@@ -22,6 +22,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-17](#ct-17--apertura-y-abandono-del-golpe-paciente) Apertura y abandono del golpe paciente | 7 oct 2026 | Opus (especificación del WP-23) | WP-23 |
 | [CT-18](#ct-18--flanqueadores-proporcionales) Flanqueadores proporcionales | 7 oct 2026 | Nico (prueba del WP-23) | WP-22E |
 | [CT-19](#ct-19--golpe-esquivo) Golpe esquivo | 7 oct 2026 | Nico | WP-23B (por especificar, después del WP-24) |
+| [CT-20](#ct-20--todos-los-tiros-con-nuestra-puntería-y-división-del-wp-24) Todos los tiros con nuestra puntería, y división del WP-24 | 7 oct 2026 | Opus (especificación del WP-24) | WP-24A y WP-24B |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -299,3 +300,18 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 **Alternativas descartadas.** Un comportamiento fijo de todos los que presionan (puede volver injusto al grupo y la memoria no aprende nada) y sumarlo al golpe paciente (mezcla escudo y carga en un mismo ataque y la memoria no las distingue).
 
 **Riesgos.** El zombie camina más lento que el jugador: contra uno que corre hacia él, el esquive no alcanza. Con espada (0,6 s de carga) la ventana es corta.
+
+## CT-20 — Todos los tiros con nuestra puntería, y división del WP-24
+
+**Qué cambia.**
+1. El spike decidió que el tiro directo usara `rangedAttack` (la puntería vanilla) y el anticipado `launchProjectile`. Ahora los tres tiros usan `launchProjectile` con nuestra puntería (`ShotAim`): el directo apunta al centro del jugador, el anticipado y el oportuno a donde va a estar.
+2. El tiro oportuno espera a que el objetivo esté distraído: el esqueleto fuera de su vista (120°, CT-16) o el jugador recién pegó (`getAttackCooldown()`). Al vencer la espera dispara el directo y lo registra como directo (igual que el abandono del golpe paciente, CT-17).
+3. El WP-24 se divide: WP-24A (rastreo de flechas) y WP-24B (`ShootGoal`, `BowShooter` y los tres tiros).
+
+**Por qué.** `rangedAttack` no devuelve la flecha, y el rastreador necesita su UUID para seguir el intento (hallazgo 5). Con una sola forma de disparar, la diferencia entre tiros es solo la puntería, que es lo que la memoria tiene que comparar. El WP-24 junto pasaba las 400 líneas.
+
+**Impacto.** Adaptadores (`BowShooter`, `ShotAim`, `ShootGoal`, `AttackTracker` con proyectiles, `ProjectileListener`, `ProjectileResolver`). Dominio: sin cambios.
+
+**Alternativas descartadas.** Capturar la flecha de `rangedAttack` con `ProjectileLaunchEvent`: funciona, pero acopla el disparo a un evento y complica correlacionar mob, flecha y ataque.
+
+**Riesgos.** El daño de la flecha depende de su velocidad: con 1,6 bloques por tick ronda el de un esqueleto vanilla; se mira en la verificación.

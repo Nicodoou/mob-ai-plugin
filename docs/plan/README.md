@@ -137,7 +137,8 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-22E | Flanqueadores proporcionales | WP-23 | Sonnet | `FlankStrategy` (CT-18) |
 | WP-23 | Golpe paciente | WP-22C | Sonnet | El golpe de flanco pasó al WP-22B (CT-14) |
 | WP-23B | Golpe esquivo | WP-24 | Sonnet | CT-19 |
-| WP-24 | Esqueletos y proyectiles | WP-23 | Sonnet | `ShootGoal`, `BowShooter`, rastreo de flechas |
+| WP-24A | Rastreo de flechas | WP-22E | Sonnet | Proyectiles en `AttackTracker`, `ProjectileListener`, `ProjectileResolver` (CT-20) |
+| WP-24B | Esqueletos que disparan | WP-24A | Sonnet | `ShootGoal`, `BowShooter`, `ShotAim`, tiro oportuno (CT-20) |
 | WP-25 | Arañas | WP-24 | Sonnet | Mordida con lentitud |
 | WP-26 | Consulta de memoria y métricas | WP-25 | Sonnet | `/mobai memory` y líneas de métricas para contar |
 | WP-27 | Validación del MVP | Puerta E6 | Nico + Opus | Sesiones de prueba, medición con Spark e informe para G1 |
