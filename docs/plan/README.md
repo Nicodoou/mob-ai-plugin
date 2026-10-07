@@ -246,7 +246,11 @@ io.github.nicodoou.mobai
 │   ├── command     MobAiCommand, Subcommand, SpawnGroupCommand, StatusCommand,
 │   │               ResetCommand, ReloadCommand, GroupSpawner, SpawnRing
 │   │                                                                 WP-21 (memory: WP-26)
-│   └── debug       DebugLog                                                           WP-29
+│   └── debug       IncidentJson, IncidentFile, OptionalTypeAdapterFactory             WP-28B
+│                   DecisionWitness, WitnessParts, Observation, FlightRecorder,
+│                   TraceHub, TraceEvent, IncidentWriter, DebugGson                    WP-29A
+│                   TraceLevels, TraceWriter, DebugLog, LineFileWriter,
+│                   TraceDestinations (+ command/DebugCommand)                         WP-29B
 └── bootstrap       MobAiPlugin, CoreServices, AdapterServices, PluginRuntime
                                                     WP-00 vacío, WP-20B armado
 ```

@@ -466,6 +466,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Reparto de decisiones, decidir un grupo, muestreo de movimiento | `DecisionCadence`, `DecisionParts`, `GroupDecider`, `MovementSampler` | Adaptadores |
 | Comandos de administración y grupo de prueba | `MobAiCommand`, `Subcommand`, `SpawnGroupCommand`, `StatusCommand`, `ResetCommand`, `ReloadCommand`, `GroupSpawner`, `SpawnRing` | Adaptadores |
 | Incidentes en el server: testigo de cada decisión, caja negra, entrada única de trazas | `DecisionWitness`, `WitnessParts`, `Observation`, `FlightRecorder`, `TraceHub`, `TraceEvent`, `IncidentWriter`, `DebugGson` | Adaptadores |
+| Trazas por nivel y log legible | `TraceLevels`, `TraceWriter`, `DebugLog`, `LineFileWriter`, `TraceDestinations`, `DebugCommand` | Adaptadores |
 | Armado y ciclo de vida del plugin | `CoreServices`, `AdapterServices`, `PluginRuntime` | Arranque |
 | Listeners de daño, amenaza y muertes | `DamageListener`, `ThreatListener`, `DeathListener` | Adaptadores |
 | Reloj propio, azar e ids de grupo reales | `ServerTickCounter`, `JdkRandomSource`, `RandomGroupIdSource` | Adaptadores |
