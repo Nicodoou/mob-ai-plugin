@@ -48,7 +48,7 @@ public final class PluginRuntime {
     MobAiSettings settings = loadSettings(plugin);
     CoreServices core =
         CoreServices.create(settings, memoryRepository(plugin), seededRandom(logger));
-    AdapterServices adapters = AdapterServices.create(plugin, core, loadMessages(plugin), logger);
+    AdapterServices adapters = AdapterServices.create(plugin, core, loadMessages(plugin));
     loadMemories(core, logger);
     registerListeners(plugin, adapters);
     plugin.registerCommand("mobai", COMMAND_DESCRIPTION, adapters.mobAiCommand());

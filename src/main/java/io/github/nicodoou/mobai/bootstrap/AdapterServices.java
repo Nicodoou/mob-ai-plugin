@@ -46,8 +46,8 @@ public record AdapterServices(
     List<Listener> listeners,
     MobAiCommand mobAiCommand) {
 
-  public static AdapterServices create(
-      Plugin plugin, CoreServices core, Messages messages, Logger logger) {
+  public static AdapterServices create(Plugin plugin, CoreServices core, Messages messages) {
+    Logger logger = plugin.getSLF4JLogger();
     SharedParts parts = sharedParts(core);
     GoalInstaller goalInstaller = goalInstaller(plugin, core, parts);
     return new AdapterServices(
