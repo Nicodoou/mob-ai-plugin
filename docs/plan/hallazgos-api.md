@@ -54,6 +54,7 @@ Este documento es la fuente de verdad de los WPs de adaptadores (WP-16 a WP-26).
 | Una flecha que falla dispara `ProjectileHitEvent` con el bloque | 4 flechas a pasto o grava | Regla 8: fallo |
 | Una flecha tardó **69 ticks** en caer, más que el plazo de 60 | Log | El rastreador ignora los impactos de intentos ya cerrados por plazo |
 | Vuelo típico a 12 bloques: de 5 a 7 ticks | Log | El plazo de 60 ticks sobra para los impactos reales |
+| **La elevación fija de vanilla (20 % de la distancia) solo sirve apuntando a un tercio de la altura del objetivo**: apuntando al centro del cuerpo, la flecha llega a 2 bloques sobre los pies y pasa por arriba del jugador (B-03) | Puerta E6: 12 de 43 aciertos; simulación con arrastre 0,99 y gravedad 0,05 por tick | `leadShotVelocity` resuelve el ángulo con la física de la flecha |
 | **La flecha lanzada con una velocidad propia sale orientada como el tirador** y viaja «derrapando de costado» hasta que Minecraft la gira (lo vio Nico en las pruebas del spike) | A la vista | `BowShooter` le pone a la flecha la rotación de su velocidad antes de que aparezca (WP-24B); falta confirmar en el server la convención de `Projectile.setRotation` |
 
 ## 6. Ciclo de vida de las entidades

@@ -76,6 +76,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 
 | Decisión | Dónde se cierra |
 | --- | --- |
+| El esqueleto dispara aunque tenga un aliado en la línea de tiro: el tiro oportuno le pegó a aliados 4 de 9 veces (`verificacion-e6.md`, corrida 3). Propuesta de Opus, aprobada por Nico para más adelante: no disparar si un miembro del grupo está cerca de la línea entre el ojo del esqueleto y el objetivo | WP chico después del WP-23B |
 | El cerebro le sugiere el golpe de flanco también a un zombie que presiona; `PressGoal` pega de frente y registra eso (lo ejecutado), así que la sugerencia se desperdicia. Propuesta: que `AttackSuggester` no ofrezca `ZOMBIE_FLANK_STRIKE` fuera del rol `FLANK` (CT-08 ya lo elige solo para los flanqueadores). Cambia sorteos de varias pruebas del cerebro | WP chico de limpieza, junto con los ciclos de paquetes |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |
 | `PlanEndDetector.hasRetreated` con miembros que se suman a mitad de plan: «se fueron» = iniciales − roles actuales da negativo y la regla se vuelve menos sensible. Propuesta: `gone = max(0, iniciales − roles)` y comparar contra `max(iniciales, roles)` | WP de limpieza después de E3 (junto con los ciclos de paquetes); el WP-11 puede mostrar si importa |

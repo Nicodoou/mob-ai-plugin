@@ -9,9 +9,9 @@ public final class MinecraftConstants {
 
   public static final double ARROW_SPEED_BLOCKS_PER_TICK = 1.6;
 
-  // Vanilla skeletons raise their aim by this fraction of the horizontal distance to make up for
-  // the arrow's drop.
-  public static final double ARROW_ARC_FACTOR = 0.2;
+  // An arrow in flight keeps this fraction of its speed and falls this much every tick.
+  public static final double ARROW_DRAG_PER_TICK = 0.99;
+  public static final double ARROW_GRAVITY_PER_TICK = 0.05;
 
   // Damage per hit on normal difficulty. The zombie value was measured in the spike; spider and
   // arrow are vanilla values (an arrow deals 1.6 speed times 2.0 base damage, rounded up).

@@ -11,6 +11,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class CombatGeometryTest {
+  private static final double ARRIVAL_TOLERANCE_BLOCKS = 0.05;
+  private static final int SIMULATED_TICKS = 100;
+  private static final double SIMULATED_DRAG = 0.99;
+  private static final double SIMULATED_GRAVITY = 0.05;
   private static final double ATTACKER_DISTANCE = 4.0;
 
   private final CombatGeometry geometry = new CombatGeometry();
@@ -172,20 +176,67 @@ class CombatGeometryTest {
   }
 
   @Test
-  void leadShotVelocityRaisesTheAimAndKeepsArrowSpeed() {
+  void leadShotVelocityKeepsArrowSpeedAndRaisesTheAim() {
     Vec3 velocity = geometry.leadShotVelocity(Vec3.ZERO, new Vec3(3, 0, 4));
 
-    assertVec(velocity, 0.9413574486632834, 0.31378581622109447, 1.2551432648843779);
     assertThat(velocity.length()).isCloseTo(1.6, within(1e-9));
+    assertThat(velocity.y()).isPositive();
+    assertThat(velocity.x() / velocity.z()).isCloseTo(0.75, within(1e-9));
   }
 
   @Test
-  void leadShotVelocityUsesTheShooterEye() {
-    assertVec(
-        geometry.leadShotVelocity(new Vec3(1, 65.5, 2), new Vec3(13, 64, -7)),
-        1.2736476034687862,
-        0.15920595043359828,
-        -0.9552357026015896);
+  void leadShotVelocityPointsFromTheShooterEye() {
+    Vec3 velocity = geometry.leadShotVelocity(new Vec3(1, 65.5, 2), new Vec3(13, 64, -7));
+
+    assertThat(velocity.horizontal().normalized().x()).isCloseTo(0.8, within(1e-9));
+    assertThat(velocity.horizontal().normalized().z()).isCloseTo(-0.6, within(1e-9));
+  }
+
+  @Test
+  void targetStraightAboveIsShotStraightUp() {
+    assertVec(geometry.leadShotVelocity(new Vec3(5, 64, 5), new Vec3(5, 70, 5)), 0, 1.6, 0);
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {8, 12, 15})
+  void arrowArrivesAtTheAimPoint(double horizontalBlocks) {
+    Vec3 eye = new Vec3(0, 65.6, 0);
+    Vec3 aim = new Vec3(0, 64.9, horizontalBlocks);
+
+    double arrivalY = simulatedArrivalY(eye, geometry.leadShotVelocity(eye, aim), horizontalBlocks);
+
+    assertThat(arrivalY).isCloseTo(aim.y(), within(ARRIVAL_TOLERANCE_BLOCKS));
+  }
+
+  @ParameterizedTest
+  @ValueSource(doubles = {-3, 3})
+  void arrowArrivesAtATargetAboveOrBelow(double riseBlocks) {
+    Vec3 eye = new Vec3(0, 65.6, 0);
+    Vec3 aim = new Vec3(9, 65.6 + riseBlocks, 9);
+    double horizontalBlocks = Math.hypot(9, 9);
+
+    double arrivalY = simulatedArrivalY(eye, geometry.leadShotVelocity(eye, aim), horizontalBlocks);
+
+    assertThat(arrivalY).isCloseTo(aim.y(), within(ARRIVAL_TOLERANCE_BLOCKS));
+  }
+
+  // Minecraft's arrow, as the test sees it: it moves, then keeps 99 % of its speed and falls 0.05
+  // blocks per tick. Returns its height when it has flown the given horizontal distance.
+  private static double simulatedArrivalY(Vec3 eye, Vec3 velocity, double horizontalBlocks) {
+    double horizontalSpeed = velocity.horizontal().length();
+    double verticalSpeed = velocity.y();
+    double travelled = 0;
+    double y = eye.y();
+    for (int tick = 0; tick < SIMULATED_TICKS; tick++) {
+      if (travelled + horizontalSpeed >= horizontalBlocks) {
+        return y + verticalSpeed * (horizontalBlocks - travelled) / horizontalSpeed;
+      }
+      travelled += horizontalSpeed;
+      y += verticalSpeed;
+      horizontalSpeed *= SIMULATED_DRAG;
+      verticalSpeed = verticalSpeed * SIMULATED_DRAG - SIMULATED_GRAVITY;
+    }
+    throw new AssertionError("the arrow never reached " + horizontalBlocks + " blocks");
   }
 
   private static Vec3 attackerAt(double degrees) {
