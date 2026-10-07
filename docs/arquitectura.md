@@ -468,6 +468,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Formación de flanqueo | `FlankFormation`, `FlankQuery` | Dominio |
 | Flanqueo fuera de la vista (CT-16) | `FlankManeuver`, `FlankStep`, `CombatGeometry.isOutOfSight` | Dominio |
 | Curación en retirada | `RecoveryHealer`, `HealSchedule` | Adaptadores |
+| Golpe paciente y tiempos de los goals | `PatientWait`, `PatientMove`, `PlayerStance`, `GoalTiming` | Adaptadores |
 | Grupo en retirada que no planifica (CT-13) | `RetreatRule.isGroupRetreated`, `PlanLifecycle.regroupWithoutPlan` y `restartRegroupWindow`, `DecisionTrace.stillRetreated` | Dominio |
 | Reparto de decisiones, decidir un grupo, muestreo de movimiento | `DecisionCadence`, `DecisionParts`, `GroupDecider`, `MovementSampler` | Adaptadores |
 | Comandos de administración y grupo de prueba | `MobAiCommand`, `Subcommand`, `SpawnGroupCommand`, `StatusCommand`, `ResetCommand`, `ReloadCommand`, `GroupSpawner`, `SpawnRing` | Adaptadores |

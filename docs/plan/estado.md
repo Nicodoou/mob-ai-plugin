@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D mergeado (#35) y verificado en el juego por Nico: B-02 cerrado; WP-22A a 22D completos.** Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
+2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D mergeado (#35) y verificado en el juego por Nico: B-02 cerrado; WP-22A a 22D completos.** **WP-23 especificado, esperando la aprobación de Nico.** Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -50,7 +50,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-22B | Goal de flanqueo y curación | E6 | mergeado | Sonnet | [#33](https://github.com/Nicodoou/mob-ai-plugin/pull/33) | Después del WP-22A. Golpe de flanco en `FlankGoal` (CT-14). Verificación en el server por Opus. Los goals miden el tiempo con el reloj del plugin (B-01) |
 | WP-22D | Flanqueo fuera de la vista | E6 | mergeado | Sonnet | [#35](https://github.com/Nicodoou/mob-ai-plugin/pull/35) | Arregla B-02 con el modelo de Nico (CT-16). Verificación en el juego por Nico |
 | WP-22C | Retirada a cubierto | E6 | mergeado | Sonnet | [#34](https://github.com/Nicodoou/mob-ai-plugin/pull/34) | Después del WP-22B. CT-15 (pedido de Nico). Verificación en el server por Opus, incluido el costo con varios mobs en retirada |
-| WP-23 | Golpe paciente | E6 | pendiente | Sonnet | — | El golpe de flanco ya llega en el WP-22B (CT-14). `PressGoal` registra `ZOMBIE_FRONT_STRIKE` (lo que ejecuta, no lo sugerido; WP-19): al agregar el golpe paciente, registrar el ataque ejecutado |
+| WP-23 | Golpe paciente | E6 | especificado | Sonnet | — | CT-17 (apertura y abandono). Verificación en el juego por Nico |
 | WP-24 | Esqueletos y proyectiles | E6 | pendiente | Sonnet | — | Hasta acá los esqueletos conservan sus goals vanilla (WP-19): `GoalInstaller` tiene que pasar a instalarles los nuestros. Mientras no registren, un grupo de solo esqueletos cierra planes con éxito 0 (puerta E5, corrida 5): verificar que deje de pasar. Ignorar impactos que llegan después del plazo |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
 | WP-26 | Consulta de memoria y métricas | E6 | pendiente | Sonnet | — | |
@@ -73,6 +73,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 
 | Decisión | Dónde se cierra |
 | --- | --- |
+| El cerebro le sugiere el golpe de flanco también a un zombie que presiona; `PressGoal` pega de frente y registra eso (lo ejecutado), así que la sugerencia se desperdicia. Propuesta: que `AttackSuggester` no ofrezca `ZOMBIE_FLANK_STRIKE` fuera del rol `FLANK` (CT-08 ya lo elige solo para los flanqueadores). Cambia sorteos de varias pruebas del cerebro | WP chico de limpieza, junto con los ciclos de paquetes |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |
 | `PlanEndDetector.hasRetreated` con miembros que se suman a mitad de plan: «se fueron» = iniciales − roles actuales da negativo y la regla se vuelve menos sensible. Propuesta: `gone = max(0, iniciales − roles)` y comparar contra `max(iniciales, roles)` | WP de limpieza después de E3 (junto con los ciclos de paquetes); el WP-11 puede mostrar si importa |
 | Brujas contra un objetivo que se cura más rápido de lo que el grupo le pega (idea de Nico). Tres jugadas: debuffear al jugador (Veneno, Daño instantáneo, Debilidad, Lentitud), buffear a los aliados (Fuerza, Velocidad) o las dos en secuencia. Propuesta: puntuar cada poción por cuánto baja el tiempo para matarlo, recalculando `KillTimeEstimator` con la foto modificada, y multiplicar por su tasa aprendida. Cuidar la salpicadura: cura y daño se invierten en no-muertos, y Fuerza o Velocidad cerca del jugador también lo buffean a él. La señal de «inmatable» ya existe: `KillTimeEstimate.damagePerSecond` negativo | Fase 2, en el WP de las brujas |

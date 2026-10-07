@@ -19,6 +19,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-14](#ct-14--formación-de-flanqueo-y-golpe-de-flanco-en-el-wp-22) Formación de flanqueo y golpe de flanco en el WP-22 | 7 oct 2026 | Opus (especificación del WP-22) | WP-22A y WP-22B |
 | [CT-15](#ct-15--retirada-a-cubierto) Retirada a cubierto | 7 oct 2026 | Nico | WP-22C |
 | [CT-16](#ct-16--flanqueo-fuera-de-la-vista) Flanqueo fuera de la vista | 7 oct 2026 | Nico (verificación del WP-22B, B-02) | WP-22D |
+| [CT-17](#ct-17--apertura-y-abandono-del-golpe-paciente) Apertura y abandono del golpe paciente | 7 oct 2026 | Opus (especificación del WP-23) | WP-23 |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -258,3 +259,17 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 - Usar la línea de visión con bloques también para el flanqueo: más caro y no es lo que pide el modelo (un abanico geométrico).
 
 **Riesgos.** Un jugador que gira constantemente hacia el flanqueador lo mantiene esquivando: el plan cierra por tiempo y la memoria aprende que flanquear a ese jugador sirve poco (es lo que tiene que aprender). Los servers que ya tienen `config.yml` conservan `flank-distance-blocks: 3.0` hasta que lo cambien.
+
+## CT-17 — Apertura y abandono del golpe paciente
+
+**Qué cambia.** El catálogo dice «golpea cuando el jugador baja el escudo o termina su propio ataque, con espera máxima de 3 s» y que una espera vencida no cuenta. Se precisa así:
+1. **Apertura:** el jugador acaba de pegar (no bloquea y `getAttackCooldown()` es menor que 1, hallazgo 7) o acaba de bajar el escudo (estaba bloqueando y ya no). Un jugador que no bloquea ni pega no es una apertura.
+2. **Abandono:** si pasan 3 s sin apertura, no se abre un intento paciente (no cuenta, como dice el catálogo) y el zombie **pega de frente**, que se registra como `ZOMBIE_FRONT_STRIKE` porque es lo que ejecutó. Después vuelve a esperar.
+
+**Por qué.** Sin el abandono, un zombie paciente frente a un jugador que nunca baja el escudo, o que no hace nada, no pegaría nunca, y la memoria no aprendería nada de esa situación. Con el abandono, el golpe frontal suma su resultado (por ejemplo, parcial contra el escudo) y la política puede comparar.
+
+**Impacto.** Solo adaptadores (`PatientWait`, `PressGoal`). Catálogo: sin cambios de texto; esta es la lectura oficial.
+
+**Alternativas descartadas.** Contar la espera vencida como fallo del golpe paciente: contradice el catálogo y castiga al ataque por algo que el jugador no hizo. Considerar apertura a cualquier jugador que no bloquea: el golpe paciente sería idéntico al frontal contra quien no usa escudo.
+
+**Riesgos.** `getAttackCooldown()` también baja al cambiar de ítem en la mano: un jugador que cambia de arma abre una apertura. Es raro y no le hace daño a nadie.
