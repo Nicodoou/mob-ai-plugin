@@ -266,6 +266,20 @@ class CombatGeometryTest {
   }
 
   @Test
+  void allyBesideTheTargetDoesNotBlock() {
+    List<Vec3> allies = List.of(new Vec3(0.7, 0, 20));
+
+    assertThat(geometry.isLineOfFireClear(Vec3.ZERO, new Vec3(0, 0, 20), allies)).isTrue();
+  }
+
+  @Test
+  void allyBehindTheTargetDoesNotBlock() {
+    List<Vec3> allies = List.of(new Vec3(0, 0, 20.7));
+
+    assertThat(geometry.isLineOfFireClear(Vec3.ZERO, new Vec3(0, 0, 20), allies)).isTrue();
+  }
+
+  @Test
   void clearLaneTurnsAroundTheTarget() {
     List<Vec3> allies = List.of(new Vec3(0, 65, 12));
 

@@ -33,8 +33,11 @@ public final class CombatGeometry {
   // blocks in about 10 ticks).
   private static final int MAX_FLIGHT_TICKS = 200;
 
-  // An ally this close to the line between a shooter's eye and its target would take the arrow.
-  static final double LINE_OF_FIRE_CLEARANCE_BLOCKS = 1.0;
+  // An ally this close to the line between a shooter's eye and its target would take the arrow
+  // (a mob's half width plus an arrow's, with room to spare).
+  static final double LINE_OF_FIRE_CLEARANCE_BLOCKS = 0.75;
+  // The arrow meets the target's body before its center: allies beside or behind it are safe.
+  static final double ARROW_STOP_SHORT_BLOCKS = 0.5;
   // Turns tried around the target, nearest first, to find a lane without allies.
   private static final List<Double> LANE_TURNS_DEGREES =
       List.of(0.0, 30.0, -30.0, 60.0, -60.0, 90.0, -90.0);
@@ -80,8 +83,17 @@ public final class CombatGeometry {
   }
 
   public boolean isLineOfFireClear(Vec3 from, Vec3 to, List<Vec3> allies) {
+    Vec3 impact = shortOf(from, to);
     return allies.stream()
-        .noneMatch(ally -> distanceToSegment(ally, from, to) < LINE_OF_FIRE_CLEARANCE_BLOCKS);
+        .noneMatch(ally -> distanceToSegment(ally, from, impact) < LINE_OF_FIRE_CLEARANCE_BLOCKS);
+  }
+
+  private static Vec3 shortOf(Vec3 from, Vec3 to) {
+    Vec3 line = to.minus(from);
+    if (line.length() <= ARROW_STOP_SHORT_BLOCKS) {
+      return from;
+    }
+    return to.minus(line.normalized().times(ARROW_STOP_SHORT_BLOCKS));
   }
 
   /** The first spot round the target, from {@code slot}, with a clear line of fire to it. */
