@@ -6,12 +6,14 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.inventory.EntityEquipment;
@@ -112,6 +114,14 @@ public final class VersionTranslator {
   // Skeleton arrows cannot be picked up in vanilla either; launched arrows default to allowed.
   public void forbidPickup(AbstractArrow arrow) {
     arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+  }
+
+  // Natural skeletons carry a bow; the test group spawns bare, and one without it looks unarmed.
+  // A drop chance of 0 keeps players from farming bows off the test group.
+  public void armWithBow(Mob mob) {
+    EntityEquipment equipment = mob.getEquipment();
+    equipment.setItemInMainHand(new ItemStack(Material.BOW));
+    equipment.setItemInMainHandDropChance(0f);
   }
 
   private Optional<EffectKind> effectKindOf(PotionEffectType type) {
