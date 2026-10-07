@@ -6,13 +6,20 @@ Lo que va saliendo al seguir `puerta-e5.md`: qué se vio, qué dicen los logs, s
 
 | Paso | Estado | Evidencia |
 | --- | --- | --- |
-| Preparación | ok (tercera corrida) | Semilla, `0 groups loaded`, `enabled`; `/mobai debug all full` |
-| 1. Crear el grupo | ok | Grupo `c53f5082`, 9 mobs sin equipo. Tildes: pendiente de confirmar |
+| Preparación | ok | Semilla, informe de carga y `enabled` en las cuatro sesiones; `/mobai debug all full` |
+| 1. Crear el grupo | ok | Grupos `c53f5082`, `50d9b3ef` y `f2da4aec`, sin equipo. Tildes: confirmadas por Nico |
 | 2. Estado | ok | `/mobai status` |
-| 3. Persecución y golpe | ok (B-01 corregido y confirmado) | Corrida 4: 18 de 22 huecos entre golpes del mismo mob son de 20 ticks |
-| 4. Golpes que cuentan | ok | Líneas `ATTACK` con `HIT rule=6` y `NEUTRAL:TARGET_INVULNERABLE rule=3` |
-| 5. Escudo, absorción, creativo | en parte | Escudo de frente: `PARTIAL rule=7`. Volar: el plan cierra con `TARGET_LOST`. Falta escudo por la espalda, manzana dorada y creativo |
-| 6 a 11 | pendiente | — |
+| 3. Persecución y golpe | ok (B-01 corregido y confirmado) | 18 de 22 huecos entre golpes del mismo mob, de 20 ticks |
+| 4. Golpes que cuentan | ok | Una línea `ATTACK` por golpe |
+| 5. Escudo, absorción, creativo | ok | 39 `PARTIAL rule=7` (escudo); `HIT rule=6` con absorción según Nico; en creativo, `TARGET_LOST` (00:09:27 y 00:11:33) |
+| 6. Muertes | ok | `PLAN … plan=3 … reason=TARGET_DIED success=1.00 damage=21.0` (grupo `f2da4aec`); miembros de menos en los archivos guardados |
+| 7. Guardado y reinicio | ok | `MobAI disabled` al `stop`; dos archivos de grupo con registros `zombie.front_strike` y `spider.bite` del jugador y las tres estrategias; `state.json` con tick 67684 y ventana 800; al levantar, `2 groups loaded, 0 skipped` |
+| 8. Descarga del chunk | ok según Nico | Además, después del reinicio el grupo `f2da4aec` volvió a pegar (5 `spider.bite`, 2 `zombie.front_strike`): los goals se reinstalan al cargar los mobs |
+| 9. Reset y recarga | ok según Nico | `/mobai reset papu123` y dos `/mobai reload` (válido e inválido) sin errores en la consola |
+| 10. Trazas | ok, con una salvedad | `trace-58474.jsonl` con decisiones, planes y ataques. Después de `/mobai debug all off`, `mobai-debug.log` sigue sumando (4 `PLAN` posteriores). Salvedad: en esa sesión no se había vuelto a poner `full` (el nivel no se guarda entre reinicios), así que no se vio un `.jsonl` que deje de crecer |
+| 11. Consola | ok | Ningún `ERROR` ni `Exception` de MobAI en las sesiones con el jar actual; ningún incidente |
+
+**Resultado: puerta E5 pasada** (7 oct 2026). Un bug corregido (B-01), un cambio técnico para el WP-22 (CT-13) y dos notas para la etapa E6 (al final).
 
 ## Corrida 1 — 6 oct, 23:29 a 23:37: entorno
 
@@ -75,3 +82,12 @@ Lo que va saliendo al seguir `puerta-e5.md`: qué se vio, qué dicen los logs, s
 **Diagnóstico.** Lo esperado sin el WP-22: el catálogo manda las arañas a flanco primero en `FLANK` y siempre en `PIN_AND_SHOOT`, y `FLANK` todavía no tiene goal. No es un bug. El ritmo de golpe ya es de 20 ticks (B-01 confirmado).
 
 **Nota.** Al arrancar se cargó el grupo `c53f5082` de la corrida 3 (`1 groups loaded`); `/kill` lo vació y quedó observando sin miembros en el tick 59309, sin errores.
+
+## Corrida 5 — 7 oct, 00:02 a 00:11: pasos 5 a 11
+
+Ver la tabla del resumen. Dos cosas que no son bugs del código de E5, pero que la etapa E6 tiene que tener en cuenta:
+
+1. **Planes de solo esqueletos.** Al grupo `50d9b3ef` le quedaron tres esqueletos (`SHOOT`, IA vanilla hasta el WP-24) y un zombie en `RETREAT`. Abrió y cerró por tiempo 11 planes de `DIRECT_ASSAULT` con éxito 0,00: los esqueletos pegan, pero no se registra nada. Es el mismo problema que el CT-13 (la memoria aprende de planes que no se jugaron) y lo resuelve el WP-24 al registrar los disparos. Nota en el WP-24.
+2. **El plan en curso al apagar se pierde sin registro** (plan 4 de `f2da4aec`, plan 12 de `50d9b3ef`). Es lo que decidió el WP-14: no se guarda el plan en curso y al reiniciar cada grupo vuelve a observar.
+
+También salió una vez `NEUTRAL:TARGET_INVALID rule=1`: el golpe que llegó cuando el jugador ya estaba muerto.
