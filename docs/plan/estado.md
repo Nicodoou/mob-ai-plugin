@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D mergeado (#35) y verificado en el juego por Nico: B-02 cerrado; WP-22A a 22D completos.** **WP-23 mergeado (#36); falta verificarlo en el juego (Nico).** Orden acordado con Nico: WP-22E (CT-18, mergeado #37) → WP-24A y WP-24B (esqueletos, especificados) → WP-23B (golpe esquivo, CT-19) → puerta E6. Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
+2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D mergeado (#35) y verificado en el juego por Nico: B-02 cerrado; WP-22A a 22D completos.** **WP-23 mergeado (#36); falta verificarlo en el juego (Nico).** Orden acordado con Nico: WP-22E (CT-18, mergeado #37) → WP-24A (en curso) y WP-24B (aprobado; la flecha tiene que apuntar a su velocidad, pedido de Nico) → WP-23B (golpe esquivo, CT-19) → puerta E6. Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -53,8 +53,8 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-23 | Golpe paciente | E6 | mergeado | Sonnet | [#36](https://github.com/Nicodoou/mob-ai-plugin/pull/36) | CT-17 (apertura y abandono). Verificación en el juego por Nico |
 | WP-22E | Flanqueadores proporcionales | E6 | mergeado | Sonnet | [#37](https://github.com/Nicodoou/mob-ai-plugin/pull/37) | CT-18, pedido de Nico. Antes del WP-24 |
 | WP-23B | Golpe esquivo | E6 | aprobado (por especificar) | Sonnet | — | CT-19, opción 2 de Nico. Después del WP-24 |
-| WP-24A | Rastreo de flechas | E6 | especificado | Sonnet | — | CT-20 |
-| WP-24B | Esqueletos que disparan | E6 | especificado | Sonnet | — | CT-20. Después del 24A. Verificar que un grupo de solo esqueletos ya no cierre planes con éxito 0 (puerta E5) |
+| WP-24A | Rastreo de flechas | E6 | en curso | Sonnet | — | CT-20 |
+| WP-24B | Esqueletos que disparan | E6 | aprobado | Sonnet | — | CT-20. Después del 24A. Verificar que un grupo de solo esqueletos ya no cierre planes con éxito 0 (puerta E5) |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
 | WP-26 | Consulta de memoria y métricas | E6 | pendiente | Sonnet | — | |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
