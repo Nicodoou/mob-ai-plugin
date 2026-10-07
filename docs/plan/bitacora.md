@@ -225,3 +225,11 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** 6 pruebas; 3 roturas mordieron (el subagente agregó una aserción para que la rotura de la suscripción falle con un mensaje claro). **Verificación en el server (Opus):** arranca y registra semilla e informe de carga; al apagar escribe `state.json` (tick 160); con `learning-speed: 2.0` se deshabilita con el mensaje del dominio sin tocar las memorias; al reiniciar, el reloj sigue de 160 a 349. CI verde.
 
 **Opinión del código.** Lo bueno: el armado está en un solo lugar, el núcleo se prueba sin server y la prueba de la suscripción cierra el riesgo del WP-13. Lo flojo: con la carga de memorias fallida, cada ciclo de guardado deja un error con stack trace cada 5 minutos (ruidoso, pero hace visible el candado). Riesgo: un error de arranque que no sea de configuración no se atrapa y deshabilita el plugin con el stack trace de Paper.
+
+## WP-21 — Comandos (PR #28, Sonnet + arreglo de Opus)
+
+**Qué hizo.** `/mobai spawngroup [política]` (grupo de prueba del catálogo en un anillo, sin equipo, sin juntar ítems y sin despawn por distancia; el tipo sale de `VersionTranslator`), `status [grupo]`, `reset [jugador]` y `reload` (atrapa cualquier error y conserva la configuración anterior), con `RecruitMob.foundWithPolicy`, `SpawnRing`, `GroupSpawner` y un subcomando por clase.
+
+**Revisión.** El subagente le agregó un cuarto parámetro a `AdapterServices.create` (el logger); lo arreglé en la rama sacándolo del plugin (`plugin.getSLF4JLogger()`). 5 pruebas; 3 roturas mordieron. **En el server, desde la consola:** `status` (sin grupos), `spawngroup` (rechazado: solo jugadores), `reset`, subcomando desconocido, `reload` válido y `reload` con `learning-speed: 9` (rechazado con el mensaje del dominio y la configuración anterior intacta). CI verde.
+
+**Opinión del código.** Lo bueno: un subcomando por clase, mensajes con placeholders literales y `reload` robusto. Lo flojo: el anillo puede spawnear mobs dentro de bloques en terreno irregular (es un comando de prueba). Riesgo: `spawngroup` todavía no se probó con un jugador (puerta E5); las tildes salen mal en el log de la consola de Windows (hay que mirarlas en el chat).
