@@ -329,3 +329,11 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código conforme, sin desvíos de diseño. 723 pruebas; las 5 roturas del WP mordieron y las mías también: acercarse sin mirar la vista (`targetOutOfSightIsApproached`), el pitch invertido (`arrowFacesUpAndDownWithItsFlight`) y retroceder hasta el máximo en vez del mínimo (`backOffPointReachesTheMinimumRange`). CI verde. **Verificación en el juego pendiente**, incluida la convención de rotación de la flecha.
 
 **Opinión del código.** Lo bueno: todas las decisiones del tirador son puras y probadas, y la flecha entra al rastreador recién después de lanzarse. Lo flojo: el esqueleto no se mueve de costado mientras dispara (fuera de alcance), y `hasLineOfSight` se consulta dos veces por tick cuando toca recalcular. Riesgo: la convención de `Projectile.setRotation` no está documentada; si la flecha sale de costado, son dos signos.
+
+## B-03 — Las flechas pasaban por encima del jugador (Opus)
+
+**Qué pasó.** En la prueba del WP-24B, los esqueletos acertaron 12 de 43 tiros. `leadShotVelocity` sumaba la elevación fija de vanilla (20 % de la distancia) al apuntar al centro del cuerpo; vanilla la usa apuntando a un tercio de la altura. La simulación mostró la flecha llegando a 2 bloques sobre los pies.
+
+**Qué se hizo.** H1 aprobada por Nico. Cinco pruebas con un simulador de la física de la flecha en la prueba (8, 12 y 15 bloques; ±3 de desnivel) fallaron con el código anterior. `leadShotVelocity` ahora busca por bisección el ángulo que, con el arrastre (0,99) y la gravedad (0,05 por tick) de Minecraft, lleva la flecha al punto apuntado; `ARROW_ARC_FACTOR` se borró y las dos pruebas con números de la fórmula vieja se reemplazaron por propiedades (velocidad 1,6, dirección horizontal, elevación positiva).
+
+**Opinión.** El arreglo ataca la causa: la puntería sale de la física y no de una constante calibrada para otro punto de mira, así que vale para cualquier distancia y desnivel. Riesgo: el modelo es el de la prueba; si el juego difiere (la flecha sale un poco debajo de los ojos, el primer tick), se ve en la verificación, y ahí se ajusta el modelo, no la constante.

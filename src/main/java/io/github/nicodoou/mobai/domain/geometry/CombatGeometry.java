@@ -23,6 +23,14 @@ public final class CombatGeometry {
       List.of(0.0, 30.0, -30.0, 60.0, -60.0, 90.0, -90.0);
   // A second, wider ring for when the first one is all open ground.
   private static final double COVER_OUTER_RING_EXTRA_BLOCKS = 4.0;
+  // A low arc is enough for any target in bow range; above 45° the arrow lands closer, not farther.
+  private static final double MIN_LAUNCH_PITCH_DEGREES = -60.0;
+  private static final double MAX_LAUNCH_PITCH_DEGREES = 45.0;
+  // Each step halves the pitch range: 30 steps leave it far below a thousandth of a degree.
+  private static final int PITCH_SEARCH_STEPS = 30;
+  // Longer than any arrow flight that can still hit (an arrow at 1.6 blocks per tick covers 15
+  // blocks in about 10 ticks).
+  private static final int MAX_FLIGHT_TICKS = 200;
 
   public double angleFromFacingDegrees(PlayerPose pose, Vec3 point) {
     Vec3 offset = point.minus(pose.position()).horizontal();
@@ -70,15 +78,54 @@ public final class CombatGeometry {
     return aimPoint.plus(movementPerTick.times(flightTicks));
   }
 
+  /** The arrow velocity whose flight, with Minecraft's drag and gravity, reaches the aim point. */
   public Vec3 leadShotVelocity(Vec3 shooterEye, Vec3 predictedAimPoint) {
     Vec3 delta = predictedAimPoint.minus(shooterEye);
     double horizontalDistance = delta.horizontal().length();
-    Vec3 raised =
-        new Vec3(
-            delta.x(),
-            delta.y() + horizontalDistance * MinecraftConstants.ARROW_ARC_FACTOR,
-            delta.z());
-    return raised.normalized().times(MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK);
+    if (horizontalDistance == 0) {
+      return delta.normalized().times(MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK);
+    }
+    double pitch = launchPitchRadians(horizontalDistance, delta.y());
+    Vec3 flat = delta.horizontal().normalized().times(Math.cos(pitch));
+    return new Vec3(flat.x(), Math.sin(pitch), flat.z())
+        .times(MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK);
+  }
+
+  // Below 45° the arrow arrives higher the higher it is launched, so halving the range finds the
+  // low arc; an aim point out of reach gets the longest shot.
+  private static double launchPitchRadians(double horizontalDistance, double rise) {
+    double low = Math.toRadians(MIN_LAUNCH_PITCH_DEGREES);
+    double high = Math.toRadians(MAX_LAUNCH_PITCH_DEGREES);
+    for (int step = 0; step < PITCH_SEARCH_STEPS; step++) {
+      double middle = (low + high) / 2;
+      if (heightAtDistance(middle, horizontalDistance) < rise) {
+        low = middle;
+      } else {
+        high = middle;
+      }
+    }
+    return (low + high) / 2;
+  }
+
+  // Minecraft's arrow: it moves, then keeps 99 % of its speed and falls 0.05 blocks per tick.
+  private static double heightAtDistance(double pitchRadians, double horizontalDistance) {
+    double horizontalSpeed =
+        Math.cos(pitchRadians) * MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK;
+    double verticalSpeed = Math.sin(pitchRadians) * MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK;
+    double travelled = 0;
+    double height = 0;
+    for (int tick = 0; tick < MAX_FLIGHT_TICKS; tick++) {
+      if (travelled + horizontalSpeed >= horizontalDistance) {
+        return height + verticalSpeed * (horizontalDistance - travelled) / horizontalSpeed;
+      }
+      travelled += horizontalSpeed;
+      height += verticalSpeed;
+      horizontalSpeed *= MinecraftConstants.ARROW_DRAG_PER_TICK;
+      verticalSpeed =
+          verticalSpeed * MinecraftConstants.ARROW_DRAG_PER_TICK
+              - MinecraftConstants.ARROW_GRAVITY_PER_TICK;
+    }
+    return Double.NEGATIVE_INFINITY;
   }
 
   static int sideOf(Vec3 facing, Vec3 offset) {
