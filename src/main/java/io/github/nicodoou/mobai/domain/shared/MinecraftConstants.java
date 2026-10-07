@@ -35,6 +35,8 @@ public final class MinecraftConstants {
 
   // Vanilla periodic effects heal or hurt one point every (base >> (level - 1)) ticks.
   public static final int REGENERATION_BASE_INTERVAL_TICKS = 50;
+  // Regeneration I heals this much every REGENERATION_BASE_INTERVAL_TICKS.
+  public static final double REGENERATION_HEAL_POINTS = 1.0;
   public static final int POISON_BASE_INTERVAL_TICKS = 25;
   public static final int WITHER_BASE_INTERVAL_TICKS = 40;
   public static final double SLOWNESS_SPEED_REDUCTION_PER_LEVEL = 0.15;

@@ -34,8 +34,10 @@ import io.github.nicodoou.mobai.adapter.scheduler.DecisionApplier;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionParts;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionScheduler;
 import io.github.nicodoou.mobai.adapter.scheduler.GroupDecider;
+import io.github.nicodoou.mobai.adapter.scheduler.HealSchedule;
 import io.github.nicodoou.mobai.adapter.scheduler.MovementSampler;
 import io.github.nicodoou.mobai.adapter.scheduler.PersistenceScheduler;
+import io.github.nicodoou.mobai.adapter.scheduler.RecoveryHealer;
 import io.github.nicodoou.mobai.adapter.snapshot.MovementTracker;
 import io.github.nicodoou.mobai.adapter.snapshot.SnapshotFactory;
 import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
@@ -65,7 +67,8 @@ public record AdapterServices(
     TraceHub traceHub,
     IncidentWriter incidentWriter,
     TraceWriter traceWriter,
-    DebugLog debugLog) {
+    DebugLog debugLog,
+    RecoveryHealer recoveryHealer) {
   private static final String DEBUG_FOLDER = "debug";
   private static final String TRACE_FILE_PREFIX = "trace-";
   private static final String TRACE_FILE_SUFFIX = ".jsonl";
@@ -92,7 +95,8 @@ public record AdapterServices(
         parts.debug().hub(),
         parts.debug().writer(),
         parts.debug().outputs().traceWriter(),
-        parts.debug().outputs().debugLog());
+        parts.debug().outputs().debugLog(),
+        new RecoveryHealer(parts.roles(), new HealSchedule()));
   }
 
   private static MobAiCommand mobAiCommand(Plugin plugin, CoreServices core, CommandParts command) {
