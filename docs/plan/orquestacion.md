@@ -112,6 +112,8 @@ git worktree remove --force .claude/worktrees/<carpeta-del-subagente>; git workt
 git branch -D wp-XX-nombre worktree-<carpeta-del-subagente>
 ```
 
+Si `git fetch` falla por refs con nombres como `main (1)` en `.git/refs`, son copias que dejó una sincronización de archivos (pasó el 7 oct): respaldalas en `$TEMP` y borralas.
+
 Windows a veces no deja borrar la carpeta del worktree («Permission denied» o «Filename too long»): con `git worktree prune` alcanza; la carpeta se borra más tarde. `.claude/worktrees/` está en `.git/info/exclude`.
 
 Después: actualizá `estado.md`, agregá la entrada del WP a `bitacora.md` (qué hizo, arquitectura, tu opinión del código y lo pendiente), commiteá y presentale a Nico el cierre del WP.
