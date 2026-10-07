@@ -2,7 +2,7 @@
 # Lo que va entre <...> sin formato (por ejemplo <reason>) lo completa el plugin.
 
 no-permission: "<red>No tenés permiso para usar este comando."
-unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|status|memory|reset|reload>"
+unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|status|reset|reload|debug>"
 reload-done: "<green>Configuración recargada."
 reload-failed: "<red>No se recargó la configuración: <gray><reason>"
 player-only: "<red>Este comando lo tiene que usar un jugador."
