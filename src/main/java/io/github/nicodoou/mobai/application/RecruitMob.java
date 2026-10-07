@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.port.GroupIdSource;
+import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
@@ -28,7 +29,14 @@ public final class RecruitMob {
     return request
         .nearbyGroup()
         .map(groupId -> recruitNear(request, groupId))
-        .orElseGet(() -> found(request));
+        .orElseGet(() -> found(request, settings.current().selection().defaultPolicy()));
+  }
+
+  public RecruitResult foundWithPolicy(RecruitRequest request, SelectionPolicyType policy) {
+    if (activeGroups.groupOf(request.mob()).isPresent()) {
+      return new RecruitResult.Rejected(RecruitResult.Rejection.ALREADY_IN_GROUP);
+    }
+    return found(request, policy);
   }
 
   private RecruitResult recruitNear(RecruitRequest request, GroupId groupId) {
@@ -37,7 +45,7 @@ public final class RecruitMob {
       return new RecruitResult.Rejected(RecruitResult.Rejection.UNKNOWN_GROUP);
     }
     if (isFull(group.get())) {
-      return found(request);
+      return found(request, settings.current().selection().defaultPolicy());
     }
     return new RecruitResult.Joined(
         groupId, activeGroups.join(groupId, request.mob(), request.kind()));
@@ -47,19 +55,18 @@ public final class RecruitMob {
     return group.roster().members().size() >= settings.current().group().maxGroupSize();
   }
 
-  private RecruitResult found(RecruitRequest request) {
-    Group group = newGroup();
+  private RecruitResult found(RecruitRequest request, SelectionPolicyType policy) {
+    Group group = newGroup(policy);
     activeGroups.add(group);
     return new RecruitResult.Founded(
         group.id(), activeGroups.join(group.id(), request.mob(), request.kind()));
   }
 
-  private Group newGroup() {
+  private Group newGroup(SelectionPolicyType policy) {
     GroupKnowledge knowledge =
         new GroupKnowledge(
             new GroupMemory(settings.section(MobAiSettings::memory)),
             new ThreatLedger(settings.section(MobAiSettings::target)));
-    return new Group(
-        groupIds.nextGroupId(), settings.current().selection().defaultPolicy(), knowledge);
+    return new Group(groupIds.nextGroupId(), policy, knowledge);
   }
 }

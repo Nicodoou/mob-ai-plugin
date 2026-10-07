@@ -1,5 +1,13 @@
 package io.github.nicodoou.mobai.bootstrap;
 
+import io.github.nicodoou.mobai.adapter.command.GroupSpawner;
+import io.github.nicodoou.mobai.adapter.command.MobAiCommand;
+import io.github.nicodoou.mobai.adapter.command.ReloadCommand;
+import io.github.nicodoou.mobai.adapter.command.ResetCommand;
+import io.github.nicodoou.mobai.adapter.command.SpawnGroupCommand;
+import io.github.nicodoou.mobai.adapter.command.StatusCommand;
+import io.github.nicodoou.mobai.adapter.command.Subcommand;
+import io.github.nicodoou.mobai.adapter.config.Messages;
 import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
@@ -21,7 +29,9 @@ import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
 import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
 import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.slf4j.Logger;
@@ -33,9 +43,11 @@ public record AdapterServices(
     MovementSampler movementSampler,
     DecisionScheduler decisionScheduler,
     PersistenceScheduler persistenceScheduler,
-    List<Listener> listeners) {
+    List<Listener> listeners,
+    MobAiCommand mobAiCommand) {
 
-  public static AdapterServices create(Plugin plugin, CoreServices core, Logger logger) {
+  public static AdapterServices create(Plugin plugin, CoreServices core, Messages messages) {
+    Logger logger = plugin.getSLF4JLogger();
     SharedParts parts = sharedParts(core);
     GoalInstaller goalInstaller = goalInstaller(plugin, core, parts);
     return new AdapterServices(
@@ -44,7 +56,22 @@ public record AdapterServices(
         parts.movementSampler(),
         decisionScheduler(core, parts, logger),
         new PersistenceScheduler(core.saveMemories(), core::storedState, logger),
-        listeners(core, parts, goalInstaller));
+        listeners(core, parts, goalInstaller),
+        mobAiCommand(
+            plugin,
+            core,
+            messages,
+            new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator())));
+  }
+
+  private static MobAiCommand mobAiCommand(
+      Plugin plugin, CoreServices core, Messages messages, GroupSpawner spawner) {
+    Map<String, Subcommand> subcommands = new LinkedHashMap<>();
+    subcommands.put("spawngroup", new SpawnGroupCommand(spawner, core.settings(), messages));
+    subcommands.put("status", new StatusCommand(core.describeGroup(), messages));
+    subcommands.put("reset", new ResetCommand(core.resetMemories(), messages));
+    subcommands.put("reload", new ReloadCommand(plugin, core.settings(), messages));
+    return new MobAiCommand(subcommands, messages);
   }
 
   private static SharedParts sharedParts(CoreServices core) {

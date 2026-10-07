@@ -114,6 +114,30 @@ class RecruitMobTest {
   }
 
   @Test
+  void foundWithPolicyUsesTheGivenPolicy() {
+    RecruitResult result =
+        recruitMob.foundWithPolicy(
+            RecruitRequest.loose(mob(1), MobKind.ZOMBIE), SelectionPolicyType.RANDOM);
+
+    assertThat(result).isInstanceOf(RecruitResult.Founded.class);
+    assertThat(activeGroups.group(groupId(1)).orElseThrow().policy())
+        .isEqualTo(SelectionPolicyType.RANDOM);
+  }
+
+  @Test
+  void foundWithPolicyRejectsAMobAlreadyInAGroup() {
+    recruitMob.execute(RecruitRequest.loose(mob(1), MobKind.ZOMBIE));
+
+    RecruitResult result =
+        recruitMob.foundWithPolicy(
+            RecruitRequest.loose(mob(1), MobKind.ZOMBIE), SelectionPolicyType.RANDOM);
+
+    assertThat(result)
+        .isEqualTo(new RecruitResult.Rejected(RecruitResult.Rejection.ALREADY_IN_GROUP));
+    assertThat(groupIds.issued()).isEqualTo(1);
+  }
+
+  @Test
   void joinWhileExecutingKeepsThePlanAndGivesNoRole() {
     recruitMob.execute(RecruitRequest.loose(mob(1), MobKind.ZOMBIE));
     Group group = activeGroups.group(groupId(1)).orElseThrow();

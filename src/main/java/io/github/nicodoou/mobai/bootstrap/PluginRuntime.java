@@ -2,6 +2,7 @@ package io.github.nicodoou.mobai.bootstrap;
 
 import io.github.nicodoou.mobai.adapter.config.ConfigLoader;
 import io.github.nicodoou.mobai.adapter.config.InvalidConfigException;
+import io.github.nicodoou.mobai.adapter.config.Messages;
 import io.github.nicodoou.mobai.adapter.runtime.JdkRandomSource;
 import io.github.nicodoou.mobai.application.GuardedMemoryRepository;
 import io.github.nicodoou.mobai.application.LoadReport;
@@ -9,11 +10,13 @@ import io.github.nicodoou.mobai.domain.port.MemoryRepository;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.persistence.JsonMemoryRepository;
+import java.io.File;
 import java.io.UncheckedIOException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Mob;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -22,6 +25,8 @@ import org.slf4j.Logger;
 /** What runs while the plugin is enabled: assembled on start, saved and stopped on stop. */
 public final class PluginRuntime {
   private static final String MEMORIES_FOLDER = "memories";
+  private static final String MESSAGES_FILE = "messages.yml";
+  private static final String COMMAND_DESCRIPTION = "MobAI admin commands";
   private static final long FIRST_TICK_DELAY_TICKS = 1;
   private static final long TICK_PERIOD_TICKS = 1;
 
@@ -43,9 +48,10 @@ public final class PluginRuntime {
     MobAiSettings settings = loadSettings(plugin);
     CoreServices core =
         CoreServices.create(settings, memoryRepository(plugin), seededRandom(logger));
-    AdapterServices adapters = AdapterServices.create(plugin, core, logger);
+    AdapterServices adapters = AdapterServices.create(plugin, core, loadMessages(plugin));
     loadMemories(core, logger);
     registerListeners(plugin, adapters);
+    plugin.registerCommand("mobai", COMMAND_DESCRIPTION, adapters.mobAiCommand());
     installGoalsOnLoadedMembers(core, adapters);
     return new PluginRuntime(core, adapters, task -> scheduleTick(plugin, task));
   }
@@ -74,6 +80,20 @@ public final class PluginRuntime {
       throw exception;
     } catch (RuntimeException exception) {
       throw new InvalidConfigException("config.yml: " + exception.getMessage(), exception);
+    }
+  }
+
+  private static Messages loadMessages(JavaPlugin plugin) {
+    File file = new File(plugin.getDataFolder(), MESSAGES_FILE);
+    if (!file.exists()) {
+      plugin.saveResource(MESSAGES_FILE, false);
+    }
+    try {
+      return Messages.load(YamlConfiguration.loadConfiguration(file));
+    } catch (InvalidConfigException exception) {
+      throw exception;
+    } catch (RuntimeException exception) {
+      throw new InvalidConfigException("messages.yml: " + exception.getMessage(), exception);
     }
   }
 
