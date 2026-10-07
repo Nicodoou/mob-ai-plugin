@@ -50,8 +50,9 @@ attack:
   projectile-timeout-ticks: 60
   patient-strike-max-wait-ticks: 60
   opportunistic-shot-max-wait-ticks: 60
-  shoot-min-distance-blocks: 8.0
-  shoot-max-distance-blocks: 15.0
+  # Distancia a la que pelean los esqueletos; se ubican en el medio (CT-21).
+  shoot-min-distance-blocks: 20.0
+  shoot-max-distance-blocks: 30.0
   # Distancia que mantiene el flanqueador mientras el jugador lo ve (el alcance del jugador es 3).
   flank-distance-blocks: 4.0
   retreat-distance-blocks: 16.0

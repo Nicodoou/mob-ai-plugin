@@ -64,6 +64,9 @@ public final class GroupSpawner {
     Location location = new Location(world, position.x(), position.y(), position.z());
     Mob mob = (Mob) world.spawnEntity(location, translator.entityTypeOf(kind));
     mob.getEquipment().clear();
+    if (kind == MobKind.SKELETON) {
+      translator.armWithBow(mob);
+    }
     mob.setCanPickupItems(false);
     mob.setRemoveWhenFarAway(false);
     return mob;

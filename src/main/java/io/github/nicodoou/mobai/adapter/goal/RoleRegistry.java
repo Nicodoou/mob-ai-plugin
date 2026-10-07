@@ -29,6 +29,13 @@ public final class RoleRegistry {
         .collect(Collectors.toUnmodifiableSet());
   }
 
+  public Set<MobId> mobsTargeting(PlayerId target) {
+    return assignments.values().stream()
+        .filter(order -> order.target().equals(Optional.of(target)))
+        .map(RoleAssignment::mob)
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
   public Set<MobId> recoveringMobs() {
     return assignments.values().stream()
         .filter(RoleAssignment::recovering)
