@@ -70,6 +70,9 @@ public record CoreServices(
     ServerTickCounter clock,
     RegroupWindow regroupWindow,
     ActiveGroups activeGroups,
+    DomainEventPublisher events,
+    GroupEvents groupEvents,
+    RecordingRandomSource randomDraws,
     TickGroups tickGroups,
     RecordOutcome recordOutcome,
     RecordDamageTaken recordDamageTaken,
@@ -91,7 +94,9 @@ Orden de armado dentro de `create` (repartido en funciones privadas):
 
 1. `SettingsHolder settings = new SettingsHolder(initialSettings)`; `ServerTickCounter clock = new ServerTickCounter()`; `RegroupWindow regroupWindow = new RegroupWindow(settings.section(MobAiSettings::retreat))`; `ActiveGroups activeGroups = new ActiveGroups()`.
 2. `DomainEventPublisher publisher = new DomainEventPublisher()`; `GroupEvents groupEvents = new GroupEvents(publisher)`; `ClosePlan closePlan = new ClosePlan(activeGroups)`; `publisher.subscribe(PlanClosed.class, closePlan::execute)`.
-3. `Brain brain = new Brain(settings::current, BrainParts.standard(settings::current, random, regroupWindow))`.
+3. `RecordingRandomSource randomDraws = new RecordingRandomSource(random)` y `Brain brain = new Brain(settings::current, BrainParts.standard(settings::current, randomDraws, regroupWindow))`. El cerebro siempre sortea a través del grabador: el WP-29 lee y limpia lo grabado alrededor de cada decisión para armar incidentes (CT-12).
+
+`events`, `groupEvents` y `randomDraws` se exponen en el record para el WP-29 (suscribir el log de debug a `PlanClosed`, publicar los eventos pendientes antes de copiar un grupo, y leer los números de cada decisión).
 4. Casos de uso:
    - `TickGroups(activeGroups, brain, groupEvents)`;
    - `RecordOutcome(activeGroups, settings)`, `RecordDamageTaken(activeGroups)`, `RecordPlayerDeath(activeGroups, settings, groupEvents)`;
@@ -214,7 +219,7 @@ Filas nuevas o actualizadas:
 
 ## Pruebas obligatorias
 
-### `CoreServicesTest` (5)
+### `CoreServicesTest` (6)
 
 `CoreServices.create(TestSettings.defaults(), repository, new SeededRandomSource(7))` con un `InMemoryMemoryRepository`.
 
@@ -222,11 +227,12 @@ Filas nuevas o actualizadas:
 | --- | --- |
 | `closePlanIsSubscribedToPlanClosed` | recluta `mob(1)` (`RecruitMob`); en su grupo, `beginPlanning` y `startPlan` contra `player` (como en el WP-13); `recordPlayerDeath().execute(player, 160)`: la memoria del grupo tiene un registro de estrategia de `player` con `successes` 1.0. **Es la prueba que pide CT-11**: sin la suscripción, el aprendizaje de estrategias se apagaría en silencio |
 | `removingTheLastMemberWhileRegroupingShortensTheWindow` | grupo de un miembro llevado a reagrupar (`closePlan(GROUP_RETREATED, …)` y `finishEvaluation`); `removeMember().execute(mob(1), DIED, 300)`: `regroupWindow().currentTicks()` 550 |
+| `brainDrawsAreRecorded` | después de que `tickGroups()` decida para un grupo reclutado con un jugador en la foto (foto armada con `GroupSnapshotBuilder`/`BrainFixture.snapshot` con el id del grupo), `randomDraws().draws()` no está vacío |
 | `storedStateReflectsClockAndWindow` | `clock().restore(1234)`: `storedState()` = `new StoredState(1234, 600)` |
 | `restoreAppliesTheSavedState` | `restore(new StoredState(5000, 700))`: reloj 5000 y ventana 700 |
 | `savedMemoriesLoadIntoAFreshCore` | recluta `mob(1)`; `saveMemories().write(saveMemories().capture(storedState()))`; un `CoreServices` nuevo con el mismo repositorio: `loadMemories().execute()` carga un grupo y `activeGroups().groupOf(mob(1))` está presente |
 
-Total: **5 pruebas**. `AdapterServices`, `PluginRuntime` y `MobAiPlugin` se verifican en el server (sección de verificación).
+Total: **6 pruebas**. `AdapterServices`, `PluginRuntime` y `MobAiPlugin` se verifican en el server (sección de verificación).
 
 ## Pruebas que muerden
 
@@ -268,7 +274,7 @@ Total: **5 pruebas**. `AdapterServices`, `PluginRuntime` y `MobAiPlugin` se veri
 ## Aceptación
 
 - [ ] Exactamente los archivos de la tabla.
-- [ ] Las 5 pruebas con sus nombres exactos, en verde.
+- [ ] Las 6 pruebas con sus nombres exactos, en verde.
 - [ ] Las 3 roturas mordieron.
 - [ ] Ninguna instancia de un servicio compartido se crea fuera de `CoreServices.create` y `AdapterServices.create`.
 - [ ] `docs/actualizar-paper.md` actualizado.
