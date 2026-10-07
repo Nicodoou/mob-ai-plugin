@@ -11,6 +11,7 @@ Esta etapa es el **esqueleto vivo**: el grupo existe, decide, persigue y golpea 
 | Falta | Llega en | Qué vas a ver mientras tanto |
 | --- | --- | --- |
 | Flanqueo y retirada (`FlankGoal`, `RetreatGoal`) | WP-22 | Los mobs con rol `FLANK` o `RETREAT` **se quedan quietos**. Con la estrategia de flanqueo, la mitad del grupo no se mueve. Es lo esperado |
+| Curación en retirada | WP-22 | Un mob con 30% de vida o menos pasa a `RETREAT`, se queda quieto **y no se cura nunca**. Si más de la mitad del grupo se retira o muere, el plan cierra con `GROUP_RETREATED` y el grupo entero queda quieto reagrupándose. Para que no pase sin querer: no pelees de día (paso 3 de la preparación) y no lastimes a los mobs salvo en los pasos que lo piden |
 | Golpe de flanco y golpe paciente | WP-23 | Todos los zombies golpean de frente y se registra `zombie.front_strike` |
 | Esqueletos | WP-24 | Los esqueletos usan su IA vanilla: no siguen al grupo ni registran nada |
 | Lentitud de la araña | WP-25 | La mordida no aplica Lentitud |
@@ -25,7 +26,7 @@ Esta etapa es el **esqueleto vivo**: el grupo existe, decide, persigue y golpea 
    ```
 
 2. En la consola tendrías que ver, en este orden: `MobAI random seed …`, `MobAI memories: … groups loaded …` y `MobAI 0.1.0-SNAPSHOT enabled`. **Anotá** si aparece cualquier `ERROR` con `MobAI`.
-3. Entrá con `papu123` (`localhost`). Ponete en supervivencia, de día, en un lugar plano: `/gamemode survival`, `/time set day`.
+3. Entrá con `papu123` (`localhost`). Ponete en supervivencia, **de noche y sin mobs naturales**, en un lugar plano: `/gamemode survival`, `/time set midnight`, `/gamerule spawn_mobs false` (si no lo reconoce, `/gamerule doMobSpawning false`). De día los zombies y esqueletos del grupo salen sin casco y **se queman**: bajan de vida, pasan a `RETREAT` y la prueba deja de valer.
 4. Si el server ya estaba levantado desde antes del WP-29B (#30), reinicialo para tener las trazas: `stop` en su consola **antes** de correr `./gradlew runServer` de nuevo. Si la consola nueva dice `Failed to start the minecraft server` con `otro proceso tiene bloqueada una parte del archivo`, el server viejo sigue vivo: cerralo y volvé a empezar. **No uses `/reload`** de Bukkit: recarga el plugin desde un jar que Gradle ya reemplazó y rompe la carga de clases (`NoClassDefFoundError`); para la configuración está `/mobai reload`.
 5. Activá la traza completa para todo: `/mobai debug all full`. Respuesta esperada: «Todos los grupos: traza en full.»
 
