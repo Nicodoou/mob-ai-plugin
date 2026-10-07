@@ -239,6 +239,48 @@ class CombatGeometryTest {
     throw new AssertionError("the arrow never reached " + horizontalBlocks + " blocks");
   }
 
+  @Test
+  void lineWithoutAlliesIsClear() {
+    assertThat(geometry.isLineOfFireClear(Vec3.ZERO, new Vec3(0, 0, 20), List.of())).isTrue();
+  }
+
+  @Test
+  void allyOnTheLineBlocksIt() {
+    List<Vec3> allies = List.of(new Vec3(0, 0, 10));
+
+    assertThat(geometry.isLineOfFireClear(Vec3.ZERO, new Vec3(0, 0, 20), allies)).isFalse();
+  }
+
+  @Test
+  void allyBesideTheLineDoesNotBlockIt() {
+    List<Vec3> allies = List.of(new Vec3(1.2, 0, 10));
+
+    assertThat(geometry.isLineOfFireClear(Vec3.ZERO, new Vec3(0, 0, 20), allies)).isTrue();
+  }
+
+  @Test
+  void allyHuggingTheTargetBlocksTheLine() {
+    List<Vec3> allies = List.of(new Vec3(0.5, 0, 19.5));
+
+    assertThat(geometry.isLineOfFireClear(Vec3.ZERO, new Vec3(0, 0, 20), allies)).isFalse();
+  }
+
+  @Test
+  void clearLaneTurnsAroundTheTarget() {
+    List<Vec3> allies = List.of(new Vec3(0, 65, 12));
+
+    Vec3 lane = geometry.clearLane(new Vec3(0, 65, 25), new Vec3(0, 65, 0), allies).orElseThrow();
+
+    assertVec(lane, -12.499999999999998, 65, 21.65063509461097);
+  }
+
+  @Test
+  void noClearLaneWhenAnAllyStandsOnTheTarget() {
+    List<Vec3> allies = List.of(new Vec3(0, 65, 0.5));
+
+    assertThat(geometry.clearLane(new Vec3(0, 65, 25), new Vec3(0, 65, 0), allies)).isEmpty();
+  }
+
   private static Vec3 attackerAt(double degrees) {
     double radians = Math.toRadians(degrees);
     return new Vec3(

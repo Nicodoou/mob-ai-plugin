@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class CombatGeometry {
   // A flanker stands well outside the shield arc so a small turn of the player does not cover it.
@@ -31,6 +32,12 @@ public final class CombatGeometry {
   // Longer than any arrow flight that can still hit (an arrow at 1.6 blocks per tick covers 15
   // blocks in about 10 ticks).
   private static final int MAX_FLIGHT_TICKS = 200;
+
+  // An ally this close to the line between a shooter's eye and its target would take the arrow.
+  static final double LINE_OF_FIRE_CLEARANCE_BLOCKS = 1.0;
+  // Turns tried around the target, nearest first, to find a lane without allies.
+  private static final List<Double> LANE_TURNS_DEGREES =
+      List.of(0.0, 30.0, -30.0, 60.0, -60.0, 90.0, -90.0);
 
   public double angleFromFacingDegrees(PlayerPose pose, Vec3 point) {
     Vec3 offset = point.minus(pose.position()).horizontal();
@@ -70,6 +77,21 @@ public final class CombatGeometry {
     List<Vec3> candidates = new ArrayList<>(coverRing(away, center, radiusBlocks));
     candidates.addAll(coverRing(away, center, radiusBlocks + COVER_OUTER_RING_EXTRA_BLOCKS));
     return List.copyOf(candidates);
+  }
+
+  public boolean isLineOfFireClear(Vec3 from, Vec3 to, List<Vec3> allies) {
+    return allies.stream()
+        .noneMatch(ally -> distanceToSegment(ally, from, to) < LINE_OF_FIRE_CLEARANCE_BLOCKS);
+  }
+
+  /** The first spot round the target, from {@code slot}, with a clear line of fire to it. */
+  public Optional<Vec3> clearLane(Vec3 slot, Vec3 target, List<Vec3> allies) {
+    Vec3 offset = slot.minus(target).horizontal();
+    return LANE_TURNS_DEGREES.stream()
+        .map(turn -> rotateAroundVertical(offset, turn))
+        .map(turned -> new Vec3(target.x() + turned.x(), slot.y(), target.z() + turned.z()))
+        .filter(spot -> isLineOfFireClear(spot, target, allies))
+        .findFirst();
   }
 
   public Vec3 predictedAimPoint(Vec3 shooterEye, Vec3 aimPoint, Vec3 movementPerTick) {
@@ -141,6 +163,16 @@ public final class CombatGeometry {
         direction.x() * cosine - direction.z() * sine,
         direction.y(),
         direction.x() * sine + direction.z() * cosine);
+  }
+
+  private static double distanceToSegment(Vec3 point, Vec3 from, Vec3 to) {
+    Vec3 segment = to.minus(from);
+    double lengthSquared = segment.dot(segment);
+    if (lengthSquared == 0) {
+      return point.distanceTo(from);
+    }
+    double along = Math.clamp(point.minus(from).dot(segment) / lengthSquared, 0.0, 1.0);
+    return point.distanceTo(from.plus(segment.times(along)));
   }
 
   private static Vec3 awayDirection(Vec3 mobPosition, Vec3 dangerPosition) {
