@@ -9,14 +9,20 @@ final class DebugGson {
   private DebugGson() {}
 
   static Gson create() {
+    return builder().setPrettyPrinting().create();
+  }
+
+  static Gson compact() {
+    return builder().create();
+  }
+
+  private static GsonBuilder builder() {
     return new GsonBuilder()
         .registerTypeAdapterFactory(new OptionalTypeAdapterFactory())
         .serializeNulls()
         .serializeSpecialFloatingPointValues()
         .enableComplexMapKeySerialization()
         .setStrictness(Strictness.LENIENT)
-        .setPrettyPrinting()
-        .disableHtmlEscaping()
-        .create();
+        .disableHtmlEscaping();
   }
 }

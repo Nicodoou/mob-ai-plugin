@@ -13,7 +13,10 @@ public enum MessageKey {
   GROUP_NOT_FOUND("group-not-found"),
   RESET_ALL("reset-all"),
   RESET_PLAYER("reset-player"),
-  PLAYER_NOT_FOUND("player-not-found");
+  PLAYER_NOT_FOUND("player-not-found"),
+  UNKNOWN_LEVEL("unknown-level"),
+  DEBUG_SET("debug-set"),
+  DEBUG_SET_ALL("debug-set-all");
 
   private final String path;
 
