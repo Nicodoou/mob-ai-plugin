@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.adapter.goal;
 
+import io.github.nicodoou.mobai.adapter.debug.TraceHub;
 import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
 import io.github.nicodoou.mobai.adapter.tracker.MeleeOpening;
 import io.github.nicodoou.mobai.adapter.tracker.TargetChecks;
@@ -17,10 +18,12 @@ import org.bukkit.entity.Player;
 public final class MeleeAttacker {
   private final AttackTracker tracker;
   private final ServerClock clock;
+  private final TraceHub hub;
 
-  public MeleeAttacker(AttackTracker tracker, ServerClock clock) {
+  public MeleeAttacker(AttackTracker tracker, ServerClock clock, TraceHub hub) {
     this.tracker = Objects.requireNonNull(tracker, "MeleeAttacker.tracker");
     this.clock = Objects.requireNonNull(clock, "MeleeAttacker.clock");
+    this.hub = Objects.requireNonNull(hub, "MeleeAttacker.hub");
   }
 
   public Optional<Classification> strike(Mob mob, Player target, Attack attack) {
@@ -34,7 +37,10 @@ public final class MeleeAttacker {
             tick,
             TargetChecks.isInvulnerable(target)));
     attackOrCancel(mob, target, mobId);
-    return tracker.closeMelee(mobId, TargetChecks.isValidTarget(target, mob), tick);
+    Optional<Classification> classification =
+        tracker.closeMelee(mobId, TargetChecks.isValidTarget(target, mob), tick);
+    classification.ifPresent(found -> hub.attacked(mobId, tick, found));
+    return classification;
   }
 
   // The damage event arrives inside attack(); if attack() fails, no attempt may stay open.

@@ -59,6 +59,7 @@ public final class PluginRuntime {
   public void stop() {
     tick.cancel();
     adapters.persistenceScheduler().shutdown();
+    adapters.incidentWriter().shutdown();
   }
 
   private void runTick() {

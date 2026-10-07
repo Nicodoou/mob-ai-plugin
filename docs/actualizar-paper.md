@@ -43,6 +43,7 @@ Riesgo: **alto** = API marcada como deprecada o que cambió en versiones recient
 | `adapter/config/Messages` | Adventure: `Component`, `MiniMessage`, `Placeholder`, `TagResolver` | Bajo | Que Paper siga trayendo Adventure con MiniMessage |
 | `adapter/scheduler/MovementSampler` | `Bukkit.getOnlinePlayers()`, `Player.getLocation()`, `PlayerQuitEvent` | Bajo | — |
 | `adapter/scheduler/GroupDecider`, `PersistenceScheduler` | `org.slf4j.Logger` (viene con Paper) | Bajo | Que Paper siga exponiendo SLF4J |
+| `adapter/debug/*` | Sin Paper: solo Gson y `org.slf4j.Logger`, que vienen con Paper | Bajo | Que Paper siga trayendo Gson y SLF4J |
 | `adapter/command/MobAiCommand` | `BasicCommand` (`execute`, `suggest`, `permission`), `CommandSourceStack.getSender` | **Medio**: API de Paper reciente | Que `BasicCommand` conserve esas firmas y que `JavaPlugin.registerCommand` siga registrando sin `plugin.yml` (hallazgo 9) |
 | `adapter/command/GroupSpawner` | `World.spawnEntity(Location, EntityType)`, `Mob`, `EntityEquipment.clear`, `LivingEntity.setCanPickupItems`, `setRemoveWhenFarAway`, `Player.getLocation`, `Location` | Bajo | Que el mob spawneado salga sin equipo (hallazgo 2) |
 | `adapter/command/SpawnGroupCommand`, `StatusCommand`, `ResetCommand`, `ReloadCommand` | `CommandSender.sendMessage(Component)`, `Player`, `Bukkit.getPlayer`, `Bukkit.getPlayerExact`, `Bukkit.getOnlinePlayers`, `Plugin.reloadConfig`, `Plugin.getConfig` | Bajo | — |

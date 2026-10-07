@@ -1,23 +1,12 @@
 package io.github.nicodoou.mobai.adapter.debug;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
 import io.github.nicodoou.mobai.application.IncidentReport;
 
 public final class IncidentJson {
   static final int CURRENT_VERSION = 1;
 
-  private final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new OptionalTypeAdapterFactory())
-          .serializeNulls()
-          .serializeSpecialFloatingPointValues()
-          .enableComplexMapKeySerialization()
-          .setStrictness(Strictness.LENIENT)
-          .setPrettyPrinting()
-          .disableHtmlEscaping()
-          .create();
+  private final Gson gson = DebugGson.create();
 
   public String write(IncidentReport report) {
     return gson.toJson(new IncidentFile(CURRENT_VERSION, report));

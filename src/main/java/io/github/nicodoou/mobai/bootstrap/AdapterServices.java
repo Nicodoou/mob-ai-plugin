@@ -8,6 +8,11 @@ import io.github.nicodoou.mobai.adapter.command.SpawnGroupCommand;
 import io.github.nicodoou.mobai.adapter.command.StatusCommand;
 import io.github.nicodoou.mobai.adapter.command.Subcommand;
 import io.github.nicodoou.mobai.adapter.config.Messages;
+import io.github.nicodoou.mobai.adapter.debug.DecisionWitness;
+import io.github.nicodoou.mobai.adapter.debug.FlightRecorder;
+import io.github.nicodoou.mobai.adapter.debug.IncidentWriter;
+import io.github.nicodoou.mobai.adapter.debug.TraceHub;
+import io.github.nicodoou.mobai.adapter.debug.WitnessParts;
 import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
@@ -28,6 +33,7 @@ import io.github.nicodoou.mobai.adapter.snapshot.SnapshotFactory;
 import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
 import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
 import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
+import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,11 +50,14 @@ public record AdapterServices(
     DecisionScheduler decisionScheduler,
     PersistenceScheduler persistenceScheduler,
     List<Listener> listeners,
-    MobAiCommand mobAiCommand) {
+    MobAiCommand mobAiCommand,
+    TraceHub traceHub,
+    IncidentWriter incidentWriter) {
+  private static final String DEBUG_FOLDER = "debug";
 
   public static AdapterServices create(Plugin plugin, CoreServices core, Messages messages) {
     Logger logger = plugin.getSLF4JLogger();
-    SharedParts parts = sharedParts(core);
+    SharedParts parts = sharedParts(core, debugParts(plugin, core, logger));
     GoalInstaller goalInstaller = goalInstaller(plugin, core, parts);
     return new AdapterServices(
         parts.translator(),
@@ -61,7 +70,9 @@ public record AdapterServices(
             plugin,
             core,
             messages,
-            new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator())));
+            new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator())),
+        parts.debug().hub(),
+        parts.debug().writer());
   }
 
   private static MobAiCommand mobAiCommand(
@@ -74,18 +85,32 @@ public record AdapterServices(
     return new MobAiCommand(subcommands, messages);
   }
 
-  private static SharedParts sharedParts(CoreServices core) {
+  private static DebugParts debugParts(Plugin plugin, CoreServices core, Logger logger) {
+    TraceHub hub =
+        new TraceHub(
+            core.activeGroups(), new FlightRecorder(core.settings().section(MobAiSettings::debug)));
+    core.events().subscribe(PlanClosed.class, hub::planClosed);
+    IncidentWriter writer =
+        new IncidentWriter(plugin.getDataFolder().toPath().resolve(DEBUG_FOLDER), logger);
+    WitnessParts witnessParts =
+        new WitnessParts(
+            core.groupEvents(), core.randomDraws(), core.regroupWindow(), core.settings());
+    return new DebugParts(hub, writer, new DecisionWitness(witnessParts, hub, writer));
+  }
+
+  private static SharedParts sharedParts(CoreServices core, DebugParts debug) {
     MovementTracker movement = new MovementTracker();
     return new SharedParts(
         new VersionTranslator(),
         movement,
         new AttackTracker(core.recordOutcome(), new AttackClassifier()),
         new RoleRegistry(),
-        new MovementSampler(movement, core.clock()));
+        new MovementSampler(movement, core.clock()),
+        debug);
   }
 
   private static GoalInstaller goalInstaller(Plugin plugin, CoreServices core, SharedParts parts) {
-    MeleeAttacker attacker = new MeleeAttacker(parts.tracker(), core.clock());
+    MeleeAttacker attacker = new MeleeAttacker(parts.tracker(), core.clock(), parts.debug().hub());
     return new GoalInstaller(new GoalContext(plugin, parts.roles(), attacker), parts.translator());
   }
 
@@ -98,7 +123,7 @@ public record AdapterServices(
         new DecisionParts(snapshots, core.tickGroups(), new DecisionApplier(parts.roles()));
     return new DecisionScheduler(
         core.activeGroups(),
-        new GroupDecider(decisionParts, logger),
+        new GroupDecider(decisionParts, parts.debug().witness(), logger),
         core.settings().section(MobAiSettings::group));
   }
 
@@ -118,5 +143,8 @@ public record AdapterServices(
       MovementTracker movement,
       AttackTracker tracker,
       RoleRegistry roles,
-      MovementSampler movementSampler) {}
+      MovementSampler movementSampler,
+      DebugParts debug) {}
+
+  private record DebugParts(TraceHub hub, IncidentWriter writer, DecisionWitness witness) {}
 }
