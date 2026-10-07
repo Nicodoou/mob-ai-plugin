@@ -15,6 +15,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-10](#ct-10--puerto-groupidsource) Puerto `GroupIdSource` | 5 oct 2026 | Opus (especificación del WP-12) | WP-12 crea el puerto y el fake; WP-16, la implementación real |
 | [CT-11](#ct-11--un-solo-camino-para-el-resultado-del-plan-y-causa-de-salida) Un solo camino para el resultado del plan y causa de salida | 5 oct 2026 | Opus (cierre del WP-12, especificación del WP-13) | WP-13 |
 | [CT-12](#ct-12--estado-completo-del-grupo-y-división-del-wp-28) Estado completo del grupo y división del WP-28 | 6 oct 2026 | Nico | WP-28A y WP-28B |
+| [CT-13](#ct-13--no-abrir-un-plan-con-el-grupo-todavía-en-retirada) No abrir un plan con el grupo todavía en retirada | 6 oct 2026 | Nico (puerta E5, corrida 2) | Aprobado; se especifica en el WP-22 |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -180,3 +181,17 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 **Alternativas descartadas.** Reconstruir el estado desde la caja negra (frágil y lento); serialización nativa de Java (acopla el formato a las clases y no es legible).
 
 **Riesgos.** Copiar el grupo cada 10 ticks cuesta memoria y CPU; el WP-29 lo mide y, si pesa, lo limita al debug activo. Un campo de estado nuevo que alguien agregue en el futuro sin sumarlo a la copia rompería la reproducción: `DecisionRepeatTest` lo detecta.
+
+## CT-13 — No abrir un plan con el grupo todavía en retirada
+
+**Qué cambia.** Un grupo que sale de `REGROUPING` (CT-07) no abre un plan nuevo si ya cumple la condición de `GROUP_RETREATED` (más de la mitad de los presentes en `RETREAT`). La regla exacta se elige al especificar el WP-22, entre:
+1. seguir reagrupando otra ventana, sin abrir plan y sin tocar la ventana adaptativa; o
+2. abrir el plan pero cerrarlo con una causa que no llega a la memoria.
+
+**Por qué.** En la puerta E5 (corrida 2, `puerta-e5-registro.md`), una araña sola con poca vida abrió y cerró cinco planes seguidos con `GROUP_RETREATED` y éxito 0,00, sin atacar nunca. La memoria aprendía que `DIRECT_ASSAULT` falla contra el jugador por planes que no se jugaron. La curación del WP-22 no alcanza: solo cura sin jugadores a menos de 12 bloques, así que con el jugador cerca el ciclo se repite.
+
+**Impacto.** Dominio: `RegroupRule` o `PlanLifecycle` (WP-22). Sin cambios de persistencia.
+
+**Alternativas descartadas.** Esperar a la curación del WP-22: no cubre al jugador que se queda cerca. Disolver el grupo: pierde la memoria de un grupo que puede recuperarse.
+
+**Riesgos.** Con la opción 1, un grupo herido con el jugador al lado no ataca nunca; es coherente con la retirada, pero se mira en la validación.

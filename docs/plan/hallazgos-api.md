@@ -12,6 +12,7 @@ Este documento es la fuente de verdad de los WPs de adaptadores (WP-16 a WP-26).
 | `removeAllGoals(mob, GoalType.MOVE)`, `LOOK` y `TARGET` dejan al zombie sin **ningún** goal: se van los 12 que trae, incluidos 5 de búsqueda de objetivo y `hurt_by`. El zombie no trae goal de nadar | Lista de goals antes y después en el log | `GoalInstaller` quita esos tres tipos. No hay goal de nadar que conservar en zombies |
 | **Los goals propios se pierden cuando el chunk se descarga.** Al volver, el mob tiene otra vez sus goals vanilla | `/spike goals` después de alejarse 300 bloques | **Obligatorio:** reinstalar los goals de cada miembro en `EntityAddToWorldEvent` |
 | Pathfinder: `mob.getPathfinder().moveTo(entity, speed)` y `stopPathfinding()`. Mirar: `mob.lookAt(entity)` | El zombie persigue bien | Confirmado |
+| **Paper llama al `tick()` de un goal activo cada dos ticks del juego** (puerta E5, no lo vio el spike) | Golpes cada 40 ticks con un intervalo contado de 20 llamadas (B-01, `puerta-e5-registro.md`) | Todo ritmo de un goal se mide con el reloj del plugin (`ServerClock`), nunca contando llamadas |
 
 ## 2. Golpe cuerpo a cuerpo
 

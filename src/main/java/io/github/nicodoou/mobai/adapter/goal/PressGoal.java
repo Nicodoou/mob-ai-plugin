@@ -27,13 +27,14 @@ public final class PressGoal implements Goal<Mob> {
   private final MobKind kind;
   private final GoalKey<Mob> key;
   private final GoalContext context;
-  private final MeleeRhythm rhythm = new MeleeRhythm();
+  private final MeleeRhythm rhythm;
 
   public PressGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "PressGoal.mob");
     this.kind = Objects.requireNonNull(kind, "PressGoal.kind");
     this.context = Objects.requireNonNull(context, "PressGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "press"));
+    this.rhythm = new MeleeRhythm(context.melee().clock());
   }
 
   @Override
@@ -78,7 +79,6 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private void pressOn(Player target) {
-    rhythm.advance();
     mob.lookAt(target);
     followIfDue(target);
     strikeIfReady(target);
@@ -97,7 +97,7 @@ public final class PressGoal implements Goal<Mob> {
     if (!rhythm.canStrike(distanceBlocks)) {
       return;
     }
-    context.attacker().strike(mob, target, executedAttack());
+    context.melee().attacker().strike(mob, target, executedAttack());
     rhythm.markStrike();
   }
 
