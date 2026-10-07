@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, especificado) → WP-23B (golpe esquivo, CT-19) → WP-24E (andanada, CT-23) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
+2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, en curso) → WP-23B (golpe esquivo, CT-19) → WP-24E (andanada, CT-23) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -56,7 +56,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-24A | Rastreo de flechas | E6 | mergeado | Sonnet | [#38](https://github.com/Nicodoou/mob-ai-plugin/pull/38) | CT-20 |
 | WP-24B | Esqueletos que disparan | E6 | mergeado | Sonnet | [#39](https://github.com/Nicodoou/mob-ai-plugin/pull/39) | CT-20. Después del 24A. Verificar que un grupo de solo esqueletos ya no cierre planes con éxito 0 (puerta E5) |
 | WP-24C | Esqueletos en formación | E6 | mergeado | Sonnet | [#41](https://github.com/Nicodoou/mob-ai-plugin/pull/41) | CT-21 |
-| WP-24D | Esqueletos en altura | E6 | especificado | Sonnet | — | CT-22 |
+| WP-24D | Esqueletos en altura | E6 | en curso | Sonnet | — | CT-22 |
 | WP-24E | Andanada | E6 | aprobado (por especificar) | Opus | — | CT-23: estrategia `VOLLEY`; cerebro, goals y tirador. Antes de la puerta E6 |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
 | WP-26 | Consulta de memoria y métricas | E6 | pendiente | Sonnet | — | |
