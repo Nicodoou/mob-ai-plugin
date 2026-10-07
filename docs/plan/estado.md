@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** WP-22A (#32), WP-22B (#33) y WP-22C (#34) mergeados. Verificación en el juego (`verificacion-e6.md`): la retirada funciona; el flanqueo no (B-02). **WP-22D mergeado (#35) y verificado en el juego por Nico: B-02 cerrado; WP-22A a 22D completos.** **WP-23 mergeado (#36); falta verificarlo en el juego (Nico).** Orden acordado con Nico: WP-22E (CT-18, mergeado #37) → WP-24A (mergeado #38) y WP-24B (mergeado #39, falta verificar en el juego; la flecha tiene que apuntar a su velocidad, pedido de Nico) → WP-23B (golpe esquivo, CT-19) → puerta E6. Después: especificar el WP-23 (golpe paciente). Después, en orden: cada uno parte del anterior mergeado.
+2. **Etapa E6, orden acordado con Nico:** WP-24C (especificado, CT-21) → WP-24D (altura, CT-22) → WP-23B (golpe esquivo, CT-19) → WP-24E (andanada, CT-23) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -55,6 +55,9 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-23B | Golpe esquivo | E6 | aprobado (por especificar) | Sonnet | — | CT-19, opción 2 de Nico. Después del WP-24 |
 | WP-24A | Rastreo de flechas | E6 | mergeado | Sonnet | [#38](https://github.com/Nicodoou/mob-ai-plugin/pull/38) | CT-20 |
 | WP-24B | Esqueletos que disparan | E6 | mergeado | Sonnet | [#39](https://github.com/Nicodoou/mob-ai-plugin/pull/39) | CT-20. Después del 24A. Verificar que un grupo de solo esqueletos ya no cierre planes con éxito 0 (puerta E5) |
+| WP-24C | Esqueletos en formación | E6 | especificado | Sonnet | — | CT-21 |
+| WP-24D | Esqueletos en altura | E6 | aprobado (por especificar) | Sonnet | — | CT-22 |
+| WP-24E | Andanada | E6 | aprobado (por especificar) | Opus | — | CT-23: estrategia `VOLLEY`; cerebro, goals y tirador. Antes de la puerta E6 |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
 | WP-26 | Consulta de memoria y métricas | E6 | pendiente | Sonnet | — | |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
@@ -76,7 +79,6 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 
 | Decisión | Dónde se cierra |
 | --- | --- |
-| El esqueleto dispara aunque tenga un aliado en la línea de tiro: el tiro oportuno le pegó a aliados 4 de 9 veces (`verificacion-e6.md`, corrida 3). Propuesta de Opus, aprobada por Nico para más adelante: no disparar si un miembro del grupo está cerca de la línea entre el ojo del esqueleto y el objetivo | WP chico después del WP-23B |
 | El cerebro le sugiere el golpe de flanco también a un zombie que presiona; `PressGoal` pega de frente y registra eso (lo ejecutado), así que la sugerencia se desperdicia. Propuesta: que `AttackSuggester` no ofrezca `ZOMBIE_FLANK_STRIKE` fuera del rol `FLANK` (CT-08 ya lo elige solo para los flanqueadores). Cambia sorteos de varias pruebas del cerebro | WP chico de limpieza, junto con los ciclos de paquetes |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |
 | `PlanEndDetector.hasRetreated` con miembros que se suman a mitad de plan: «se fueron» = iniciales − roles actuales da negativo y la regla se vuelve menos sensible. Propuesta: `gone = max(0, iniciales − roles)` y comparar contra `max(iniciales, roles)` | WP de limpieza después de E3 (junto con los ciclos de paquetes); el WP-11 puede mostrar si importa |

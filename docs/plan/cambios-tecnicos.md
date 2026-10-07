@@ -23,6 +23,9 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-18](#ct-18--flanqueadores-proporcionales) Flanqueadores proporcionales | 7 oct 2026 | Nico (prueba del WP-23) | WP-22E |
 | [CT-19](#ct-19--golpe-esquivo) Golpe esquivo | 7 oct 2026 | Nico | WP-23B (por especificar, después del WP-24) |
 | [CT-20](#ct-20--todos-los-tiros-con-nuestra-puntería-y-división-del-wp-24) Todos los tiros con nuestra puntería, y división del WP-24 | 7 oct 2026 | Opus (especificación del WP-24) | WP-24A y WP-24B |
+| [CT-21](#ct-21--esqueletos-en-formación) Esqueletos en formación | 7 oct 2026 | Nico (prueba del WP-24B) | WP-24C |
+| [CT-22](#ct-22--esqueletos-en-altura) Esqueletos en altura | 7 oct 2026 | Nico | WP-24D (por especificar) |
+| [CT-23](#ct-23--andanada) Andanada | 7 oct 2026 | Nico | WP-24E (por especificar, antes de la puerta E6) |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -315,3 +318,36 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 **Alternativas descartadas.** Capturar la flecha de `rangedAttack` con `ProjectileLaunchEvent`: funciona, pero acopla el disparo a un evento y complica correlacionar mob, flecha y ataque.
 
 **Riesgos.** El daño de la flecha depende de su velocidad: con 1,6 bloques por tick ronda el de un esqueleto vanilla; se mira en la verificación.
+
+## CT-21 — Esqueletos en formación
+
+**Qué cambia.**
+1. Los esqueletos pelean entre 20 y 30 bloques (antes 8 y 15) y se ubican en el medio, a 25.
+2. Los esqueletos de un mismo objetivo se reparten parejo alrededor de él (`ShooterFormation`): 2 opuestos, 3 a 120°, 4 a 90°. El de menor id ancla el anillo donde está y los demás siguen en el orden en que ya están.
+3. No disparan si un aliado está a menos de 1 bloque de la línea de tiro; prueban girar su puesto 30°, 60° y 90° a cada lado hasta tener la línea limpia.
+4. El grupo de prueba les da arco (sin probabilidad de soltarlo).
+5. Se borran `RangeSituation`, `RangeMove` y `Waypoints.backOffPoint`: el puesto en el anillo ya cumple acercarse y alejarse.
+
+**Por qué.** Nico, después de probar el WP-24B: a 8–15 bloques el esqueleto no tiene tiempo de reaccionar si el jugador se acerca; se agrupaban; no tenían arco; y le pegaban todo el tiempo a los zombies que atacaban.
+
+**Impacto.** Dominio: `ShooterFormation`, `ShooterQuery`, `CombatGeometry.isLineOfFireClear` y `clearLane`. Adaptadores: `ShootGoal`, `Waypoints`, `RoleRegistry.mobsTargeting`, `PoseReader.bodyCenterOf`, `VersionTranslator.armWithBow`, `GroupSpawner`. Configuración por defecto: 20 y 30.
+
+**Alternativas descartadas.** Una clave nueva para la distancia preferida (el medio del rango alcanza); separación fija de 90° (con 2 o 3 esqueletos quedan amontonados de un lado).
+
+**Riesgos.** A 25 bloques, un jugador que cambia de dirección es difícil de acertar: es lo que la memoria tiene que aprender de él. El chequeo de aliados es geométrico: un aliado detrás de un bloque cuenta igual.
+
+## CT-22 — Esqueletos en altura
+
+**Qué cambia.** Al ubicarse, el esqueleto revisa unos 10 lugares cerca de su puesto (±15° y ±30°, a 24 y 28 bloques) y elige el más alto con suelo firme (bloque más alto de la columna), desde donde ve al jugador y al que puede llegar (hasta 3 caminos por búsqueda). Si no hay uno más alto, se queda en su puesto.
+
+**Por qué.** Nico: desde arriba tienen vista y distancia.
+
+**Riesgos.** El bloque más alto de la columna falla en cuevas o bajo árboles grandes; el cálculo de camino descarta esos lugares.
+
+## CT-23 — Andanada
+
+**Qué cambia.** Una estrategia nueva, `VOLLEY`, que la memoria aprende como las otras tres: los zombies presionan; cada tanto, los que presionan se abren unos bloques, los esqueletos disparan juntos con la línea limpia y los zombies vuelven a entrar. Se especifica como WP-24E, antes de la puerta E6.
+
+**Por qué.** Nico: sinergia entre zombies y esqueletos en vez de fuego amigo.
+
+**Impacto.** Cerebro (fases dentro del plan), goals (abrirse y volver) y tirador (ventana de disparo). Es el cambio más grande de la etapa.
