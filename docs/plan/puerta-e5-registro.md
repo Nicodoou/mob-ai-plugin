@@ -9,7 +9,7 @@ Lo que va saliendo al seguir `puerta-e5.md`: qué se vio, qué dicen los logs, s
 | Preparación | ok (tercera corrida) | Semilla, `0 groups loaded`, `enabled`; `/mobai debug all full` |
 | 1. Crear el grupo | ok | Grupo `c53f5082`, 9 mobs sin equipo. Tildes: pendiente de confirmar |
 | 2. Estado | ok | `/mobai status` |
-| 3. Persecución y golpe | **bug B-01 corregido**, falta repetir | Golpe cada 40 ticks en vez de 20 |
+| 3. Persecución y golpe | ok (B-01 corregido y confirmado) | Corrida 4: 18 de 22 huecos entre golpes del mismo mob son de 20 ticks |
 | 4. Golpes que cuentan | ok | Líneas `ATTACK` con `HIT rule=6` y `NEUTRAL:TARGET_INVULNERABLE rule=3` |
 | 5. Escudo, absorción, creativo | en parte | Escudo de frente: `PARTIAL rule=7`. Volar: el plan cierra con `TARGET_LOST`. Falta escudo por la espalda, manzana dorada y creativo |
 | 6 a 11 | pendiente | — |
@@ -64,4 +64,14 @@ Lo que va saliendo al seguir `puerta-e5.md`: qué se vio, qué dicen los logs, s
   - H3: un cooldown de Paper frena el golpe. Descartada: el registro es anterior al daño y vería los intentos cada 20.
 - **Prueba que reproduce.** `MeleeRhythmTest.strikesOncePerAttackIntervalOfGameTicksWhenTickedEveryOtherTick` y `repathsEveryTenGameTicksWhenTickedEveryOtherTick` (el reloj avanza de a 2 por llamada). Fallaron con el código anterior.
 - **Arreglo.** `MeleeRhythm` mide con el reloj del plugin (`ServerClock`): guarda el tick del próximo repath y del próximo golpe. Llega a `PressGoal` por `GoalContext.melee()` (`MeleeTools`: atacante y reloj). Suite completa: 633 pruebas.
-- **Falta.** Repetir el paso 3 en el server: hueco de 20 ticks.
+- **Confirmado en el server** (corrida 4): 18 de 22 huecos son de 20 ticks; los demás son más largos (el mob fuera de alcance).
+
+## Corrida 4 — 7 oct, 00:01: con el arreglo del B-01
+
+**Qué se vio.** Las arañas se apagan y se vuelven a prender.
+
+**Traza (`trace-58474.jsonl`, grupo `50d9b3ef`).** Las arañas `42dd` y `b531` tienen `PRESS` en los planes de `DIRECT_ASSAULT` (1 y 2) y `FLANK` en los de `FLANK` y `PIN_AND_SHOOT` (3, 4 y en parte el 5). Se apagan exactamente cuando arranca un plan que les da `FLANK`.
+
+**Diagnóstico.** Lo esperado sin el WP-22: el catálogo manda las arañas a flanco primero en `FLANK` y siempre en `PIN_AND_SHOOT`, y `FLANK` todavía no tiene goal. No es un bug. El ritmo de golpe ya es de 20 ticks (B-01 confirmado).
+
+**Nota.** Al arrancar se cargó el grupo `c53f5082` de la corrida 3 (`1 groups loaded`); `/kill` lo vació y quedó observando sin miembros en el tick 59309, sin errores.
