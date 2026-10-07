@@ -468,6 +468,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Formación de flanqueo | `FlankFormation`, `FlankQuery` | Dominio |
 | Flanqueo fuera de la vista (CT-16) | `FlankManeuver`, `FlankStep`, `CombatGeometry.isOutOfSight` | Dominio |
 | Curación en retirada | `RecoveryHealer`, `HealSchedule` | Adaptadores |
+| Golpe esquivo | `EvasiveWait`, `EvasiveMove`, `PlayerThreat`, `Waypoints.evadePoint` | Adaptadores |
 | Golpe paciente y tiempos de los goals | `PatientWait`, `PatientMove`, `PlayerStance`, `GoalTiming` | Adaptadores |
 | Formación de tiradores y línea de tiro | `ShooterFormation`, `ShooterQuery`, `CombatGeometry.isLineOfFireClear`, `clearLane` | Dominio |
 | Esqueletos en altura | `HighGroundFinder`, `HighGroundRanking`, `PerchRequest`, `CombatGeometry.perchCandidates` | Adaptadores y dominio |
