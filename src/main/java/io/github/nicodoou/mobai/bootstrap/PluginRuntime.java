@@ -68,6 +68,7 @@ public final class PluginRuntime {
     core.clock().advance();
     long now = core.clock().currentTick();
     adapters.movementSampler().sampleOnlinePlayers();
+    adapters.projectileResolver().tick(now);
     adapters.decisionScheduler().tick(now);
     adapters.recoveryHealer().tick(now);
     adapters
