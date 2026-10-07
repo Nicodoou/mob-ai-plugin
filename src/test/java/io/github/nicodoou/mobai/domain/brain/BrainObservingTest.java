@@ -76,7 +76,7 @@ class BrainObservingTest {
 
   @Test
   void plansAndExecutesInTheSameDecision() {
-    ScriptedRandomSource random = new ScriptedRandomSource().withIndexes(1, 0, 1, 2, 0, 1, 2);
+    ScriptedRandomSource random = new ScriptedRandomSource().withIndexes(1, 0, 1, 2, 0, 1);
     BrainFixture fixture = BrainFixture.scripted(random);
     List<MobSnapshot> mobs = fixture.catalogGroup();
 
@@ -94,11 +94,11 @@ class BrainObservingTest {
         .containsExactly(
             Attack.ZOMBIE_FRONT_STRIKE,
             Attack.ZOMBIE_FLANK_STRIKE,
-            Attack.ZOMBIE_PATIENT_STRIKE,
             Attack.ZOMBIE_FLANK_STRIKE,
+            Attack.ZOMBIE_FLANK_STRIKE,
+            Attack.SKELETON_OPPORTUNISTIC_SHOT,
             Attack.SKELETON_DIRECT_SHOT,
             Attack.SKELETON_LEAD_SHOT,
-            Attack.SKELETON_OPPORTUNISTIC_SHOT,
             Attack.SPIDER_BITE,
             Attack.SPIDER_BITE);
     assertThat(result.decision().assignments())
@@ -106,12 +106,12 @@ class BrainObservingTest {
         .containsExactly(
             Role.PRESS,
             Role.PRESS,
+            Role.FLANK,
+            Role.FLANK,
+            Role.SHOOT,
+            Role.SHOOT,
+            Role.SHOOT,
             Role.PRESS,
-            Role.FLANK,
-            Role.SHOOT,
-            Role.SHOOT,
-            Role.SHOOT,
-            Role.FLANK,
             Role.FLANK);
     assertThat(result.trace().strategyChecks()).hasSize(3);
     assertThat(result.trace().strategySelection().orElseThrow().chosen())

@@ -34,7 +34,7 @@ class FlankStrategyTest {
   }
 
   @Test
-  void spidersFlankFirstThenTheMostSidewaysZombie() {
+  void halfOfEachKindFlanksTheMostSideways() {
     var snapshot =
         snapshotOf(
             mob(1, MobKind.ZOMBIE, new Vec3(0, 64, 5)),
@@ -51,12 +51,12 @@ class FlankStrategyTest {
     assertThat(roles)
         .containsExactly(
             entry(mobId(1), Role.PRESS),
-            entry(mobId(2), Role.PRESS),
+            entry(mobId(2), Role.FLANK),
             entry(mobId(3), Role.FLANK),
             entry(mobId(4), Role.PRESS),
             entry(mobId(5), Role.SHOOT),
             entry(mobId(6), Role.SHOOT),
-            entry(mobId(7), Role.FLANK),
+            entry(mobId(7), Role.PRESS),
             entry(mobId(8), Role.FLANK));
   }
 
@@ -72,7 +72,7 @@ class FlankStrategyTest {
   }
 
   @Test
-  void extraSpidersPressWhenThereAreMoreThanHalf() {
+  void anOddOneOutFlankerIsAZombie() {
     var snapshot =
         snapshotOf(
             mob(1, MobKind.ZOMBIE, new Vec3(0, 64, 5)),
@@ -84,10 +84,33 @@ class FlankStrategyTest {
 
     assertThat(roles)
         .containsExactly(
-            entry(mobId(1), Role.PRESS),
+            entry(mobId(1), Role.FLANK),
             entry(mobId(2), Role.PRESS),
-            entry(mobId(3), Role.FLANK),
+            entry(mobId(3), Role.PRESS),
             entry(mobId(4), Role.FLANK));
+  }
+
+  @Test
+  void oddCountsOfBothKindsStillFlankHalfTheMelee() {
+    var snapshot =
+        snapshotOf(
+            mob(1, MobKind.ZOMBIE, new Vec3(0, 64, 5)),
+            mob(2, MobKind.ZOMBIE, new Vec3(5, 64, 0)),
+            mob(3, MobKind.ZOMBIE, new Vec3(0, 64, -5)),
+            mob(4, MobKind.SPIDER, new Vec3(0, 64, 4)),
+            mob(5, MobKind.SPIDER, new Vec3(4, 64, 0)),
+            mob(6, MobKind.SPIDER, new Vec3(0, 64, -4)));
+
+    var roles = strategy.assignRoles(snapshot, player.id());
+
+    assertThat(roles)
+        .containsExactly(
+            entry(mobId(1), Role.PRESS),
+            entry(mobId(2), Role.FLANK),
+            entry(mobId(3), Role.FLANK),
+            entry(mobId(4), Role.PRESS),
+            entry(mobId(5), Role.PRESS),
+            entry(mobId(6), Role.FLANK));
   }
 
   @Test
