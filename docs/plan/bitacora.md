@@ -215,3 +215,13 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** El trabajo quedó cortado por un apagado de la PC con los commits ya pusheados; el subagente retomó desde las roturas. Código conforme al WP; 13 pruebas; las 4 roturas del WP y 2 propias (aplicador que no indexa las órdenes; escritura que relanza el error) fallaron. `groupsAreSpreadOverTheWindow` quedó en 10 ticks distintos con los UUID reales (corrección permitida). CI verde.
 
 **Opinión del código.** Lo bueno: el guardado es seguro entre hilos (la copia son records inmutables) y nunca puede tumbar el server. Lo flojo: `GroupDecider`, `DecisionScheduler` y `MovementSampler` no tienen prueba sin server. Riesgo: el reparto usa `hashCode` del UUID; con muchos grupos de UUID parecidos podría agruparse, pero con UUID aleatorios (v4) se reparte bien.
+
+## WP-20B — Arranque del plugin (PR #27, Opus)
+
+**Qué hizo.** `CoreServices` (dominio y aplicación armados una vez, Java puro, con `ClosePlan` suscripto y el azar del cerebro grabado), `AdapterServices`, `PluginRuntime` (configuración, memorias con candado, estado restaurado, listeners, goals de los miembros ya cargados y un único tick ordenado) y `MobAiPlugin`.
+
+**Arquitectura.** El tick se agenda desde el constructor con un `Function<Runnable, BukkitTask>`, así los campos son `final` y nunca nulos. Para respetar los 3 parámetros, el armado agrupa piezas en records privados anidados.
+
+**Revisión.** 6 pruebas; 3 roturas mordieron (el subagente agregó una aserción para que la rotura de la suscripción falle con un mensaje claro). **Verificación en el server (Opus):** arranca y registra semilla e informe de carga; al apagar escribe `state.json` (tick 160); con `learning-speed: 2.0` se deshabilita con el mensaje del dominio sin tocar las memorias; al reiniciar, el reloj sigue de 160 a 349. CI verde.
+
+**Opinión del código.** Lo bueno: el armado está en un solo lugar, el núcleo se prueba sin server y la prueba de la suscripción cierra el riesgo del WP-13. Lo flojo: con la carga de memorias fallida, cada ciclo de guardado deja un error con stack trace cada 5 minutos (ruidoso, pero hace visible el candado). Riesgo: un error de arranque que no sea de configuración no se atrapa y deshabilita el plugin con el stack trace de Paper.
