@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.geometry.FlankFormation;
+import io.github.nicodoou.mobai.domain.geometry.FlankManeuver;
+import io.github.nicodoou.mobai.domain.geometry.FlankStep;
 import io.github.nicodoou.mobai.domain.geometry.PlayerPose;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
@@ -20,26 +22,24 @@ class WaypointsTest {
   private final Waypoints waypoints =
       new Waypoints(
           new CombatGeometry(),
-          new FlankFormation(new CombatGeometry()),
+          new FlankManeuver(new CombatGeometry(), new FlankFormation(new CombatGeometry())),
           () -> TestSettings.defaults().attack());
   private final PlayerPose pose = new PlayerPose(Vec3.ZERO, new Vec3(0, 0, 1));
 
   @Test
-  void flankPointUsesTheConfiguredDistance() {
-    Map<MobId, Vec3> flankers = Map.of(mob(1), new Vec3(2, 0, 0));
+  void flankStepKeepsTheConfiguredDistanceWhileSeen() {
+    Map<MobId, Vec3> flankers = Map.of(mob(1), new Vec3(0, 0, 2));
 
-    Vec3 point = waypoints.flankPoint(pose, mob(1), flankers);
+    FlankStep step = waypoints.flankStep(pose, mob(1), flankers);
 
-    assertThat(point.x()).isCloseTo(2.1213203435596424, within(TOLERANCE));
-    assertThat(point.y()).isCloseTo(0, within(TOLERANCE));
-    assertThat(point.z()).isCloseTo(-2.1213203435596424, within(TOLERANCE));
+    assertThat(step.waypoint().horizontal().length()).isCloseTo(4.0, within(TOLERANCE));
   }
 
   @Test
-  void onlyOutsideTheShieldArcCountsAsFlank() {
-    assertThat(waypoints.isOutsideTheShieldArc(pose, new Vec3(0, 0, -2))).isTrue();
-    assertThat(waypoints.isOutsideTheShieldArc(pose, new Vec3(0, 0, 2))).isFalse();
-    assertThat(waypoints.isOutsideTheShieldArc(pose, new Vec3(2, 0, 0))).isFalse();
+  void onlyOutOfSightCountsAsFlank() {
+    assertThat(waypoints.isOutOfSight(pose, new Vec3(0, 0, -2))).isTrue();
+    assertThat(waypoints.isOutOfSight(pose, new Vec3(2, 0, 0))).isFalse();
+    assertThat(waypoints.isOutOfSight(pose, new Vec3(0, 0, 2))).isFalse();
   }
 
   @Test

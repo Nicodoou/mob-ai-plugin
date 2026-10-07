@@ -52,6 +52,20 @@ class CombatGeometryTest {
   }
 
   @Test
+  void beyondOneHundredTwentyDegreesIsOutOfSight() {
+    assertThat(geometry.isOutOfSight(pose, new Vec3(-1.7143346014042247, 0, -1.0300761498201085)))
+        .isTrue();
+    assertThat(geometry.isOutOfSight(pose, new Vec3(0, 0, -2))).isTrue();
+  }
+
+  @Test
+  void withinOneHundredTwentyDegreesIsInSight() {
+    assertThat(geometry.isOutOfSight(pose, new Vec3(-1.7492394142787917, 0, -0.969619240492674)))
+        .isFalse();
+    assertThat(geometry.isOutOfSight(pose, new Vec3(2, 0, 0))).isFalse();
+  }
+
+  @Test
   void flankPointGoesBehindOnTheMobsSide() {
     assertVec(
         geometry.flankPoint(pose, new Vec3(2, 0, 0), 3), 2.121320343559643, 0, -2.1213203435596424);
