@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. WP-22A, WP-22B y WP-22C especificados (CT-13, CT-14 y CT-15), esperando la aprobación de Nico. Se lanzan en orden: cada uno parte del anterior mergeado.
+2. **WP-22A, WP-22B y WP-22C aprobados por Nico (7 oct).** Lanzar el WP-22A al empezar la sesión (no se lanzó por falta de uso de sesión). Después, en orden: cada uno parte del anterior mergeado.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -46,9 +46,9 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-21 | Comandos | E5 | mergeado | Sonnet | #28 | `/mobai reload` atrapa cualquier excepción de `ConfigLoader` (un entero enorme sale como `ArithmeticException`, riesgo del WP-16) y conserva la configuración anterior. Los mobs de `spawngroup` con `setRemoveWhenFarAway(false)`: si no, un miembro que desaparece con el server apagado queda para siempre en su grupo guardado. Spawn del grupo de prueba sin equipo |
 | WP-29A | Incidentes en el server | E5 | mergeado | Sonnet | #29 | Incluye el `DebugLog` legible (sale del WP-21): cada plan y cada ataque con estrategia, ataque y resultado, para contar en la validación (catálogo). Publicar los eventos pendientes y copiar el grupo (`GroupCaptureMapper`) antes de cada decisión, con `RecordingRandomSource.clear()`; medir el costo y limitarlo al debug si pesa (CT-12). `RecordingRandomSource` ya existe (WP-28A) |
 | WP-29B | Trazas y log de debug | E5 | mergeado | Sonnet | #30 | Niveles por grupo, `TraceWriter` JSON Lines, `DebugLog` legible para contar (catálogo), `/mobai debug <grupo|all> <nivel>`; se cuelga de `TraceHub` (WP-29A) |
-| WP-22A | Sin planes con el grupo en retirada y formación de flanqueo | E6 | especificado | Sonnet | — | CT-13 (opción 1) y CT-14 |
-| WP-22B | Goal de flanqueo y curación | E6 | especificado | Sonnet | — | Después del WP-22A. Golpe de flanco en `FlankGoal` (CT-14). Verificación en el server por Opus. Los goals miden el tiempo con el reloj del plugin (B-01) |
-| WP-22C | Retirada a cubierto | E6 | especificado | Sonnet | — | Después del WP-22B. CT-15 (pedido de Nico). Verificación en el server por Opus, incluido el costo con varios mobs en retirada |
+| WP-22A | Sin planes con el grupo en retirada y formación de flanqueo | E6 | aprobado | Sonnet | — | CT-13 (opción 1) y CT-14 |
+| WP-22B | Goal de flanqueo y curación | E6 | aprobado | Sonnet | — | Después del WP-22A. Golpe de flanco en `FlankGoal` (CT-14). Verificación en el server por Opus. Los goals miden el tiempo con el reloj del plugin (B-01) |
+| WP-22C | Retirada a cubierto | E6 | aprobado | Sonnet | — | Después del WP-22B. CT-15 (pedido de Nico). Verificación en el server por Opus, incluido el costo con varios mobs en retirada |
 | WP-23 | Golpe paciente | E6 | pendiente | Sonnet | — | El golpe de flanco ya llega en el WP-22B (CT-14). `PressGoal` registra `ZOMBIE_FRONT_STRIKE` (lo que ejecuta, no lo sugerido; WP-19): al agregar el golpe paciente, registrar el ataque ejecutado |
 | WP-24 | Esqueletos y proyectiles | E6 | pendiente | Sonnet | — | Hasta acá los esqueletos conservan sus goals vanilla (WP-19): `GoalInstaller` tiene que pasar a instalarles los nuestros. Mientras no registren, un grupo de solo esqueletos cierra planes con éxito 0 (puerta E5, corrida 5): verificar que deje de pasar. Ignorar impactos que llegan después del plazo |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
