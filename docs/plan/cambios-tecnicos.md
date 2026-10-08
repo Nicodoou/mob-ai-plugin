@@ -510,6 +510,12 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
    - la migración del esquema **no borra** los registros por estrategia; el plugin copia la carpeta de memorias a `memories-backup-v<versión>/` antes de migrar.
    - El sistema viejo se quita recién cuando Nico lo decida, después de compararlos.
 
+8. **Rasgos del jugador desde el principio** (aprobado por Nico el 8 oct, después del prototipo de la simulación). Sin ellos, una base entrenada contra varios estilos (Nico y sus testers) promedia estilos opuestos y queda **peor** que las 4 estrategias de hoy. Con ellos, la base mixta es competente desde el primer plan contra cada estilo.
+   - Rasgos medidos de cada jugador, de 0 a 1, con un promedio móvil: **escudo** (fracción del tiempo que bloquea), **a distancia** (fracción del tiempo con arco o ballesta en la mano) y **armadura** (puntos sobre 20).
+   - El modelo combina cada rasgo de la receta con `[1, escudo, a distancia, armadura]`: de 15 a **60 parámetros**. Para buscar la receta, los pesos sorteados se reducen a 15 con los rasgos del jugador del plan.
+   - La base pesa como punto de partida completo; el ajuste por jugador sigue encima.
+   - Prototipo en Python (3 estilos sintéticos, 600 planes de entrenamiento mezclados): distancia al óptimo en los primeros 20 planes de 0,20 a 0,30 sin rasgos y de 0,02 a 0,03 con rasgos exactos; las 4 estrategias de hoy, 0,07 a 0,13. El WP-33C lo mide en Java con rasgos ruidosos.
+
 ### Diseño original (con los cambios de arriba)
 
 **Qué cambia.**
