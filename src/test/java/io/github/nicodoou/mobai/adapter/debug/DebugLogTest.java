@@ -15,11 +15,20 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
+import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
+import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
 import io.github.nicodoou.mobai.testsupport.AttackFactsBuilder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -62,6 +71,29 @@ class DebugLogTest {
   }
 
   @Test
+  void aRecipePlanLineShowsTheRecipeAndTraits() {
+    ClosedPlan plan =
+        new ClosedPlan(
+            new PlanId(groupId(1), 3),
+            RecipePlanner.STRATEGY_ID,
+            player,
+            PlanEndReason.TARGET_DIED,
+            1.0,
+            new PlanScores(1, 1, 1),
+            0,
+            0,
+            20.0,
+            100,
+            TICK,
+            Optional.of(recipePlay()));
+
+    String line = DebugLog.planLine(new TraceEvent.PlanEvent(groupId(1), TICK, plan));
+
+    assertThat(line)
+        .endsWith(" recipe=z2/1/1 s1/1 volley=true delay=89 retreat=0.15 traits=0.50/0.00/1.00");
+  }
+
+  @Test
   void attackLineHasTheExactFormat() {
     MobId mob = new MobId(new UUID(1, 1));
     AttackFacts facts =
@@ -96,6 +128,18 @@ class DebugLogTest {
     debugLog.shutdown();
 
     assertThat(Files.exists(file) ? Files.readString(file) : "").isEmpty();
+  }
+
+  private static RecipePlay recipePlay() {
+    Double[] features = new Double[ContextualFeatures.DIMENSION];
+    Arrays.fill(features, 0.0);
+    features[0] = 1.0;
+    return new RecipePlay(
+        new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(1, 1, 0), true, 89, 0.15),
+        new PlayerTraits(0.5, 0, 1),
+        List.of(features),
+        Map.of(),
+        Set.of());
   }
 
   private static GroupId groupId(long n) {
