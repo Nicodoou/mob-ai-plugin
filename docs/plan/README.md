@@ -142,7 +142,8 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-23C | Alcance del jugador según su arma | WP-23B | Sonnet | CT-24 |
 | WP-24C | Esqueletos en formación | WP-24B | Sonnet | `ShooterFormation`, línea de tiro limpia, arcos (CT-21) |
 | WP-24D | Esqueletos en altura | WP-24C | Sonnet | CT-22 |
-| WP-24E | Andanada | WP-23B | Opus | Estrategia `VOLLEY` (CT-23) |
+| WP-24E | Andanada: cerebro | WP-23C | Opus | Estrategia `VOLLEY` y fases (CT-23) |
+| WP-24F | Andanada: goals | WP-24E | Sonnet | `FallBackGoal`, `ShootGoal` con `HOLD_FIRE` y `VOLLEY` |
 | WP-25 | Arañas | WP-24 | Sonnet | Mordida con lentitud |
 | WP-26 | Consulta de memoria y métricas | WP-25 | Sonnet | `/mobai memory` y líneas de métricas para contar |
 | WP-27 | Validación del MVP | Puerta E6 | Nico + Opus | Sesiones de prueba, medición con Spark e informe para G1 |
