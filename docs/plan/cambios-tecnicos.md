@@ -32,6 +32,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-27](#ct-27--éxito-con-tres-medidas) Éxito con tres medidas | 8 oct 2026 | Nico | WP-30A, WP-30B |
 | [CT-28](#ct-28--retirada-aprendida) Retirada aprendida | 8 oct 2026 | Nico | WP-30C |
 | [CT-29](#ct-29--punto-de-reunión-al-reagruparse) Punto de reunión al reagruparse | 8 oct 2026 | Nico (diseño), Opus (detalle) | WP-32A y WP-32B |
+| [CT-30](#ct-30--planes-por-receta-modelo-bayesiano-y-modo-entrenamiento) Planes por receta, modelo bayesiano y modo entrenamiento | 8 oct 2026 | Nico (idea), Opus (diseño) | **Propuesto**, sin aprobar. WP-33A a WP-33G |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -488,4 +489,89 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 **Riesgos.**
 - El punto es geométrico: puede caer dentro de un cerro o en el aire. El pathfinder de Paper va al bloque alcanzable más cercano; si no hay camino, el mob se queda donde está. Se verifica en el juego.
 - `PlanLifecycle` llega a 20 métodos públicos, el umbral de alerta. El próximo cambio del reagrupamiento tiene que sacar ese estado a una clase propia.
+
+## CT-30 — Planes por receta, modelo bayesiano y modo entrenamiento
+
+**Estado:** propuesto el 8 oct 2026; falta la aprobación de Nico (ver «Decisiones para Nico»).
+
+**Qué cambia.**
+
+1. **Del plan fijo a la receta.** Hoy hay 4 estrategias y en cada una todos los mobs de un tipo hacen lo mismo. Un plan pasa a ser una **receta**: qué fracción de cada tipo de mob toma cada rol, más algunas perillas del grupo.
+
+   | Perilla | Valores | Cuántos |
+   | --- | --- | --- |
+   | Zombies: presionan / flanquean / reserva | fracciones de a 25 % que suman 100 % | 15 |
+   | Arañas: fracción que flanquea (el resto presiona) | 0, 25, 50, 75 y 100 % | 5 |
+   | Andanada sincronizada de los esqueletos | sí o no | 2 |
+   | Demora de la reserva (cuándo entra a presionar) | 60, 120 o 200 ticks | 3 |
+   | Umbral de retirada individual (absorbe CT-28) | 0, 15, 30 o 45 % de vida | 4 |
+
+   Son unas 1.800 recetas. Las 4 estrategias de hoy son recetas de ese espacio: asalto directo es «100 % presiona», flanqueo es «mitad y mitad», contener y disparar ya está en las fracciones de presión de los zombies con esqueletos disparando, y la andanada es la perilla de andanada.
+   - Rol nuevo `RESERVE`: los zombies de reserva esperan fuera del alcance del jugador (como `FALL_BACK`, que se reusa) y entran a presionar después de la demora.
+   - Las fracciones se pasan a cantidades enteras con una regla fija y determinista: redondeo hacia abajo, y el sobrante va al rol de mayor fracción. Una receta que no se puede armar con el grupo actual (por ejemplo, andanada sin esqueletos) no es candidata.
+   - El ataque de cada mob se sigue eligiendo como hoy, con su Beta por jugador.
+
+2. **De una Beta por plan a un modelo lineal bayesiano.** Con 1.800 recetas, una Beta por receta no aprendería nunca: cada una juntaría una fracción de plan por sesión. El grupo aprende cuánto aporta **cada perilla** al éxito del plan (CT-27, entre 0 y 1):
+   - **Rasgos de una receta:** constante, fracciones de zombies (presión, flanqueo, reserva), fracción de arañas que flanquean, andanada, demora y umbral normalizados. Más tres interacciones elegidas: flanqueo × esqueletos disparando, andanada × fracción de esqueletos, reserva × demora. Unos 12 rasgos.
+   - **Modelo:** regresión lineal bayesiana con ruido conocido. Se guarda una media de 12 números y una matriz de 12 × 12.
+   - **Elección (Thompson):** antes de cada plan se sortea un juego de pesos de la distribución, con Cholesky y `nextGaussian()` del puerto de azar, así que es reproducible. Con esos pesos se puntúan todas las recetas viables y gana la mejor. El sorteo hace que el grupo varíe cerca de lo mejor sin repetir siempre la misma mezcla: esa es la falta de previsibilidad que pidió Nico.
+   - **Aprendizaje:** al cerrar el plan, una actualización de rango 1 con su éxito.
+   - **Olvido:** la información se descuenta hacia el punto de partida con la misma vida media que la memoria de hoy.
+   - **Costo:** puntuar 1.800 recetas con 12 rasgos son unas 22.000 multiplicaciones por plan, nada para el server.
+
+3. **Dos niveles: base del server y ajuste por jugador.**
+   - **Base** (`base.json`, junto a las memorias): un modelo para todo el server, entrenado con peleas reales.
+   - **Por jugador** (dentro de la memoria del grupo, como hoy): cuando un grupo se cruza con un jugador nuevo, arranca con la base como punto de partida y la corrige con sus resultados contra esa persona.
+   - **Cuánto pesa la base:** se configura como «vale lo mismo que N planes» (`learning.base-weight-plans`). Con N chico se aparta rápido de la base; con N grande tarda en adaptarse a alguien distinto.
+
+4. **Modo entrenamiento.** `/mobai train on|off|status`:
+   - con el modo activo, los grupos exploran más (el sorteo usa la covarianza multiplicada por `training.exploration-scale`), y cada plan cerrado actualiza **también la base**;
+   - fuera del modo, la base no cambia: los jugadores normales solo ajustan su propio nivel;
+   - `/mobai reinforce` (WP-31) mantiene vivo al grupo entre plan y plan;
+   - `status` muestra cuántos planes tiene la base y sus 5 mejores recetas estimadas.
+
+5. **El registro como conjunto de datos.** Cada plan cerrado escribe una línea en `training-data.jsonl`: receta, rasgos, jugador, composición del grupo, éxito y sus tres medidas. Con cientos de peleas de Nico y de 2 o 3 testers, ese archivo permite, en otra fase, recalibrar el modelo fuera del juego o probar uno más grande (incluso una red chica) sin volver a jugar.
+
+**Por qué.** Nico, en la prueba del 8 oct: con 4 planes de «todos hacen lo mismo» el grupo es previsible, aunque aprenda cuál de los 4 funciona mejor. Pidió combinaciones por proporción y un entrenamiento que deje a los mobs competentes de entrada.
+
+**Cuántos datos hacen falta.** Un modelo lineal de 12 rasgos empieza a estimar bien con unos 5 a 10 planes por rasgo, es decir, 60 a 120 planes. Cientos de peleas (miles de planes) alcanzan de sobra y dejan margen para sumar rasgos de contexto más adelante.
+
+**Alternativas descartadas.**
+- **Una Beta por receta:** el aprendizaje se diluye entre 1.800 opciones.
+- **Red neuronal en el juego:** con estos datos no supera a un modelo lineal bayesiano. Además pierde la exploración de Thompson, la explicación de cada decisión, la reproducción de incidentes y las pruebas deterministas. Queda abierta para otra fase, entrenada fuera del juego con `training-data.jsonl`.
+- **Rasgos del jugador ya (bandido contextual):** suma parámetros antes de tener datos. El diseño los admite como rasgos nuevos en una fase siguiente (escudo, armadura, arma a distancia).
+
+**Impacto.**
+- **Dominio:** `PlanRecipe`, `RecipeSpace`, `RecipeFeatures`, `LinearThompsonModel`, una `RecipeStrategy` que reemplaza a las 4 estrategias, el rol `RESERVE` y `Brain` (elección y cierre del plan).
+- **Memoria:** `GroupMemory` cambia los registros por estrategia por un modelo por jugador. El esquema del archivo sube de versión y la migración descarta los registros por estrategia; los de ataques y peligro se conservan.
+- **Persistencia:** `base.json` con escritura atómica, como las memorias.
+- **Adaptadores:** el goal de la reserva (reusa `FallBackGoal` con la demora), `/mobai train`, `/mobai memory` (mejores recetas), el log de debug y el registro de datos.
+- **Configuración:** secciones `learning` y `training`.
+- **Simulación (WP-11):** `OutcomeModel` y `PlanSuccessModel` pasan de tablas por estrategia a una función de recompensa sintética por receta, con interacciones, para medir cuántos planes tarda en encontrar la mejor.
+- **Incidentes:** los grabados antes del cambio no se pueden abrir.
+- **CT-28 y WP-30C:** el umbral de retirada pasa a ser una perilla de la receta, y el WP-30C se cancela.
+
+**Plan de WPs** (orden pensado para validar antes de tocar el juego):
+
+| WP | Qué | Modelo |
+| --- | --- | --- |
+| WP-33A | `LinearThompsonModel`: media, matriz, sorteo con Cholesky, actualización de rango 1 y olvido. Matemática pura con pruebas de referencia | Opus |
+| WP-33B | Simulación: recompensa sintética por receta; verificar que el modelo encuentra la mejor receta y calibrar ruido, punto de partida, exploración y peso de la base. **Puerta: sin buenos números acá, no se sigue** | Opus |
+| WP-33C | `PlanRecipe`, `RecipeSpace` (recetas viables y cantidades enteras), `RecipeFeatures` y el rol `RESERVE` en el dominio | Sonnet |
+| WP-33D | `RecipeStrategy` y `Brain`: elegir la receta, asignar roles, aprender al cerrar el plan, traza y log de debug | Opus |
+| WP-33E | Memoria por jugador, migración del esquema y `base.json` | Sonnet |
+| WP-33F | Goal de la reserva (`FallBackGoal` con demora y entrada a presionar) | Sonnet |
+| WP-33G | `/mobai train`, exploración del modo, actualización de la base, `training-data.jsonl` y `/mobai memory` | Sonnet |
+
+**Riesgos.**
+- **Interacciones:** el modelo lineal solo ve las interacciones que se le dan. Si en el juego aparece una combinación ganadora que el modelo no puede expresar, se suma ese rasgo; `training-data.jsonl` permite verificarlo sin jugar de nuevo.
+- **La base aprende a los testers:** queda afinada contra el estilo de Nico y sus amigos. Contra otro estilo, la arranca mejor un N moderado. La solución de fondo son los rasgos del jugador (fase siguiente).
+- **Dificultad:** una base competente puede hacer a los mobs demasiado duros para un jugador común. `base-weight-plans` y la exploración funcionan también como perillas de dificultad, y se calibran en la puerta G1.
+- **Tamaño:** es el cambio más grande desde el cerebro. Toca la memoria, el formato en disco y la simulación.
+
+**Decisiones para Nico.**
+1. ¿El umbral de retirada entra en la receta y se cancela el WP-30C? (propuesta: sí)
+2. ¿La reserva es «espera fuera del alcance y entra después de la demora»? (propuesta: sí; otra opción es que entre cuando cae un zombie que presiona)
+3. ¿La base aprende solo en modo entrenamiento? (propuesta: sí, para que un jugador normal no la cambie sin querer)
+4. ¿Fracciones de a 25 %? (propuesta: sí; de a 20 % serían 21 combinaciones de zombies en vez de 15)
 
