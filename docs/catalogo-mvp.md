@@ -54,7 +54,7 @@ Cada ataque es una forma distinta de enfrentar al jugador, así la memoria apren
 
 | Ataque (código) | Cómo es | Regla |
 | --- | --- | --- |
-| Mordida (`spider.bite`) | Ataque cuerpo a cuerpo al objetivo más cercano, con bonus de compromiso | Aplica Lentitud I por 3 s; no se renueva ni se acumula si el jugador ya la tiene |
+| Mordida (`spider.bite`) | Ataque cuerpo a cuerpo al objetivo más cercano, con bonus de compromiso | Si hace daño (acierto), aplica Lentitud I por 3 s; bloqueada con el escudo no deja efecto. No se renueva ni se acumula si el jugador ya tiene Lentitud de cualquier nivel (WP-25) |
 
 Las mordidas también pasan por el rastreador y se registran, para las métricas y para estrategias futuras, aunque la araña no las use para elegir.
 
