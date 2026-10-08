@@ -40,4 +40,24 @@ class ShotRhythmTest {
 
     assertThat(rhythm.canShoot()).isTrue();
   }
+
+  @Test
+  void canDrawBeforeAnyShot() {
+    assertThat(rhythm.canDraw()).isTrue();
+  }
+
+  @Test
+  void drawStartsTwentyTicksBeforeTheShot() {
+    rhythm.markShot();
+
+    clock.advance(19);
+    assertThat(rhythm.canDraw()).isFalse();
+
+    clock.advance(1);
+    assertThat(rhythm.canDraw()).isTrue();
+    assertThat(rhythm.canShoot()).isFalse();
+
+    clock.advance(20);
+    assertThat(rhythm.canShoot()).isTrue();
+  }
 }

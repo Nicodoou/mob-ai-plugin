@@ -17,6 +17,11 @@ public final class ShotRhythm {
     return clock.currentTick() >= nextShotTick;
   }
 
+  /** The draw starts early enough for the arrow to leave on the rhythm, not 20 ticks late. */
+  public boolean canDraw() {
+    return clock.currentTick() + MinecraftConstants.BOW_FULL_DRAW_TICKS >= nextShotTick;
+  }
+
   public void markShot() {
     nextShotTick = clock.currentTick() + MinecraftConstants.SKELETON_ATTACK_INTERVAL_TICKS;
   }
