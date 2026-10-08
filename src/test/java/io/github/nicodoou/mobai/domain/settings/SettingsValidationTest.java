@@ -106,6 +106,9 @@ class SettingsValidationTest {
             "AttackSettings.evasiveMarginBlocks must be zero or positive, got -1.0",
             (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, 0.8, -1.0)),
         org.junit.jupiter.params.provider.Arguments.of(
+            "AttackSettings.flankMarginBlocks must be zero or positive, got -1.0",
+            (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, -1.0, 16.0, 0.8, 0.5)),
+        org.junit.jupiter.params.provider.Arguments.of(
             "SpiderSettings.slownessLevel must be at least 1, got 0",
             (Runnable) () -> new SpiderSettings(60, 0)),
         org.junit.jupiter.params.provider.Arguments.of(
