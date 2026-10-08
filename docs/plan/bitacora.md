@@ -587,3 +587,41 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Opinión del código.**
 - **Lo bueno:** la regla es pura y chica, y el efecto pasa por el traductor.
 - **Lo flojo:** `StrikeFollowUps` agrupa dos cosas distintas para respetar los 3 parámetros. El efecto en el jugador se verifica en el juego.
+
+## WP-31 — `/mobai reinforce` (PR #57, Sonnet; especificado en la nube)
+
+**Qué hizo.**
+- **`/mobai reinforce <grupo>`:** spawnea el set de prueba alrededor del jugador y lo suma al grupo con `RecruitRequest.near`, así que conserva su memoria. Respeta `max-size` (`TestGroup.reinforcementSize`).
+- **`TestGroup`:** la composición del set de prueba sale de `GroupSpawner` a esta clase.
+
+**Revisión local.**
+- Build completo y CI en verde.
+- Mi rotura (sin el piso en 0 del tamaño) mordió en `TestGroupTest`.
+- `messages.yml` de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:** la composición quedó en un solo lugar.
+- **Lo flojo:**
+  - un refuerzo parcial toma los primeros del set, que son zombies: con lugar para 3, llegan 3 zombies;
+  - si un recluta no entra, lanza una excepción y el mob queda spawneado sin grupo;
+  - el mensaje de uso muestra `[grupo]` como opcional, aunque es obligatorio.
+
+## WP-32A — Punto de reunión: el cerebro (PR #58, Opus; especificado en la nube)
+
+**Qué hizo.** Primera mitad del CT-29.
+- **`RallyPointRule`, puro:** el centro del grupo corrido 12 bloques lejos del jugador. Si no está el objetivo comprometido, se aleja del jugador vivo más cercano.
+- **Cuándo se calcula:** al entrar en `REGROUPING` y al reiniciar la ventana, nunca en cada decisión.
+- **Dónde se guarda:** en `PlanLifecycle` (`regrouping()` → `Regrouping`).
+- **Cómo viaja:** en las órdenes `RETREAT` del reagrupamiento (`RoleAssignment.rallyPoint`).
+
+**Revisión local.**
+- Build completo y CI en verde.
+- Mis dos roturas mordieron:
+  - el punto hacia el jugador → 8 de 11 en `RallyPointRuleTest`;
+  - sin recalcular al reiniciar la ventana → 1 en las pruebas del cerebro.
+- `config.yml` de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:** la regla es pura y se calcula una sola vez por reagrupamiento, que evita que el punto se corra.
+- **Lo flojo:** `PlanLifecycle` llegó a 20 métodos públicos. El próximo cambio del reagrupamiento tiene que sacar ese estado a una clase propia; lo dice el WP.
+- **Riesgo:** el punto puede caer en un lugar inalcanzable (pared o agua). Eso lo tiene que manejar el WP-32B.
