@@ -712,3 +712,27 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - "a distancia" solo mira la mano principal (una ballesta en la otra mano no cuenta);
   - "escudo" se muestrea en cada decisión, no en cada tick.
 - **Riesgo:** ninguno nuevo en el juego, porque todavía no decide nada.
+
+## WP-33E — Planificador de recetas (PR #64, Opus; especificado en la nube)
+
+**Qué hizo.**
+- **`RecipePlanner`, puro:**
+  - modelo vigente con olvido hacia el punto de partida;
+  - plan: sortea pesos, los pliega con los rasgos, busca la receta y reparte los roles (los más de costado flanquean; de reserva, los zombies más lejanos);
+  - aprende con el éxito del plan.
+- **`GroupMemory`:** guarda `RecipeModelRecord` por jugador, por ahora solo en memoria.
+- **`SidewaysOrder`:** sale de `FlankStrategy` sin cambiar su comportamiento.
+- **Correcciones:**
+  - el umbral máximo baja a 0,5, validado por debajo de la vuelta a pelear;
+  - **arma a distancia en las dos manos** (pedido de Nico, corrige el WP-33D).
+
+**Revisión local.** Build y CI en verde. Mis roturas mordieron:
+- reserva con los más cercanos → 1;
+- sin olvido del modelo → 1.
+
+`config.yml` de prueba con `max-retreat-health-fraction: 0.5`. Con 0,6 el plugin no arrancaría, por la validación nueva.
+
+**Opinión del código.**
+- **Lo bueno:** el planificador es puro y aprende con los rasgos ya calculados al planificar, inmunes a un `/reload` a mitad de plan.
+- **Lo flojo:** el modelo de recetas todavía no se guarda en disco (WP-33G), así que un reinicio lo pierde.
+- **Riesgo:** nada cambia en el juego hasta el WP-33F.
