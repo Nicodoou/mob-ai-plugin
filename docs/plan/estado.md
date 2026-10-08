@@ -62,7 +62,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-24D | Esqueletos en altura | E6 | mergeado | Sonnet | [#42](https://github.com/Nicodoou/mob-ai-plugin/pull/42) | CT-22 |
 | WP-24E | Andanada: estrategia y fases en el cerebro | E6 | mergeado | Opus | [#45](https://github.com/Nicodoou/mob-ai-plugin/pull/45) | CT-23. Al mergear, sumar la sección `volley` al `config.yml` del server de prueba |
 | WP-24F | Andanada: los goals | E6 | mergeado | Sonnet | [#46](https://github.com/Nicodoou/mob-ai-plugin/pull/46) | CT-23. Después del 24E |
-| WP-24G | Tensar el arco | E6 | especificado | Sonnet | — | CT-26, B-06 |
+| WP-24G | Tensar el arco | E6 | en curso | Sonnet | — | CT-26, B-06 |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
 | WP-26 | Consulta de memoria y métricas | E6 | pendiente | Sonnet | — | |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
