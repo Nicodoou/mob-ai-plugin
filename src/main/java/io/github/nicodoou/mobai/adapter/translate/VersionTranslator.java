@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.adapter.translate;
 
+import io.github.nicodoou.mobai.domain.attack.EffectGrant;
 import io.github.nicodoou.mobai.domain.shared.EffectKind;
 import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
@@ -28,6 +29,9 @@ import org.bukkit.potion.PotionEffectType;
 
 /** The only class that reads Paper constants that change between Minecraft versions. */
 public final class VersionTranslator {
+  // Paper counts amplifiers from 0: level I is amplifier 0.
+  private static final int AMPLIFIER_OFFSET = 1;
+
   // No switch here: javac would put the EntityType table in a synthetic class outside this one.
   public Optional<MobKind> mobKindOf(EntityType type) {
     if (type == EntityType.ZOMBIE) {
@@ -61,11 +65,22 @@ public final class VersionTranslator {
     };
   }
 
+  public PotionEffect potionEffectOf(EffectGrant grant) {
+    return new PotionEffect(
+        potionEffectOf(grant.kind()), durationOf(grant), grant.level() - AMPLIFIER_OFFSET);
+  }
+
+  // Paper durations are ints; anything longer already lasts forever in the game.
+  private static int durationOf(EffectGrant grant) {
+    return (int) Math.min(grant.durationTicks(), Integer.MAX_VALUE);
+  }
+
   public Map<EffectKind, Integer> effectLevels(LivingEntity entity) {
     Map<EffectKind, Integer> levels = new EnumMap<>(EffectKind.class);
     for (PotionEffect effect : entity.getActivePotionEffects()) {
       effectKindOf(effect.getType())
-          .ifPresent(kind -> levels.merge(kind, effect.getAmplifier() + 1, Math::max));
+          .ifPresent(
+              kind -> levels.merge(kind, effect.getAmplifier() + AMPLIFIER_OFFSET, Math::max));
     }
     return levels;
   }
