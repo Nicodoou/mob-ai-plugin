@@ -15,10 +15,12 @@ import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -29,6 +31,10 @@ import org.bukkit.entity.Player;
 public final class ShootGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
   private static final double WALK_SPEED = 1.0;
+
+  // SHOOT, and the two volley orders (CT-23): HOLD_FIRE positions without shooting, VOLLEY shoots
+  // at once.
+  private static final Set<Role> SHOOTER_ROLES = Set.of(Role.SHOOT, Role.HOLD_FIRE, Role.VOLLEY);
 
   // Paper's attack cooldown is 1 once the player's weapon has fully recharged.
   private static final float FULL_ATTACK_COOLDOWN = 1.0f;
@@ -92,7 +98,10 @@ public final class ShootGoal implements Goal<Mob> {
   }
 
   private Optional<RoleAssignment> currentOrder() {
-    return GoalOrders.orderFor(mob, context.roles(), Role.SHOOT);
+    return context
+        .roles()
+        .assignmentOf(new MobId(mob.getUniqueId()))
+        .filter(order -> SHOOTER_ROLES.contains(order.role()));
   }
 
   private Optional<Player> currentTarget() {
@@ -164,7 +173,7 @@ public final class ShootGoal implements Goal<Mob> {
   // Every shooter of this target loaded in its world, this mob included.
   private Map<MobId, Vec3> shooterPositions(Player target) {
     Map<MobId, Vec3> positions = new HashMap<>();
-    for (MobId id : context.roles().mobsWith(Role.SHOOT, new PlayerId(target.getUniqueId()))) {
+    for (MobId id : shooterIds(target)) {
       if (Bukkit.getEntity(id.value()) instanceof Mob shooter
           && shooter.isValid()
           && shooter.getWorld().equals(target.getWorld())) {
@@ -173,6 +182,15 @@ public final class ShootGoal implements Goal<Mob> {
     }
     positions.put(self(), mobPosition());
     return positions;
+  }
+
+  private Set<MobId> shooterIds(Player target) {
+    PlayerId targetId = new PlayerId(target.getUniqueId());
+    Set<MobId> ids = new HashSet<>();
+    for (Role role : SHOOTER_ROLES) {
+      ids.addAll(context.roles().mobsWith(role, targetId));
+    }
+    return ids;
   }
 
   // Every other mob ordered against this target: any of them can take the arrow.
@@ -190,6 +208,10 @@ public final class ShootGoal implements Goal<Mob> {
   }
 
   private void shootIfReady(RoleAssignment order, Player target) {
+    if (order.role() == Role.HOLD_FIRE) {
+      opportunism.reset();
+      return;
+    }
     if (!shots.canShoot()
         || !mob.hasLineOfSight(target)
         || distanceTo(target) > attack().shootMaxDistanceBlocks()
@@ -209,16 +231,29 @@ public final class ShootGoal implements Goal<Mob> {
             });
   }
 
+  private static Attack chosenAttack(RoleAssignment order) {
+    return order
+        .suggestedAttack()
+        .filter(attack -> attack.mobKind() == MobKind.SKELETON)
+        .orElse(Attack.SKELETON_DIRECT_SHOT);
+  }
+
   private Optional<Attack> shotNow(RoleAssignment order, Player target) {
-    Attack chosen =
-        order
-            .suggestedAttack()
-            .filter(attack -> attack.mobKind() == MobKind.SKELETON)
-            .orElse(Attack.SKELETON_DIRECT_SHOT);
+    Attack chosen = chosenAttack(order);
+    if (order.role() == Role.VOLLEY) {
+      // A volley does not wait: the opportunistic shot fires at once, aimed like the lead shot.
+      opportunism.reset();
+      return Optional.of(
+          chosen == Attack.SKELETON_OPPORTUNISTIC_SHOT ? Attack.SKELETON_LEAD_SHOT : chosen);
+    }
     if (chosen != Attack.SKELETON_OPPORTUNISTIC_SHOT) {
       opportunism.reset();
       return Optional.of(chosen);
     }
+    return opportunisticShot(target);
+  }
+
+  private Optional<Attack> opportunisticShot(Player target) {
     long now = context.tools().timing().clock().currentTick();
     return switch (opportunism.next(
         focusOf(target), now, attack().opportunisticShotMaxWaitTicks())) {

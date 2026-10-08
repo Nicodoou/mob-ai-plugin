@@ -62,6 +62,16 @@ public final class Waypoints {
     return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
   }
 
+  /** Empty once the mob is already that far from the danger, horizontally. */
+  public Optional<Vec3> keepAwayPoint(
+      Vec3 mobPosition, Vec3 dangerPosition, double distanceBlocks) {
+    double missing = distanceBlocks - horizontalDistance(mobPosition, dangerPosition);
+    if (missing <= 0) {
+      return Optional.empty();
+    }
+    return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
+  }
+
   public Vec3 shooterSlot(Vec3 center, MobId self, Map<MobId, Vec3> shooters) {
     AttackSettings attack = settings.get();
     double radius = (attack.shootMinDistanceBlocks() + attack.shootMaxDistanceBlocks()) / 2;

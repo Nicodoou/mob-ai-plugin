@@ -179,7 +179,10 @@ public record AdapterServices(
     GoalTools tools =
         new GoalTools(
             new Weapons(attacker, bow, parts.translator()::playerReach),
-            new GoalTiming(core.clock(), core.settings().section(MobAiSettings::attack)),
+            new GoalTiming(
+                core.clock(),
+                core.settings().section(MobAiSettings::attack),
+                core.settings().section(MobAiSettings::volley)),
             waypoints);
     return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
   }
