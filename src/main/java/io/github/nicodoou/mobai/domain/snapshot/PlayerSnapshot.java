@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @param holdingRanged the main hand holds a bow or a crossbow
+ * @param holdingRanged either hand holds a bow or a crossbow
  */
 public record PlayerSnapshot(
     PlayerId id,

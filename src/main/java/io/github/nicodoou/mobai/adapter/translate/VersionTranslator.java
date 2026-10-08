@@ -24,6 +24,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -169,7 +170,12 @@ public final class VersionTranslator {
   }
 
   public boolean holdsRangedWeapon(Player player) {
-    Material held = player.getInventory().getItemInMainHand().getType();
+    PlayerInventory inventory = player.getInventory();
+    return isRangedWeapon(inventory.getItemInMainHand().getType())
+        || isRangedWeapon(inventory.getItemInOffHand().getType());
+  }
+
+  private static boolean isRangedWeapon(Material held) {
     return held == Material.BOW || held == Material.CROSSBOW;
   }
 
