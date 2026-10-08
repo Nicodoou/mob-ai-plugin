@@ -118,6 +118,7 @@ Dos componentes nuevos **al final**: `double evasiveChargeThreshold, double evas
 | `ConfigLoaderTest` | el `AttackSettings` esperado suma `0.8, 3.5` al final |
 | `SettingsValidationTest` | `boundaryValuesAreAccepted`: `new AttackSettings(1, 1, 1, 8.0, 8.0, 1.0, 1.0, 0.0, 0.1)` y otra con `1.0` de umbral; el caso de `shootMinDistanceBlocks` suma `0.8, 3.5`. Casos nuevos en `outOfRangeValuesProvider`: umbral `1.5` → `AttackSettings.evasiveChargeThreshold must be between 0.0 and 1.0, got 1.5`; distancia `0` → el mensaje de `requirePositive` para `AttackSettings.evasiveDistanceBlocks` (copialo del texto que arma `SettingsChecks`) |
 | `AttackTest` | `forKindListsAttacksInCatalogOrder`: los ataques de zombie son `FRONT`, `FLANK`, `PATIENT`, `EVASIVE` |
+| `AttackTest` | `idsMatchTheCatalog`: `hasSize(8)`; `attacks[3]` es `zombie.evasive_strike` y los esqueletos y la araña pasan a los índices 4 a 7 |
 | `AttackSuggesterTest` | `zombieChoosesAmongItsThreeAttacks` pasa a llamarse `zombieChoosesAmongItsFourAttacks` y espera los cuatro |
 | `OutcomeModel` | Filas nuevas para `ZOMBIE_EVASIVE_STRIKE` con rol `PRESS`: `BLOCKER` `new OutcomeOdds(0.05, 0.60, 0.15, 0.20)` (contra el escudo casi siempre se cansa y pega al escudo); `OPEN` `new OutcomeOdds(0.65, 0, 0.35, 0)` |
 
