@@ -214,21 +214,23 @@ public final class ShootGoal implements Goal<Mob> {
     }
     if (!shots.canShoot()
         || !mob.hasLineOfSight(target)
-        || distanceTo(target) > attack().shootMaxDistanceBlocks()
-        || !waypoints()
-            .isLineOfFireClear(
-                PoseReader.positionOf(mob.getEyeLocation()),
-                PoseReader.bodyCenterOf(target),
-                allyCenters(target))) {
+        || distanceTo(target) > attack().shootMaxDistanceBlocks()) {
       opportunism.reset();
       return;
     }
     shotNow(order, target)
+        .filter(attack -> isLaneClear(target, attack))
         .ifPresent(
             attack -> {
               context.tools().weapons().bow().shoot(mob, target, attack);
               shots.markShot();
             });
+  }
+
+  // Checked towards where this very shot is aimed: a lead shot flies down another lane (B-04).
+  private boolean isLaneClear(Player target, Attack attack) {
+    BowShooter bow = context.tools().weapons().bow();
+    return bow.isLaneClear(bow.requestFor(mob, target, attack), allyCenters(target));
   }
 
   private static Attack chosenAttack(RoleAssignment order) {

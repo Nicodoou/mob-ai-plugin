@@ -2,6 +2,7 @@ package io.github.nicodoou.mobai.adapter.goal;
 
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import java.util.List;
 import java.util.Objects;
 
 /** The arrow velocity of each shot: where the target is, or where it is going to be. */
@@ -14,6 +15,11 @@ public final class ShotAim {
 
   public Vec3 velocity(ShotRequest request) {
     return geometry.leadShotVelocity(request.eye(), aimPoint(request));
+  }
+
+  /** Whether no ally stands in the lane towards the point this shot is aimed at (B-04). */
+  public boolean isLaneClear(ShotRequest request, List<Vec3> allies) {
+    return geometry.isLineOfFireClear(request.eye(), aimPoint(request), allies);
   }
 
   // Minecraft's projectile convention (the one its own shots use): yaw 0 flies towards +Z and
