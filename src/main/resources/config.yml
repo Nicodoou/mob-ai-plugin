@@ -96,3 +96,11 @@ volley:
   fire-ticks: 30
   # Cuánto más allá del alcance del jugador se abren los cuerpo a cuerpo.
   fall-back-margin-blocks: 1.5
+
+success:
+  # Éxito de un plan (CT-27): daño hecho, rapidez y supervivencia del grupo, con estos pesos (suman 1).
+  damage-weight: 0.4
+  speed-weight: 0.4
+  survival-weight: 0.2
+  # Rapidez: comparada con matar al objetivo en estos ticks.
+  reference-kill-ticks: 600

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.nicodoou.mobai.domain.settings.GroupSettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,7 @@ class SettingsHolderTest {
         base.persistence(),
         base.debug(),
         base.retreat(),
-        base.volley());
+        base.volley(),
+        new SuccessSettings(0.4, 0.4, 0.2, 600));
   }
 }

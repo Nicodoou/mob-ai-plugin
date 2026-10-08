@@ -11,6 +11,7 @@ import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
 import io.github.nicodoou.mobai.domain.settings.VolleySettings;
@@ -35,7 +36,8 @@ public final class ConfigLoader {
           persistence(root),
           debug(root),
           retreat(root),
-          volley(root));
+          volley(root),
+          success(root));
     } catch (IllegalArgumentException exception) {
       throw new InvalidConfigException("config.yml: " + exception.getMessage(), exception);
     }
@@ -128,6 +130,14 @@ public final class ConfigLoader {
         wholeNumber(root, "volley.fall-back-ticks"),
         wholeNumber(root, "volley.fire-ticks"),
         number(root, "volley.fall-back-margin-blocks"));
+  }
+
+  private SuccessSettings success(ConfigurationSection root) {
+    return new SuccessSettings(
+        number(root, "success.damage-weight"),
+        number(root, "success.speed-weight"),
+        number(root, "success.survival-weight"),
+        wholeNumber(root, "success.reference-kill-ticks"));
   }
 
   private double number(ConfigurationSection root, String path) {

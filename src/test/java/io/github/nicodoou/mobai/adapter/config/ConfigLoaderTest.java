@@ -15,6 +15,7 @@ import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
@@ -133,6 +134,7 @@ class ConfigLoaderTest {
         new PersistenceSettings(6_000),
         new DebugSettings(TraceLevel.OFF, 200),
         new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50),
-        TestSettings.defaults().volley());
+        TestSettings.defaults().volley(),
+        new SuccessSettings(0.4, 0.4, 0.2, 600));
   }
 }
