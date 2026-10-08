@@ -28,7 +28,10 @@ public final class VolleyStrategy implements GroupStrategy {
 
   @Override
   public boolean isViable(GroupSnapshot snapshot) {
-    GroupComposition composition = GroupComposition.of(snapshot);
+    return isViableFor(GroupComposition.of(snapshot));
+  }
+
+  public static boolean isViableFor(GroupComposition composition) {
     return composition.skeletons() >= MIN_SKELETONS && composition.melee() >= MIN_MELEE;
   }
 
