@@ -133,7 +133,7 @@ class ConfigLoaderTest {
         new SpiderSettings(60, 1),
         new PersistenceSettings(6_000),
         new DebugSettings(TraceLevel.OFF, 200),
-        new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50),
+        new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50, 12.0, 3.0),
         TestSettings.defaults().volley(),
         new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0));
   }

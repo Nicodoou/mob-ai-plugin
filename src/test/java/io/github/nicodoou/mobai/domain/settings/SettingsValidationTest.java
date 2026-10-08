@@ -127,6 +127,12 @@ class SettingsValidationTest {
             "VolleySettings.fallBackMarginBlocks must be zero or positive, got -1.0",
             (Runnable) () -> new VolleySettings(60, 20, 30, -1.0)),
         org.junit.jupiter.params.provider.Arguments.of(
+            "RetreatSettings.rallyDistanceBlocks must be a positive number, got 0.0",
+            (Runnable) () -> new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50, 0.0, 3.0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RetreatSettings.rallyArrivalBlocks must be a positive number, got 0.0",
+            (Runnable) () -> new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50, 12.0, 0.0)),
+        org.junit.jupiter.params.provider.Arguments.of(
             "SuccessSettings weights must add up to 1.0, got 1.1",
             (Runnable) () -> new SuccessSettings(0.5, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0)),
         org.junit.jupiter.params.provider.Arguments.of(
@@ -181,7 +187,7 @@ class SettingsValidationTest {
                     defaults.spider(),
                     defaults.persistence(),
                     defaults.debug(),
-                    new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50),
+                    new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50, 12.0, 3.0),
                     defaults.volley(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0)))
         .isInstanceOf(IllegalArgumentException.class)

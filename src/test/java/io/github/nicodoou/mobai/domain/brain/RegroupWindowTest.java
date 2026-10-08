@@ -57,14 +57,14 @@ class RegroupWindowTest {
   void boundsFollowTheCurrentSettings() {
     window.restore(900);
 
-    settings.set(new RetreatSettings(0.6, 12.0, 600, 200, 800, 50));
+    settings.set(new RetreatSettings(0.6, 12.0, 600, 200, 800, 50, 12.0, 3.0));
 
     assertThat(window.currentTicks()).isEqualTo(800);
   }
 
   @Test
   void rejectsInconsistentSettings() {
-    assertThatThrownBy(() -> new RetreatSettings(0.6, 12.0, 600, 1300, 1200, 50))
+    assertThatThrownBy(() -> new RetreatSettings(0.6, 12.0, 600, 1300, 1200, 50, 12.0, 3.0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "RetreatSettings.regroupMinTicks must not exceed RetreatSettings.regroupMaxTicks, got 1300.0 > 1200.0");
