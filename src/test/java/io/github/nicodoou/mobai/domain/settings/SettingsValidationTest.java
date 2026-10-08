@@ -31,7 +31,8 @@ class SettingsValidationTest {
     new MemorySettings(1, 1.0, 1.0);
     new SelectionSettings(SelectionPolicyType.RANDOM, 1.0, 1.0, 0.0, 0);
     new SelectionSettings(SelectionPolicyType.RANDOM, 1.0, 1.0, 1.0, 0);
-    new AttackSettings(1, 1, 1, 8.0, 8.0, 1.0, 1.0);
+    new AttackSettings(1, 1, 1, 8.0, 8.0, 1.0, 1.0, 0.0, 0.1);
+    new AttackSettings(1, 1, 1, 8.0, 8.0, 1.0, 1.0, 1.0, 0.1);
     new PlanSettings(1, 1.0, 1, 0.0, 1.0);
     new TargetSettings(1, 0.0, 1.0, 1.0, 1.0);
   }
@@ -97,7 +98,13 @@ class SettingsValidationTest {
             (Runnable) () -> new PlanSettings(600, 32.0, 200, 1.5, 0.5)),
         org.junit.jupiter.params.provider.Arguments.of(
             "AttackSettings.shootMinDistanceBlocks must not exceed AttackSettings.shootMaxDistanceBlocks, got 16.0 > 15.0",
-            (Runnable) () -> new AttackSettings(60, 60, 60, 16.0, 15.0, 3.0, 16.0)),
+            (Runnable) () -> new AttackSettings(60, 60, 60, 16.0, 15.0, 3.0, 16.0, 0.8, 3.5)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "AttackSettings.evasiveChargeThreshold must be between 0.0 and 1.0, got 1.5",
+            (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 4.0, 16.0, 1.5, 3.5)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "AttackSettings.evasiveDistanceBlocks must be a positive number, got 0.0",
+            (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 4.0, 16.0, 0.8, 0.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "SpiderSettings.slownessLevel must be at least 1, got 0",
             (Runnable) () -> new SpiderSettings(60, 0)),
