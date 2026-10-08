@@ -515,6 +515,7 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
    - El modelo combina cada rasgo de la receta con `[1, escudo, a distancia, armadura]`: de 15 a **60 parámetros**. Para buscar la receta, los pesos sorteados se reducen a 15 con los rasgos del jugador del plan.
    - La base pesa como punto de partida completo; el ajuste por jugador sigue encima.
    - Prototipo en Python (3 estilos sintéticos, 600 planes de entrenamiento mezclados): distancia al óptimo en los primeros 20 planes de 0,20 a 0,30 sin rasgos y de 0,02 a 0,03 con rasgos exactos; las 4 estrategias de hoy, 0,07 a 0,13. El WP-33C lo mide en Java con rasgos ruidosos.
+   - **Puerta del WP-33C: PASS** (8 oct, `docs/plan/calibracion-recetas.md`). En Java, con base de 600 planes mezclados y rasgos ruidosos: distancia al óptimo en los primeros 20 planes 0,040 (escudo), 0,052 (agresivo) y 0,031 (arquero), contra 0,110, 0,074 y 0,134 de las 4 estrategias de hoy; competente desde el plan 10. Sin rasgos: 0,16 a 0,25. De cero: competente recién entre los planes 61 y 85.
 
 ### Diseño original (con los cambios de arriba)
 
