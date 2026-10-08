@@ -21,7 +21,8 @@ public record BrainParts(
     PlanEndDetector planEndDetector,
     RetreatRule retreatRule,
     RegroupRule regroupRule,
-    RegroupWindow regroupWindow) {
+    RegroupWindow regroupWindow,
+    RallyPointRule rallyPointRule) {
   public BrainParts {
     Objects.requireNonNull(targetSelector, "BrainParts.targetSelector");
     Objects.requireNonNull(spiderTargetRule, "BrainParts.spiderTargetRule");
@@ -32,6 +33,7 @@ public record BrainParts(
     Objects.requireNonNull(retreatRule, "BrainParts.retreatRule");
     Objects.requireNonNull(regroupRule, "BrainParts.regroupRule");
     Objects.requireNonNull(regroupWindow, "BrainParts.regroupWindow");
+    Objects.requireNonNull(rallyPointRule, "BrainParts.rallyPointRule");
   }
 
   /** The one way the plugin, the tests and incident replays assemble a brain. */
@@ -48,6 +50,7 @@ public record BrainParts(
         new PlanEndDetector(() -> settings.get().plan()),
         new RetreatRule(() -> settings.get().plan(), () -> settings.get().retreat()),
         new RegroupRule(() -> settings.get().retreat(), regroupWindow),
-        regroupWindow);
+        regroupWindow,
+        new RallyPointRule(() -> settings.get().retreat()));
   }
 }

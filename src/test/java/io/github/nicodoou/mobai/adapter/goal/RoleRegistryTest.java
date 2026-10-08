@@ -28,7 +28,8 @@ class RoleRegistryTest {
   @Test
   void newOrderReplacesTheOldOne() {
     RoleAssignment retreat =
-        new RoleAssignment(mob(1), Role.RETREAT, Optional.empty(), Optional.empty(), true);
+        new RoleAssignment(
+            mob(1), Role.RETREAT, Optional.empty(), Optional.empty(), true, Optional.empty());
     RoleAssignment press = pressOrder(mob(1));
     registry.assign(retreat);
 
@@ -106,21 +107,32 @@ class RoleRegistryTest {
 
   private RoleAssignment flankOrder(MobId mob, Optional<PlayerId> target) {
     return new RoleAssignment(
-        mob, Role.FLANK, target, Optional.of(Attack.ZOMBIE_FLANK_STRIKE), false);
+        mob, Role.FLANK, target, Optional.of(Attack.ZOMBIE_FLANK_STRIKE), false, Optional.empty());
   }
 
   private RoleAssignment shootOrder(MobId mob) {
     return new RoleAssignment(
-        mob, Role.SHOOT, Optional.of(player), Optional.of(Attack.SKELETON_DIRECT_SHOT), false);
+        mob,
+        Role.SHOOT,
+        Optional.of(player),
+        Optional.of(Attack.SKELETON_DIRECT_SHOT),
+        false,
+        Optional.empty());
   }
 
   private RoleAssignment retreatOrder(MobId mob, boolean recovering) {
-    return new RoleAssignment(mob, Role.RETREAT, Optional.empty(), Optional.empty(), recovering);
+    return new RoleAssignment(
+        mob, Role.RETREAT, Optional.empty(), Optional.empty(), recovering, Optional.empty());
   }
 
   private RoleAssignment pressOrder(MobId mob) {
     return new RoleAssignment(
-        mob, Role.PRESS, Optional.of(player), Optional.of(Attack.ZOMBIE_FRONT_STRIKE), false);
+        mob,
+        Role.PRESS,
+        Optional.of(player),
+        Optional.of(Attack.ZOMBIE_FRONT_STRIKE),
+        false,
+        Optional.empty());
   }
 
   private static MobId mob(long id) {

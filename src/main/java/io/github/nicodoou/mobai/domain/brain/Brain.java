@@ -14,6 +14,7 @@ import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.PlanLifecycle;
 import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.group.PlanStart;
+import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.selection.SelectionCandidate;
@@ -120,6 +121,7 @@ public final class Brain {
   // failure that was never fought.
   private Outcome holdBack(Turn turn) {
     turn.lifecycle().regroupWithoutPlan(turn.snapshot().tick());
+    rally(turn);
     turn.draft().stillRetreated();
     return Outcome.withOrders(regroupOrders(turn));
   }
@@ -276,6 +278,9 @@ public final class Brain {
     ClosedPlan closed =
         turn.lifecycle().closePlan(endReason, turn.snapshot().tick(), scoring(turn));
     turn.lifecycle().finishEvaluation();
+    if (turn.lifecycle().state() == GroupState.REGROUPING) {
+      rally(turn);
+    }
     return new Outcome(ordersAfterEvaluation(turn), Optional.of(closed));
   }
 
@@ -290,6 +295,9 @@ public final class Brain {
   private Outcome evaluate(Turn turn) {
     turn.lifecycle().plan().map(Plan::id).ifPresent(turn.draft()::plan);
     turn.lifecycle().finishEvaluation();
+    if (turn.lifecycle().state() == GroupState.REGROUPING) {
+      rally(turn);
+    }
     return Outcome.withOrders(ordersAfterEvaluation(turn));
   }
 
@@ -318,8 +326,17 @@ public final class Brain {
   // from regroups that end.
   private Outcome keepRegrouping(Turn turn) {
     turn.lifecycle().restartRegroupWindow(turn.snapshot().tick());
+    rally(turn);
     turn.draft().stillRetreated();
     return Outcome.withOrders(regroupOrders(turn));
+  }
+
+  // CT-29: chosen once per regroup; recomputed every decision, it would drift with the mobs.
+  private void rally(Turn turn) {
+    parts
+        .rallyPointRule()
+        .pointFor(turn.snapshot(), turn.lifecycle().committedTarget())
+        .ifPresent(turn.lifecycle()::rallyAt);
   }
 
   private Optional<RegroupEndReason> detectRegroupEnd(Turn turn) {
@@ -336,8 +353,17 @@ public final class Brain {
   }
 
   private List<RoleAssignment> regroupOrders(Turn turn) {
-    Optional<PlayerId> committed = turn.lifecycle().committedTarget();
-    return turn.snapshot().mobs().stream().map(mob -> retreatOrder(turn, mob, committed)).toList();
+    return turn.snapshot().mobs().stream().map(mob -> regroupOrder(turn, mob)).toList();
+  }
+
+  private RoleAssignment regroupOrder(Turn turn, MobSnapshot mob) {
+    return new RoleAssignment(
+        mob.id(),
+        Role.RETREAT,
+        turn.lifecycle().committedTarget(),
+        Optional.empty(),
+        parts.retreatRule().canRecover(mob, turn.snapshot()),
+        turn.lifecycle().regrouping().flatMap(Regrouping::rallyPoint));
   }
 
   private RoleAssignment retreatOrder(Turn turn, MobSnapshot mob, Optional<PlayerId> awayFrom) {
@@ -346,7 +372,8 @@ public final class Brain {
         Role.RETREAT,
         awayFrom,
         Optional.empty(),
-        parts.retreatRule().canRecover(mob, turn.snapshot()));
+        parts.retreatRule().canRecover(mob, turn.snapshot()),
+        Optional.empty());
   }
 
   // Snapshot order fixes the order in which attacks draw randomness, so incidents can be replayed.
@@ -363,7 +390,7 @@ public final class Brain {
     Role role = phasedRole(turn, planned);
     if (role == Role.FALL_BACK || role == Role.HOLD_FIRE) {
       return new RoleAssignment(
-          mob.id(), role, Optional.of(plan.target()), Optional.empty(), false);
+          mob.id(), role, Optional.of(plan.target()), Optional.empty(), false, Optional.empty());
     }
     if (mob.kind() == MobKind.SPIDER) {
       return spiderOrder(turn, mob, role);
@@ -392,7 +419,7 @@ public final class Brain {
     PlayerId target = currentPlan(turn).target();
     AttackChoice choice = chooseFighterAttack(turn, mob, role);
     return new RoleAssignment(
-        mob.id(), role, Optional.of(target), Optional.of(choice.attack()), false);
+        mob.id(), role, Optional.of(target), Optional.of(choice.attack()), false, Optional.empty());
   }
 
   private AttackChoice chooseFighterAttack(Turn turn, MobSnapshot mob, Role role) {
@@ -413,11 +440,13 @@ public final class Brain {
   private RoleAssignment spiderOrder(Turn turn, MobSnapshot spider, Role role) {
     Optional<PlayerId> target = chooseSpiderTarget(turn, spider);
     if (target.isEmpty()) {
-      return new RoleAssignment(spider.id(), role, target, Optional.empty(), false);
+      return new RoleAssignment(
+          spider.id(), role, target, Optional.empty(), false, Optional.empty());
     }
     turn.group().roster().assignSpiderTarget(spider.id(), target.get());
     AttackChoice choice = suggestAttack(turn, spider, target.get());
-    return new RoleAssignment(spider.id(), role, target, Optional.of(choice.attack()), false);
+    return new RoleAssignment(
+        spider.id(), role, target, Optional.of(choice.attack()), false, Optional.empty());
   }
 
   private Optional<PlayerId> chooseSpiderTarget(Turn turn, MobSnapshot spider) {

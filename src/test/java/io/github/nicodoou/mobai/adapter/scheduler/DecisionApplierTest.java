@@ -69,7 +69,12 @@ class DecisionApplierTest {
 
   private RoleAssignment pressOrder(MobId mob) {
     return new RoleAssignment(
-        mob, Role.PRESS, Optional.of(player), Optional.of(Attack.ZOMBIE_FRONT_STRIKE), false);
+        mob,
+        Role.PRESS,
+        Optional.of(player),
+        Optional.of(Attack.ZOMBIE_FRONT_STRIKE),
+        false,
+        Optional.empty());
   }
 
   private static MobId mob(long id) {

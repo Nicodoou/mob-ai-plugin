@@ -9,6 +9,7 @@ import io.github.nicodoou.mobai.domain.brain.AttackSuggester;
 import io.github.nicodoou.mobai.domain.brain.Brain;
 import io.github.nicodoou.mobai.domain.brain.BrainParts;
 import io.github.nicodoou.mobai.domain.brain.PlanEndDetector;
+import io.github.nicodoou.mobai.domain.brain.RallyPointRule;
 import io.github.nicodoou.mobai.domain.brain.RegroupRule;
 import io.github.nicodoou.mobai.domain.brain.RegroupWindow;
 import io.github.nicodoou.mobai.domain.brain.RetreatRule;
@@ -175,7 +176,8 @@ final class LearningSimulation {
               new PlanEndDetector(settings::plan),
               new RetreatRule(settings::plan, settings::retreat),
               new RegroupRule(settings::retreat, regroupWindow),
-              regroupWindow));
+              regroupWindow,
+              new RallyPointRule(settings::retreat)));
     }
 
     private void advance() {
