@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, mergeado #42; falta verificar 24C y 24D en el juego) → WP-23B (golpe esquivo, CT-19, mergeado #43; falta verificar en el juego) → WP-23C (alcance según el arma, CT-24, mergeado #44) → WP-24E y WP-24F (andanada, CT-23, 24E mergeado #45, 24F en curso) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
+2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, mergeado #42; falta verificar 24C y 24D en el juego) → WP-23B (golpe esquivo, CT-19, mergeado #43; falta verificar en el juego) → WP-23C (alcance según el arma, CT-24, mergeado #44) → WP-24E y WP-24F (andanada, CT-23, 24E #45 y 24F #46 mergeados. **Falta la prueba en el juego de 24C, 24D, 23B, 23C y la andanada**) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -59,7 +59,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-24C | Esqueletos en formación | E6 | mergeado | Sonnet | [#41](https://github.com/Nicodoou/mob-ai-plugin/pull/41) | CT-21 |
 | WP-24D | Esqueletos en altura | E6 | mergeado | Sonnet | [#42](https://github.com/Nicodoou/mob-ai-plugin/pull/42) | CT-22 |
 | WP-24E | Andanada: estrategia y fases en el cerebro | E6 | mergeado | Opus | [#45](https://github.com/Nicodoou/mob-ai-plugin/pull/45) | CT-23. Al mergear, sumar la sección `volley` al `config.yml` del server de prueba |
-| WP-24F | Andanada: los goals | E6 | en curso | Sonnet | — | CT-23. Después del 24E |
+| WP-24F | Andanada: los goals | E6 | mergeado | Sonnet | [#46](https://github.com/Nicodoou/mob-ai-plugin/pull/46) | CT-23. Después del 24E |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
 | WP-26 | Consulta de memoria y métricas | E6 | pendiente | Sonnet | — | |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |

@@ -377,3 +377,11 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** El subagente frenó bien: la especificación no incluía `PlanSuccessModel` (la simulación no sabía cómo le va a la andanada). Le di medias (contra quien bloquea 0,55, debajo del flanqueo; contra quien no, 0,50) y la regla quedó en el manual, junto con la de validar cada clave nueva. 779 pruebas, con la simulación y las invariantes en verde; las 4 roturas del WP mordieron y las mías también: los cuerpo a cuerpo que nunca se abren (`fallingBackPullsTheMeleeOut` y otras), sacar la precedencia de la retirada (`BrainExecutingTest`, tres pruebas) y la frontera de la apertura con `<=` (`thenFires`, `theCycleRepeats`). CI verde. Sumé la sección `volley` al `config.yml` del server de prueba.
 
 **Opinión del código.** Lo bueno: el cambio del cerebro es una función chica que transforma roles sin tocar el plan, así que retirada, cierre por retirada y reproducción siguen igual. Lo flojo: las fases dependen de que el grupo decida cada 10 ticks; con otra cadencia, los tiempos que no sean múltiplos se redondean a la decisión siguiente. Riesgo: la andanada recién se ve con el WP-24F.
+
+## WP-24F — Andanada: los goals (PR #46, Sonnet)
+
+**Qué hizo.** CT-23: `FallBackGoal` (zombies y arañas se alejan a alcance del jugador + 1,5 y miran; el primer paso en el acto), `ShootGoal` acepta `HOLD_FIRE` (se ubica sin disparar) y `VOLLEY` (dispara ya; el oportuno sale como anticipado y se registra así), la formación cuenta los tres roles de tirador, `Waypoints.keepAwayPoint`, `GoalTiming` con la configuración `volley`.
+
+**Revisión.** Código conforme; desvío aceptado: `shotNow` se partió en `chosenAttack` y `opportunisticShot` por las 20 líneas. 781 pruebas; las 2 roturas del WP y la mía (distancia con altura y un bloque de menos) mordieron. CI verde.
+
+**Opinión del código.** Lo bueno: la andanada se arma con piezas que ya existían (alcance, línea limpia, ritmo de tiro guardado durante la presión). Lo flojo: cada cuerpo a cuerpo se abre hacia atrás desde donde está, sin coordinar hacia qué lado; si dos quedan en la misma línea de un esqueleto, ese esqueleto espera. Riesgo: todo esto se juzga en el juego.
