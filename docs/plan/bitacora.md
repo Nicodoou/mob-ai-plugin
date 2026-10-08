@@ -495,3 +495,26 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - el peligro solo mira vida perdida contra daño hecho; un jugador que huye todo el tiempo baja la razón sin ser malo;
   - los incidentes viejos ya no se abren.
 - **Riesgo:** los números 2 y 8 son una suposición. Se calibran en el test fuerte de Nico.
+
+## WP-26 — Consulta de memoria (PR #52, Sonnet)
+
+**Qué hizo.** El comando `/mobai memory [jugador]`. Sin nombre, consulta al jugador que lo manda.
+- **Por cada grupo que recuerda al jugador muestra:**
+  - una cabecera con el peligro (CT-27), la vida perdida y el daño hecho;
+  - las estrategias y los ataques de mejor a peor, con su tasa y su respaldo.
+- **`DescribePlayerMemory`** suma el peligro.
+- **Las líneas las arma `MemoryReport`,** que es pura y usa `Locale.ROOT`.
+- **Las "métricas"** del nombre original quedan cubiertas por el log de debug (WP-29B).
+
+**Revisión.**
+- Las 6 pruebas y las 3 roturas del WP; todas mordieron.
+- Una ronda de corrección:
+  - dos funciones con 4 parámetros, contra la regla de 3, ahora agrupados en el record `LineKind`;
+  - el desempate por nombre no tenía prueba; la nueva `equalRatesGoByName` muerde.
+- Build y CI en verde.
+- `MemoryCommand` depende de Paper: se verifica en el juego.
+
+**Opinión del código.**
+- **Lo bueno:** el formato se prueba sin Paper, y el comando solo resuelve al jugador y manda las líneas.
+- **Lo flojo:** solo jugadores conectados, y todavía no muestra el umbral de retirada (llega con el WP-30C).
+- **Riesgo:** ninguno nuevo. Ojo: la regla de 3 parámetros no la verifica ninguna herramienta (ArchUnit no la cubre), así que depende de la revisión.
