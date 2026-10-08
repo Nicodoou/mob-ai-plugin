@@ -168,6 +168,11 @@ public final class VersionTranslator {
         .orElse(MinecraftConstants.PLAYER_REACH_BLOCKS);
   }
 
+  public boolean holdsRangedWeapon(Player player) {
+    Material held = player.getInventory().getItemInMainHand().getType();
+    return held == Material.BOW || held == Material.CROSSBOW;
+  }
+
   public double movementSpeed(LivingEntity entity) {
     return attributeValue(entity, Attribute.MOVEMENT_SPEED)
         .orElse(MinecraftConstants.DEFAULT_MOB_MOVEMENT_SPEED);

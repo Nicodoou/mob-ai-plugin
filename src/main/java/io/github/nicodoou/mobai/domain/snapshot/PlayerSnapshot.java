@@ -9,6 +9,9 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @param holdingRanged the main hand holds a bow or a crossbow
+ */
 public record PlayerSnapshot(
     PlayerId id,
     PlayerPose pose,
@@ -20,7 +23,8 @@ public record PlayerSnapshot(
     double armorToughness,
     int protectionFactor,
     Map<EffectKind, Integer> effectLevels,
-    boolean blocking) {
+    boolean blocking,
+    boolean holdingRanged) {
 
   public PlayerSnapshot {
     Objects.requireNonNull(id, "PlayerSnapshot.id");
