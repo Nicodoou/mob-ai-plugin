@@ -584,11 +584,12 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 | WP-33B | Recetas continuas: `PlanRecipe`, rasgos cuadráticos (`RecipeFeatures`), fracciones realizadas y la búsqueda gruesa-a-fina (`RecipeSearch`) | Opus |
 | WP-33C | Simulación: recompensa sintética con un óptimo interior conocido; medir en cuántos planes lo encuentra y calibrar ruido, punto de partida, exploración, refinamientos y peso de la base. **Puerta: sin buenos números acá, no se sigue** | Opus |
 | WP-33D | Rasgos del jugador (`TraitLedger`, arma a distancia en la foto) y configuración `learning` con el conmutador `planner` | Sonnet |
-| WP-33E | Las recetas en el cerebro: elegir con el modelo y los rasgos, asignar roles, reserva por fases (`FALL_BACK` hasta la demora y después `PRESS`, como la andanada), umbral de retirada por plan, aprender al cerrar, traza y log de debug | Opus |
-| WP-33F | Memoria por jugador en disco, esquema nuevo sin borrar lo viejo, copia de seguridad al migrar, rasgos y `base.json` | Sonnet |
-| WP-33G | `/mobai train`, exploración del modo, actualización de la base, `training-data.jsonl` y `/mobai memory` | Sonnet |
+| WP-33E | `RecipePlanner` en el dominio: modelo vigente con olvido, plan (sorteo, rasgos, búsqueda, reparto de flanqueadores y reserva), aprendizaje; modelos por jugador en `GroupMemory`; umbral máximo de retirada por debajo de la vuelta | Opus |
+| WP-33F | Las recetas en el cerebro: conmutador `planner`, rasgos observados en cada decisión, reserva por fases (`FALL_BACK` hasta la demora y después `PRESS`), umbral de retirada por plan, aprender al cerrar, incidentes y log de debug | Opus |
+| WP-33G | Memoria por jugador en disco, esquema nuevo sin borrar lo viejo, copia de seguridad al migrar, rasgos y `base.json` | Sonnet |
+| WP-33H | `/mobai train`, exploración del modo, actualización de la base, `training-data.jsonl` y `/mobai memory` | Sonnet |
 
-**Reordenamiento del 8 oct (al especificar el WP-33D):** la reserva no necesita un goal propio. El cerebro la maneja por fases, como la andanada (CT-23): `FALL_BACK` mientras el plan es más joven que la demora y `PRESS` después, con los goals que ya existen. El viejo WP-33F (goal de reserva) desaparece y la serie queda en 33D a 33G.
+**Reordenamiento del 8 oct (al especificar el WP-33D):** la reserva no necesita un goal propio. El cerebro la maneja por fases, como la andanada (CT-23): `FALL_BACK` mientras el plan es más joven que la demora y `PRESS` después, con los goals que ya existen. El viejo WP-33F (goal de reserva) desaparece y la serie queda en 33D a 33G. Al especificar el WP-33E, el cerebro se separó del planificador (pasaba el tamaño máximo): la serie queda en 33D a 33H. Se corrigió además el umbral máximo de retirada de las recetas (0,6, igual a la vuelta a pelear: un mob habría oscilado), que baja a 0,5 con validación.
 
 **Riesgos.**
 - **Interacciones:** el modelo lineal solo ve las interacciones que se le dan. Si en el juego aparece una combinación ganadora que el modelo no puede expresar, se suma ese rasgo; `training-data.jsonl` permite verificarlo sin jugar de nuevo.
