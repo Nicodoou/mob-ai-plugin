@@ -469,3 +469,29 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** el puntaje es puro, con cada medida en su función y números hechos a mano. El cerebro solo le pasa la vida al plan.
 - **Lo flojo:** la supervivencia se apoya en `roles` para saber quién sigue vivo, así que un mob que desaparece por chunk cuenta como muerto. Además, la simulación no ejercita la fórmula.
 - **Riesgo:** con pesos fijos, la rapidez puede dominar contra jugadores fuertes. Lo corrige el WP-30B.
+
+## WP-30B — Peso de la supervivencia según el jugador (PR #51, Opus)
+
+**Qué hizo.** Segunda parte del CT-27.
+- **Registro de peligro por jugador** (`DangerRecord`, con olvido): por cada jugador, la vida neta que perdió el grupo y el daño que le hizo. Lo actualiza `ClosePlan`.
+- **`DangerLevel`:** convierte la razón vida perdida ÷ daño en un nivel de 0 a 1, entre 2 y 8, con un previo de 10 de daño.
+- **`SuccessWeights`:** sube el peso de la supervivencia de 0,2 a 0,6 según el nivel.
+- **Cierre del plan:** el cerebro y `RecordPlayerDeath` lo puntúan con el peligro anterior al plan.
+- **Persistencia:** esquema de memoria v2, con migración desde v1. Los incidentes pasan a v2.
+- El log `PLAN` muestra `danger=`.
+
+**Revisión.**
+- Las 17 pruebas y las 5 roturas del WP; todas mordieron.
+- Mis roturas:
+  - un previo con la razón alta hizo fallar `noFightingMeansOrdinary` y `halfwayRatioIsHalfDanger`;
+  - quitar el peligro del mapper de memoria **no hacía fallar nada**. Una ronda de corrección sumó `StoredMemoriesMapperTest.dangerRecordsSurviveTheMapper`, que ahora muerde.
+- Build y CI en verde.
+- Desvíos aceptados: constantes en `SchemaMigrator` y el fixture de `ClosePlanTest`.
+- `config.yml` del server de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:** el nivel y los pesos son dos funciones puras chicas, y la migración es un paso por versión, como estaba previsto.
+- **Lo flojo:**
+  - el peligro solo mira vida perdida contra daño hecho; un jugador que huye todo el tiempo baja la razón sin ser malo;
+  - los incidentes viejos ya no se abren.
+- **Riesgo:** los números 2 y 8 son una suposición. Se calibran en el test fuerte de Nico.
