@@ -29,6 +29,7 @@ import io.github.nicodoou.mobai.adapter.goal.GoalTiming;
 import io.github.nicodoou.mobai.adapter.goal.GoalTools;
 import io.github.nicodoou.mobai.adapter.goal.HitEffects;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
+import io.github.nicodoou.mobai.adapter.goal.RallyRoute;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
 import io.github.nicodoou.mobai.adapter.goal.ShotAim;
 import io.github.nicodoou.mobai.adapter.goal.ShotParts;
@@ -60,6 +61,7 @@ import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.geometry.FlankFormation;
 import io.github.nicodoou.mobai.domain.geometry.FlankManeuver;
+import io.github.nicodoou.mobai.domain.geometry.RallyDetour;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -179,30 +181,38 @@ public record AdapterServices(
   }
 
   private static GoalInstaller goalInstaller(Plugin plugin, CoreServices core, SharedParts parts) {
-    MeleeAttacker attacker = meleeAttacker(core, parts);
-    CombatGeometry geometry = new CombatGeometry();
-    Waypoints waypoints =
-        new Waypoints(
-            geometry,
-            new FlankManeuver(geometry, new FlankFormation(geometry)),
-            core.settings().section(MobAiSettings::attack));
+    GoalTools tools = goalTools(core, parts, new CombatGeometry());
+    return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
+  }
+
+  private static GoalTools goalTools(
+      CoreServices core, SharedParts parts, CombatGeometry geometry) {
     BowShooter bow =
         new BowShooter(
             parts.tracker(),
             core.clock(),
             new ShotParts(new ShotAim(geometry), parts.movement(), parts.translator()));
-    GoalTools tools =
-        new GoalTools(
-            new Weapons(
-                attacker,
-                bow,
-                new Bodies(parts.translator()::playerReach, parts.translator()::movementSpeed)),
-            new GoalTiming(
-                core.clock(),
-                core.settings().section(MobAiSettings::attack),
-                core.settings().section(MobAiSettings::volley)),
-            waypoints);
-    return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
+    return new GoalTools(
+        new Weapons(
+            meleeAttacker(core, parts),
+            bow,
+            new Bodies(parts.translator()::playerReach, parts.translator()::movementSpeed)),
+        new GoalTiming(
+            core.clock(),
+            core.settings().section(MobAiSettings::attack),
+            core.settings().section(MobAiSettings::volley)),
+        waypoints(core, geometry),
+        new RallyRoute(
+            new RallyDetour(geometry),
+            core.settings().section(MobAiSettings::attack),
+            core.settings().section(MobAiSettings::retreat)));
+  }
+
+  private static Waypoints waypoints(CoreServices core, CombatGeometry geometry) {
+    return new Waypoints(
+        geometry,
+        new FlankManeuver(geometry, new FlankFormation(geometry)),
+        core.settings().section(MobAiSettings::attack));
   }
 
   private static MeleeAttacker meleeAttacker(CoreServices core, SharedParts parts) {

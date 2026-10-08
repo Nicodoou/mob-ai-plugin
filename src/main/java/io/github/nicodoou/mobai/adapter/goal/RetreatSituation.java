@@ -7,13 +7,18 @@ package io.github.nicodoou.mobai.adapter.goal;
  * @param farEnough the mob is at the retreat distance or beyond, horizontally
  * @param coverStillHidden the mob is heading for a cover spot the danger still cannot see
  * @param searchDue the cover search interval has passed since the last search
+ * @param rallyPending the order carries a rally point the mob has not reached yet
  */
 public record RetreatSituation(
-    boolean hidden, boolean farEnough, boolean coverStillHidden, boolean searchDue) {
+    boolean hidden,
+    boolean farEnough,
+    boolean coverStillHidden,
+    boolean searchDue,
+    boolean rallyPending) {
 
   public RetreatMove nextMove() {
     if (hidden && farEnough) {
-      return RetreatMove.HOLD;
+      return rallyPending ? RetreatMove.RALLY : RetreatMove.HOLD;
     }
     if (coverStillHidden) {
       return RetreatMove.KEEP_COVER;
