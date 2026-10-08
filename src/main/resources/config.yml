@@ -56,9 +56,12 @@ attack:
   # Lo que el flanqueador se mantiene más allá del alcance del jugador mientras lo ve.
   flank-margin-blocks: 1.0
   retreat-distance-blocks: 16.0
-  # Golpe esquivo: carga del arma del jugador (0 a 1) desde la que el zombie se aparta, y cuánto más allá del alcance del jugador.
-  evasive-charge-threshold: 0.8
+  # Golpe esquivo: cuánto más allá del alcance del jugador se aparta el zombie.
   evasive-margin-blocks: 0.5
+  # Golpe esquivo: ticks de más para reaccionar (el goal decide uno sí y uno no, y el camino tarda en
+  # arrancar) y grados de más, además del ancho del mob, que se aparta de la mira del jugador que se cubre.
+  evasive-safety-ticks: 4
+  evasive-aim-margin-degrees: 15.0
 
 spider:
   # Lentitud I por 3 segundos.

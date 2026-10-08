@@ -8,8 +8,9 @@ public record AttackSettings(
     double shootMaxDistanceBlocks,
     double flankMarginBlocks,
     double retreatDistanceBlocks,
-    double evasiveChargeThreshold,
-    double evasiveMarginBlocks) {
+    double evasiveMarginBlocks,
+    long evasiveSafetyTicks,
+    double evasiveAimMarginDegrees) {
   public AttackSettings {
     SettingsChecks.requireAtLeast(
         "AttackSettings.projectileTimeoutTicks", projectileTimeoutTicks, 1);
@@ -21,9 +22,10 @@ public record AttackSettings(
     SettingsChecks.requirePositive("AttackSettings.shootMaxDistanceBlocks", shootMaxDistanceBlocks);
     SettingsChecks.requireNonNegative("AttackSettings.flankMarginBlocks", flankMarginBlocks);
     SettingsChecks.requirePositive("AttackSettings.retreatDistanceBlocks", retreatDistanceBlocks);
-    SettingsChecks.requireBetween(
-        "AttackSettings.evasiveChargeThreshold", evasiveChargeThreshold, 0, 1);
     SettingsChecks.requireNonNegative("AttackSettings.evasiveMarginBlocks", evasiveMarginBlocks);
+    SettingsChecks.requireAtLeast("AttackSettings.evasiveSafetyTicks", evasiveSafetyTicks, 0);
+    SettingsChecks.requireBetween(
+        "AttackSettings.evasiveAimMarginDegrees", evasiveAimMarginDegrees, 0, 90);
     SettingsChecks.requireNotAbove(
         "AttackSettings.shootMinDistanceBlocks",
         shootMinDistanceBlocks,
