@@ -24,6 +24,9 @@ public final class MinecraftConstants {
   public static final int SKELETON_ATTACK_INTERVAL_TICKS = 40;
   public static final double MELEE_REACH_BLOCKS = 2.0;
 
+  // A survival player's reach with a plain weapon; spears reach farther (their own component).
+  public static final double PLAYER_REACH_BLOCKS = 3.0;
+
   // Vanilla damage reduction: armor, armor toughness, Protection and Resistance.
   public static final double ARMOR_TOUGHNESS_BASE = 2.0;
   public static final double ARMOR_TOUGHNESS_DIVISOR = 4.0;
