@@ -178,7 +178,7 @@ public record AdapterServices(
             new ShotParts(new ShotAim(geometry), parts.movement(), parts.translator()));
     GoalTools tools =
         new GoalTools(
-            new Weapons(attacker, bow),
+            new Weapons(attacker, bow, parts.translator()::playerReach),
             new GoalTiming(core.clock(), core.settings().section(MobAiSettings::attack)),
             waypoints);
     return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());

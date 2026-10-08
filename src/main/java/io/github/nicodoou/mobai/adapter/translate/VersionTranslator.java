@@ -1,7 +1,10 @@
 package io.github.nicodoou.mobai.adapter.translate;
 
 import io.github.nicodoou.mobai.domain.shared.EffectKind;
+import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.AttackRange;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +17,7 @@ import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.inventory.EntityEquipment;
@@ -122,6 +126,19 @@ public final class VersionTranslator {
     EntityEquipment equipment = mob.getEquipment();
     equipment.setItemInMainHand(new ItemStack(Material.BOW));
     equipment.setItemInMainHandDropChance(0f);
+  }
+
+  // A spear carries its own reach; any other hand uses the player's interaction range.
+  public double playerReach(Player player) {
+    ItemStack held = player.getInventory().getItemInMainHand();
+    if (held.hasData(DataComponentTypes.ATTACK_RANGE)) {
+      AttackRange range = held.getData(DataComponentTypes.ATTACK_RANGE);
+      if (range != null) {
+        return range.maxReach();
+      }
+    }
+    return attributeValue(player, Attribute.ENTITY_INTERACTION_RANGE)
+        .orElse(MinecraftConstants.PLAYER_REACH_BLOCKS);
   }
 
   private Optional<EffectKind> effectKindOf(PotionEffectType type) {

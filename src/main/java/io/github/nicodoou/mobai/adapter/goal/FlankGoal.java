@@ -88,10 +88,18 @@ public final class FlankGoal implements Goal<Mob> {
       return;
     }
     Vec3 point =
-        context.tools().waypoints().flankStep(pose, self(), flankerPositions(target)).waypoint();
+        context
+            .tools()
+            .waypoints()
+            .flankStep(new PlayerTarget(pose, reachOf(target)), self(), flankerPositions(target))
+            .waypoint();
     mob.getPathfinder()
         .moveTo(new Location(target.getWorld(), point.x(), point.y(), point.z()), WALK_SPEED);
     rhythm.markRepath();
+  }
+
+  private double reachOf(Player target) {
+    return context.tools().weapons().playerReach().blocksOf(target);
   }
 
   // Every flanker of this target loaded in its world, this mob included.

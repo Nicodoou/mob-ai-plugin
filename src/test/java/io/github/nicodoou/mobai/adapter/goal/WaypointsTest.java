@@ -1,6 +1,7 @@
 package io.github.nicodoou.mobai.adapter.goal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
@@ -30,7 +31,7 @@ class WaypointsTest {
   void flankStepKeepsTheConfiguredDistanceWhileSeen() {
     Map<MobId, Vec3> flankers = Map.of(mob(1), new Vec3(0, 0, 2));
 
-    FlankStep step = waypoints.flankStep(pose, mob(1), flankers);
+    FlankStep step = waypoints.flankStep(new PlayerTarget(pose, 3.0), mob(1), flankers);
 
     assertThat(step.waypoint().horizontal().length()).isCloseTo(4.0, within(TOLERANCE));
   }
@@ -73,7 +74,7 @@ class WaypointsTest {
 
   @Test
   void evadePointStepsOutOfReach() {
-    Vec3 point = waypoints.evadePoint(new Vec3(0, 64, 2), new Vec3(0, 64, 0)).orElseThrow();
+    Vec3 point = waypoints.evadePoint(new Vec3(0, 64, 2), new Vec3(0, 64, 0), 3.0).orElseThrow();
 
     assertThat(point.x()).isCloseTo(0, within(TOLERANCE));
     assertThat(point.y()).isCloseTo(64, within(TOLERANCE));
@@ -84,8 +85,33 @@ class WaypointsTest {
   void zombieAlreadyOutOfReachDoesNotMove() {
     Vec3 danger = new Vec3(0, 64, 0);
 
-    assertThat(waypoints.evadePoint(new Vec3(0, 64, 3.5), danger)).isEmpty();
-    assertThat(waypoints.evadePoint(new Vec3(0, 64, 5), danger)).isEmpty();
+    assertThat(waypoints.evadePoint(new Vec3(0, 64, 3.5), danger, 3.0)).isEmpty();
+    assertThat(waypoints.evadePoint(new Vec3(0, 64, 5), danger, 3.0)).isEmpty();
+  }
+
+  @Test
+  void longerReachKeepsFlankersFarther() {
+    Map<MobId, Vec3> flankers = Map.of(mob(1), new Vec3(0, 0, 2));
+
+    FlankStep step = waypoints.flankStep(new PlayerTarget(pose, 4.5), mob(1), flankers);
+
+    assertThat(step.waypoint().horizontal().length()).isCloseTo(5.5, within(TOLERANCE));
+  }
+
+  @Test
+  void evadePointGrowsWithReach() {
+    Vec3 point = waypoints.evadePoint(new Vec3(0, 64, 2), new Vec3(0, 64, 0), 4.5).orElseThrow();
+
+    assertThat(point.x()).isCloseTo(0, within(TOLERANCE));
+    assertThat(point.y()).isCloseTo(64, within(TOLERANCE));
+    assertThat(point.z()).isCloseTo(5, within(TOLERANCE));
+  }
+
+  @Test
+  void playerTargetRejectsNonPositiveReach() {
+    assertThatThrownBy(() -> new PlayerTarget(pose, 0))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("PlayerTarget.reachBlocks must be a positive number, got 0.0");
   }
 
   @Test
