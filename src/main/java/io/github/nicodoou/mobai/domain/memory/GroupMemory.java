@@ -9,6 +9,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 public final class GroupMemory {
@@ -18,6 +19,7 @@ public final class GroupMemory {
   private final Map<PlayerId, Map<Attack, AttackRecord>> attackRecords = new HashMap<>();
   private final Map<PlayerId, Map<StrategyId, AttackRecord>> strategyRecords = new HashMap<>();
   private final Map<PlayerId, DangerRecord> dangerRecords = new HashMap<>();
+  private final Map<PlayerId, RecipeModelRecord> recipeModels = new HashMap<>();
 
   public GroupMemory(Supplier<MemorySettings> settings) {
     this.settings = Objects.requireNonNull(settings, "GroupMemory.settings");
@@ -91,12 +93,14 @@ public final class GroupMemory {
     attackRecords.remove(player);
     strategyRecords.remove(player);
     dangerRecords.remove(player);
+    recipeModels.remove(player);
   }
 
   public void clear() {
     attackRecords.clear();
     strategyRecords.clear();
     dangerRecords.clear();
+    recipeModels.clear();
   }
 
   public Map<PlayerId, Map<Attack, AttackRecord>> attackRecords() {
@@ -109,6 +113,20 @@ public final class GroupMemory {
 
   public Map<PlayerId, DangerRecord> dangerRecords() {
     return Map.copyOf(dangerRecords);
+  }
+
+  public Optional<RecipeModelRecord> recipeModel(PlayerId player) {
+    return Optional.ofNullable(recipeModels.get(player));
+  }
+
+  public void storeRecipeModel(PlayerId player, RecipeModelRecord record) {
+    Objects.requireNonNull(player, "GroupMemory.player");
+    Objects.requireNonNull(record, "GroupMemory.record");
+    recipeModels.put(player, record);
+  }
+
+  public Map<PlayerId, RecipeModelRecord> recipeModels() {
+    return Map.copyOf(recipeModels);
   }
 
   private AttackRecord combinedKindRecord(PlayerId player, MobKind kind, long tick) {

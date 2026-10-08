@@ -17,7 +17,11 @@ public final class RetreatRule {
   }
 
   public boolean shouldRetreat(MobSnapshot mob) {
-    return mob.health() <= plan.get().retreatHealthFraction() * mob.maxHealth();
+    return shouldRetreatAt(mob, plan.get().retreatHealthFraction());
+  }
+
+  public boolean shouldRetreatAt(MobSnapshot mob, double healthFraction) {
+    return mob.health() <= healthFraction * mob.maxHealth();
   }
 
   // CT-13: a group in this state would close any new plan at once with GROUP_RETREATED.

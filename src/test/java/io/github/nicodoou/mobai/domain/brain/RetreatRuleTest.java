@@ -29,6 +29,14 @@ class RetreatRuleTest {
   }
 
   @Test
+  void retreatAtAGivenFraction() {
+    MobSnapshot mob = zombieWithHealth(8);
+
+    assertThat(rule.shouldRetreatAt(mob, 0.4)).isTrue();
+    assertThat(rule.shouldRetreatAt(mob, 0.35)).isFalse();
+  }
+
+  @Test
   void usesEachMobsMaxHealth() {
     assertThat(rule.shouldRetreat(spiderWithHealth(4.8))).isTrue();
     assertThat(rule.shouldRetreat(spiderWithHealth(5))).isFalse();
