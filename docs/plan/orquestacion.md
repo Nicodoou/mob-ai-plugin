@@ -122,6 +122,8 @@ Si `git fetch` falla por refs con nombres como `main (1)` en `.git/refs`, son co
 
 Windows a veces no deja borrar la carpeta del worktree («Permission denied» o «Filename too long»): con `git worktree prune` alcanza; la carpeta se borra más tarde. `.claude/worktrees/` está en `.git/info/exclude`.
 
+Si el WP suma claves a `config.yml` o a `messages.yml`, actualizá también la copia del server de prueba (`run/plugins/MobAI/`, y `docs/plan/config-de-prueba.yml`): el plugin no pisa archivos existentes y se deshabilita si falta una clave (pasó el 8 oct con `memory-empty`).
+
 Después: actualizá `estado.md`, agregá la entrada del WP a `bitacora.md` (qué hizo, arquitectura, tu opinión del código y lo pendiente), commiteá y presentale a Nico el cierre del WP.
 
 ## 8. Cambio de sesión

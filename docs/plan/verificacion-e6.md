@@ -102,3 +102,17 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
 - **B-06, esqueletos que disparan de espaldas (aclarado por Nico):** disparan mientras caminan hacia su puesto o se alejan, con el cuerpo de espaldas al jugador. `ShootGoal` dispara sin mirar hacia dónde está orientado el cuerpo. Va con la animación de tensar el arco, en el mismo CT, aprobado por Nico: el esqueleto se planta y gira hacia el jugador para tensar.
 - **B-05:** Nico quiere debatir qué hace el zombie esquivo frente a un jugador que se queda cubierto y cargado.
 - **Por verificar todavía:** la andanada (no salió ningún plan `VOLLEY`), las arañas, el alcance de la lanza y la rotación de la flecha.
+
+## Arranque del 8 oct 2026, después del WP-26
+
+**Qué vio Nico:** al iniciar el server, el plugin no funciona.
+
+**Log:** `MobAI disabled: messages.yml: missing memory-empty`.
+
+**Causa:** el `messages.yml` del server de prueba es una copia vieja. El plugin no lo pisa si ya existe, y el WP-26 sumó cuatro claves (`memory-*`). Es lo mismo que pasa con `config.yml`, pero esta vez Opus no actualizó la copia al mergear. No es un bug del código: el plugin hace lo que dice el WP-16 (falla con un mensaje claro si falta una clave).
+
+**Arreglo:** Opus sumó las cuatro claves y la lista nueva de `unknown-subcommand` al `messages.yml` del server de prueba.
+
+**Anotado:**
+- regla del manual: al mergear un WP que suma mensajes, actualizar también el `messages.yml` de prueba;
+- decisión abierta: que una clave de mensaje que falta use el texto del jar con un aviso, en vez de deshabilitar el plugin. Los servers reales van a pasar por esto en cada actualización.

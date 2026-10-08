@@ -97,6 +97,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 
 | Decisión | Dónde se cierra |
 | --- | --- |
+| Una clave que falta en `messages.yml` deshabilita el plugin (pasó el 8 oct). Propuesta: usar el texto del jar y avisar en el log. Lo mismo podría valer para claves nuevas de `config.yml` con su valor por defecto | Antes de publicar el plugin |
 | `PressGoal` maneja tres modos (frontal, paciente y esquivo) con `if` sobre la sugerencia. Nico va a sumar más ataques: con el cuarto modo, separar cada uno en una clase de táctica (`MeleeTactic`: paciente, esquiva, frontal) que `PressGoal` elige por el ataque sugerido | Antes de agregar el próximo ataque de zombie |
 | El cerebro le sugiere el golpe de flanco también a un zombie que presiona; `PressGoal` pega de frente y registra eso (lo ejecutado), así que la sugerencia se desperdicia. Propuesta: que `AttackSuggester` no ofrezca `ZOMBIE_FLANK_STRIKE` fuera del rol `FLANK` (CT-08 ya lo elige solo para los flanqueadores). Cambia sorteos de varias pruebas del cerebro | WP chico de limpieza, junto con los ciclos de paquetes |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |
