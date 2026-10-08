@@ -500,6 +500,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Copia completa de un grupo | `GroupCapture`, `GroupCaptureMapper` (aplicación), `LifecycleCapture` (dominio), `ThreatCapture`, `ThreatRecord` (dominio) | Dominio y aplicación |
 | Azar grabado y repetido | `RecordingRandomSource`, `ReplayRandomSource`, `RecordedDraw`, `DrawKind` | Aplicación |
 | Incidente y su JSON | `IncidentReport`, `IncidentLocation`, `IncidentFailure` (aplicación), `IncidentJson`, `IncidentFile`, `OptionalTypeAdapterFactory` (adaptadores, `adapter.debug`) | Aplicación y adaptadores |
+| Set de prueba, refuerzo de un grupo | `TestGroup`, `ReinforceCommand`, `GroupSpawner.reinforce` | Adaptador |
 
 «Escape» se reserva para el mob (RF-08: `MemberEscaped`, `RecordEscape`). Cuando el que se va es el jugador, el plan cierra con `TARGET_LOST`; nunca se lo llama escape en el código.
 
