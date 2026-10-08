@@ -80,6 +80,7 @@ Este WP es solo el dominio: la estrategia, las fases y las órdenes nuevas. Los 
 | Modificar | `src/test/java/io/github/nicodoou/mobai/adapter/config/ConfigLoaderTest.java` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/domain/settings/SettingsValidationTest.java` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/simulation/OutcomeModel.java` |
+| Modificar | `src/test/java/io/github/nicodoou/mobai/simulation/PlanSuccessModel.java` |
 
 `new MobAiSettings(` aparece hoy en `ConfigLoader`, `ConfigLoaderTest`, `RecordOutcomeTest`, `RecruitMobTest` (2), `SettingsHolderTest`, `SettingsValidationTest` (2), `LearningSimulation` y `TestSettings`. Todos suman el componente nuevo al final. En las pruebas va `TestSettings.defaults().volley()` (o `base.volley()` donde ya hay un `base`). En `TestSettings` va `new VolleySettings(60, 20, 30, 1.5)`. Buscá con grep antes de empezar: si aparece en otro archivo, frená y reportá.
 
@@ -247,6 +248,7 @@ Campo nuevo `private final VolleyCycle volleyCycle;`, armado en el constructor c
 | `StrategyCatalogTest` | `listsTheThreeStrategiesInFixedOrder` pasa a `listsTheFourStrategiesInFixedOrder` y espera las cuatro, `VOLLEY` última; `testGroupMakesEveryStrategyViable` espera las cuatro |
 | `BrainObservingTest` | `plansAndExecutesInTheSameDecision`: `strategyChecks()` `hasSize(4)` (el índice 1 sigue siendo `FLANK`). `onlyViableStrategiesAreCandidates`: suma `tuple(VolleyStrategy.ID, false)` al final |
 | `OutcomeModel` | Filas nuevas para esqueletos con rol `VOLLEY`. `BLOCKER`: `DIRECT_SHOT` `(0.25, 0.50, 0.25, 0)`, `LEAD_SHOT` `(0.30, 0.45, 0.25, 0)`, `OPPORTUNISTIC_SHOT` `(0.30, 0.45, 0.25, 0)`. `OPEN`: `DIRECT_SHOT` `(0.45, 0, 0.55, 0)`, `LEAD_SHOT` `(0.65, 0, 0.35, 0)`, `OPPORTUNISTIC_SHOT` `(0.65, 0, 0.35, 0)`. En la andanada, el oportuno dispara como el anticipado (WP-24F). Las órdenes `FALL_BACK` y `HOLD_FIRE` no tienen ataque y la simulación ya las saltea |
+| `PlanSuccessModel` | Medias nuevas para `VOLLEY`: `BLOCKER` 0.55 (los tiros llegan de varios lados a la vez y el escudo cubre uno solo, pero el flanqueo, 0.70, sigue siendo lo mejor contra él, que es lo que calibra el CT-09) y `OPEN` 0.50 (contra quien no bloquea, frenar la presión para disparar rinde menos que el ataque directo, 0.65). Como `Map.of` admite hasta 10 pares, pasan a ser 8: alcanza |
 | `ConfigLoaderTest`, `SettingsValidationTest` y los demás `new MobAiSettings(` | el componente nuevo al final. En `SettingsValidationTest`, dos casos nuevos: `new VolleySettings(0, 20, 30, 1.5)` → `VolleySettings.pressTicks must be at least 1, got 0`; `new VolleySettings(60, 20, 30, -1.0)` → `VolleySettings.fallBackMarginBlocks must be zero or positive, got -1.0` |
 
 Si `BrainInvariantsTest`, `BrainExecutingTest`, `LearningSimulationTest` u otra prueba existente falla por la estrategia nueva, **frená y reportá** la prueba, el mensaje y, si la imprime, la cobertura. No la cambies.
