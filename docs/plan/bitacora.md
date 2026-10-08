@@ -558,3 +558,13 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** el cambio es de una función, y las pruebas fijan las dos propiedades que importan: sin daño no hay éxito, y perder al grupo cuesta más contra un jugador peligroso.
 - **Lo flojo:** el diseño original (CT-27) tenía este agujero y lo encontró el test en el juego, no la especificación. Fue error de Opus.
 - **Riesgo:** con un grupo que casi nunca le hace daño al jugador, todas las estrategias quedan cerca de 0 y la memoria distingue poco entre ellas.
+
+## B-04, H2 — Aliados que entran al carril (PR #56, Opus)
+
+**Qué hizo.** La verificación del carril al soltar proyecta a cada aliado con su movimiento por los ticks que tarda la flecha en llegar a él (`MovingAlly`, `CombatGeometry.arrowTicksToCover`).
+
+**Revisión.** La prueba que reproduce el bug falló primero. Las roturas sin freno del aire y sin proyección mordieron. Build y CI en verde.
+
+**Opinión del código.**
+- **Lo bueno:** el costo es por tiro y no por tick, y la proyección usa la misma flecha que se dispara.
+- **Lo flojo:** la velocidad de un mob que recién arranca o frena es engañosa por un tick o dos, y `clearLane` (elegir puesto) sigue mirando posiciones quietas.

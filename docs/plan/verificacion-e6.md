@@ -151,3 +151,16 @@ El plan 3 sacó el mejor éxito (0,64) con casi nada de daño (1,4), porque cont
 - **Peligro:** llegó a 1 en el primer test y a 0,92 en el segundo, con dos `spawngroup`. No sabe si los grupos se unificaron.
 - **Reclutamiento:** los mobs vanilla no se suman a los grupos y siguen con su IA, e incluso un esqueleto vanilla le pegó a uno del grupo. **No es un bug:** el reclutamiento por cercanía y la unificación de grupos son de la fase 2 (`requerimientos.md`, tabla de etapas). Opus le había dicho a Nico que los grupos reclutan; fue un error de Opus. Hoy solo `spawngroup` arma grupos.
 - **D-01:** Nico aprobó que la supervivencia multiplique (WP-30D).
+
+### B-04, H2 — aliados que entran al carril durante el vuelo (aprobada por Nico, con la condición de que no sea cara)
+
+- **Prueba que la reproduce:** `ShotAimTest.laneIsCheckedWhereAlliesWillBeWhenTheArrowPasses`. Un aliado a 1,2 bloques del carril, caminando hacia él a 0,12 bloques por tick, con un tiro a 20 bloques. Falló con la verificación anterior.
+- **Arreglo (#56):** cada aliado se proyecta con su movimiento horizontal por los ticks que tarda la flecha en llegar a su altura del camino (`CombatGeometry.arrowTicksToCover`, con el freno del aire). La roturas sin freno y sin proyección mordieron.
+- **Costo:** solo al soltar cada flecha (un tiro cada 40 ticks por esqueleto). Por aliado, un lazo de hasta ~20 pasos. Nada por tick. Cumple la condición de Nico.
+- **Falta:** confirmarlo en el juego.
+
+**Esquivo de mira (respuesta de Nico):** "hace como un mini dash pero es rápido, está bueno". **WP-23D verificado.**
+
+### Reagrupamiento sin reunión (observación de Nico)
+
+Al retirarse, cada mob se va por su lado, y después no se vuelven a juntar. **No es un bug del código:** el CT-07 define el reagrupamiento como "todos se retiran y se curan", sin punto de reunión. Es un comportamiento que falta. Va a Nico como CT nuevo: un punto de reunión lejos del jugador y un camino que lo evite.
