@@ -57,3 +57,42 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
 - **Arreglo.** `CombatGeometry.leadShotVelocity` busca por bisección (30 pasos, entre −60° y 45°) el ángulo con el que la flecha, con el arrastre y la gravedad de Minecraft (`ARROW_DRAG_PER_TICK`, `ARROW_GRAVITY_PER_TICK`), llega al punto apuntado. Se borró `ARROW_ARC_FACTOR`.
 - **Falta:** confirmar en el juego que los tiros pegan (el modelo no tiene en cuenta que la flecha sale 0,1 bloques debajo de los ojos).
 - **Anotado para después (aprobado por Nico):** el esqueleto no debería disparar con un aliado en la línea de tiro (el tiro oportuno le pegó a aliados 4 de 9 veces).
+
+## WP-24C, WP-24D, WP-23B, WP-23C y andanada — 7 oct 2026, corrida 4
+
+**Qué vio Nico.**
+- Los esqueletos se alejan y tratan de no pegarles a los compañeros, pero en algunos tiros anticipados les pegan igual.
+- Los esqueletos siguen atacando "aun de espaldas" (falta aclarar qué significa).
+- No hacen la animación de tensar el arco.
+- Los zombies bien, salvo el esquivo frente a un jugador con el escudo levantado y la espada cargada: se acercan y se alejan sin parar, y pegarles es fácil (esperás a que se alejen y les pegás).
+- Las arañas no se probaron.
+
+**Log (último tramo, desde el tick 246.563).**
+- Hay **3 planes**, todos `DIRECT_ASSAULT`. En los tramos anteriores del día no hay ningún plan `VOLLEY`: **la andanada no se vio en el juego**.
+
+| Tiro | Acierto | Fallo | Neutral (aliado) | Neutral (invulnerable) |
+| --- | --- | --- | --- | --- |
+| `skeleton.direct_shot` | 1 | 4 | 3 | 2 |
+| `skeleton.lead_shot` | 2 | 9 | 0 | 1 |
+| `skeleton.opportunistic_shot` | 9 | 11 | 1 | 6 |
+
+- Los aliados reciben 4 de 49 tiros (8 %; en la corrida 3 eran 6 de 43, el 14 %). En este tramo, los tiros a aliados son sobre todo directos.
+
+### B-04 — Flechas que les pegan a los aliados
+
+- **Hipótesis** (pendientes de aprobación):
+  - **H1:** la línea de tiro se verifica hacia el centro del cuerpo del jugador, pero el anticipado apunta adonde va a estar. La flecha sale por otro carril, y ese carril no se verificó. Predicción: con un aliado en el carril del punto anticipado y no en el del centro, la verificación da libre.
+  - H2: el aliado entra al carril durante el vuelo (a 20–30 bloques, la flecha tarda más de un segundo). Predicción: tiros a aliados también en el directo, con aliados que se mueven (los zombies que presionan). Los 3 directos de este tramo la apoyan.
+  - H3: la línea es recta, pero la flecha hace un arco. Predicción: los aliados golpeados están cerca de la mitad del camino, más altos que la línea. Es la menos probable, porque el arco pasa por arriba de los aliados.
+
+### B-05 — El esquivo entra y sale frente al escudo
+
+- **Causa (por el código):** `EvasiveWait` espera como máximo `patient-strike-max-wait-ticks` (60) y después carga de frente (`CHARGE`). Con el escudo arriba y la espada cargada, el peligro no termina nunca: cada 3 s el zombie entra, recibe el golpe y vuelve a esquivar.
+- **Hipótesis H1:** la carga por espera agotada entra aunque el jugador siga cargado. Predicción: en una prueba de `EvasiveWait` con peligro constante, sale `CHARGE` a los 60 ticks.
+- **Pedido de Nico (diseño, CT nuevo):** la retirada tiene que arrancar antes de que el arma termine de cargar, de modo que al 100 % el zombie ya esté fuera del alcance. Hoy el umbral es fijo (0,8). Con el tiempo que le falta al arma para cargar y el tiempo que tarda el zombie en salir, la retirada arranca justo a tiempo.
+
+### Pendientes de la corrida
+
+- **Animación de tensar el arco** (no es un bug: el WP-24B dispara sin animación). Va con un CT.
+- **"De espaldas":** falta que Nico aclare.
+- **Por verificar todavía:** la andanada (no salió ningún plan `VOLLEY`), las arañas, el alcance de la lanza y la rotación de la flecha.
