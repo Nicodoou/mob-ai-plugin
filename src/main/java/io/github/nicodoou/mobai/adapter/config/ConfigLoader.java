@@ -4,10 +4,12 @@ import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.settings.DebugSettings;
 import io.github.nicodoou.mobai.domain.settings.GroupSettings;
+import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
+import io.github.nicodoou.mobai.domain.settings.PlannerKind;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
@@ -37,7 +39,8 @@ public final class ConfigLoader {
           debug(root),
           retreat(root),
           volley(root),
-          success(root));
+          success(root),
+          learning(root));
     } catch (IllegalArgumentException exception) {
       throw new InvalidConfigException("config.yml: " + exception.getMessage(), exception);
     }
@@ -144,6 +147,20 @@ public final class ConfigLoader {
         number(root, "success.danger-ratio-low"),
         number(root, "success.danger-ratio-high"),
         number(root, "success.danger-prior-damage"));
+  }
+
+  private LearningSettings learning(ConfigurationSection root) {
+    return new LearningSettings(
+        choice(root, "learning.planner", PlannerKind.class),
+        number(root, "learning.model-noise-variance"),
+        number(root, "learning.prior-variance"),
+        number(root, "learning.prior-success"),
+        number(root, "learning.exploration-scale"),
+        number(root, "learning.training-exploration-scale"),
+        wholeNumber(root, "learning.min-reserve-delay-ticks"),
+        wholeNumber(root, "learning.max-reserve-delay-ticks"),
+        number(root, "learning.max-retreat-health-fraction"),
+        wholeNumber(root, "learning.traits-half-life-ticks"));
   }
 
   private double number(ConfigurationSection root, String path) {

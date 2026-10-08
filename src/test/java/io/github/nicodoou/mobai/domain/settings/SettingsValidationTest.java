@@ -146,7 +146,60 @@ class SettingsValidationTest {
             (Runnable) () -> new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 2.0, 10.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "SuccessSettings.dangerPriorDamage must be a positive number, got 0.0",
-            (Runnable) () -> new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 0)));
+            (Runnable) () -> new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.modelNoiseVariance must be a positive number, got 0.0",
+            (Runnable) () -> learning(0.0, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.priorVariance must be a positive number, got 0.0",
+            (Runnable) () -> learning(0.01, 0.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.priorSuccess must be between 0.0 and 1.0, got 1.5",
+            (Runnable) () -> learning(0.01, 1.0, 1.5, 1.0, 2.0, 20, 400, 0.6, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.explorationScale must be a positive number, got 0.0",
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 0.0, 2.0, 20, 400, 0.6, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.trainingExplorationScale must be a positive number, got 0.0",
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 0.0, 20, 400, 0.6, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.minReserveDelayTicks must be at least 1, got 0",
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 0, 400, 0.6, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.maxReserveDelayTicks must exceed LearningSettings.minReserveDelayTicks, got 20 <= 20",
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 20, 0.6, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.maxRetreatHealthFraction must be strictly between 0 and 1, got 1.0",
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 1.0, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.maxRetreatHealthFraction must be between 0.0 and 1.0, got 1.5",
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 1.5, 6000)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.traitsHalfLifeTicks must be at least 1, got 0",
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 0)));
+  }
+
+  private static LearningSettings learning(
+      double modelNoiseVariance,
+      double priorVariance,
+      double priorSuccess,
+      double explorationScale,
+      double trainingExplorationScale,
+      long minReserveDelayTicks,
+      long maxReserveDelayTicks,
+      double maxRetreatHealthFraction,
+      long traitsHalfLifeTicks) {
+    return new LearningSettings(
+        PlannerKind.STRATEGIES,
+        modelNoiseVariance,
+        priorVariance,
+        priorSuccess,
+        explorationScale,
+        trainingExplorationScale,
+        minReserveDelayTicks,
+        maxReserveDelayTicks,
+        maxRetreatHealthFraction,
+        traitsHalfLifeTicks);
   }
 
   @Test
@@ -166,7 +219,8 @@ class SettingsValidationTest {
                     defaults.debug(),
                     defaults.retreat(),
                     defaults.volley(),
-                    new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0)))
+                    new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
+                    defaults.learning()))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("MobAiSettings.memory");
   }
@@ -189,7 +243,8 @@ class SettingsValidationTest {
                     defaults.debug(),
                     new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50, 12.0, 3.0),
                     defaults.volley(),
-                    new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0)))
+                    new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
+                    defaults.learning()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got 0.3 <= 0.3");

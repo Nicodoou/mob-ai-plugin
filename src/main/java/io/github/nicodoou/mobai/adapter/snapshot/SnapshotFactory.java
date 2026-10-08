@@ -103,7 +103,8 @@ public final class SnapshotFactory {
         translator.armorToughness(player),
         translator.protectionFactor(player),
         translator.effectLevels(player),
-        player.isBlocking());
+        player.isBlocking(),
+        translator.holdsRangedWeapon(player));
   }
 
   private record LoadedMob(Member member, Mob entity) {}

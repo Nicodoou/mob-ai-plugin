@@ -26,6 +26,7 @@ public final class PlayerSnapshotBuilder {
   private int protectionFactor = 0;
   private final EnumMap<EffectKind, Integer> effectLevels = new EnumMap<>(EffectKind.class);
   private boolean blocking = false;
+  private boolean holdingRanged = false;
 
   public PlayerSnapshotBuilder withId(PlayerId id) {
     this.id = id;
@@ -87,6 +88,11 @@ public final class PlayerSnapshotBuilder {
     return this;
   }
 
+  public PlayerSnapshotBuilder withHoldingRanged(boolean holdingRanged) {
+    this.holdingRanged = holdingRanged;
+    return this;
+  }
+
   public PlayerSnapshotBuilder fullDiamondProtectionFour() {
     this.armorPoints = FULL_DIAMOND_ARMOR_POINTS;
     this.armorToughness = FULL_DIAMOND_ARMOR_TOUGHNESS;
@@ -106,6 +112,7 @@ public final class PlayerSnapshotBuilder {
         armorToughness,
         protectionFactor,
         effectLevels,
-        blocking);
+        blocking,
+        holdingRanged);
   }
 }
