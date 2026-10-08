@@ -26,10 +26,12 @@ import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
 import io.github.nicodoou.mobai.adapter.goal.GoalTiming;
 import io.github.nicodoou.mobai.adapter.goal.GoalTools;
+import io.github.nicodoou.mobai.adapter.goal.HitEffects;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
 import io.github.nicodoou.mobai.adapter.goal.ShotAim;
 import io.github.nicodoou.mobai.adapter.goal.ShotParts;
+import io.github.nicodoou.mobai.adapter.goal.StrikeFollowUps;
 import io.github.nicodoou.mobai.adapter.goal.Waypoints;
 import io.github.nicodoou.mobai.adapter.goal.Weapons;
 import io.github.nicodoou.mobai.adapter.listener.DamageListener;
@@ -52,6 +54,7 @@ import io.github.nicodoou.mobai.adapter.snapshot.SnapshotFactory;
 import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
 import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
 import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
+import io.github.nicodoou.mobai.domain.attack.BiteSlowness;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.geometry.FlankFormation;
@@ -169,7 +172,7 @@ public record AdapterServices(
   }
 
   private static GoalInstaller goalInstaller(Plugin plugin, CoreServices core, SharedParts parts) {
-    MeleeAttacker attacker = new MeleeAttacker(parts.tracker(), core.clock(), parts.debug().hub());
+    MeleeAttacker attacker = meleeAttacker(core, parts);
     CombatGeometry geometry = new CombatGeometry();
     Waypoints waypoints =
         new Waypoints(
@@ -193,6 +196,17 @@ public record AdapterServices(
                 core.settings().section(MobAiSettings::volley)),
             waypoints);
     return new GoalInstaller(new GoalContext(plugin, parts.roles(), tools), parts.translator());
+  }
+
+  private static MeleeAttacker meleeAttacker(CoreServices core, SharedParts parts) {
+    return new MeleeAttacker(
+        parts.tracker(),
+        core.clock(),
+        new StrikeFollowUps(
+            parts.debug().hub(),
+            new HitEffects(
+                new BiteSlowness(core.settings().section(MobAiSettings::spider)),
+                parts.translator())));
   }
 
   private static DecisionScheduler decisionScheduler(

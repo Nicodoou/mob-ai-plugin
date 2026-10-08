@@ -1,6 +1,5 @@
 package io.github.nicodoou.mobai.adapter.goal;
 
-import io.github.nicodoou.mobai.adapter.debug.TraceHub;
 import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
 import io.github.nicodoou.mobai.adapter.tracker.MeleeOpening;
 import io.github.nicodoou.mobai.adapter.tracker.TargetChecks;
@@ -18,12 +17,12 @@ import org.bukkit.entity.Player;
 public final class MeleeAttacker {
   private final AttackTracker tracker;
   private final ServerClock clock;
-  private final TraceHub hub;
+  private final StrikeFollowUps followUps;
 
-  public MeleeAttacker(AttackTracker tracker, ServerClock clock, TraceHub hub) {
+  public MeleeAttacker(AttackTracker tracker, ServerClock clock, StrikeFollowUps followUps) {
     this.tracker = Objects.requireNonNull(tracker, "MeleeAttacker.tracker");
     this.clock = Objects.requireNonNull(clock, "MeleeAttacker.clock");
-    this.hub = Objects.requireNonNull(hub, "MeleeAttacker.hub");
+    this.followUps = Objects.requireNonNull(followUps, "MeleeAttacker.followUps");
   }
 
   public Optional<Classification> strike(Mob mob, Player target, Attack attack) {
@@ -39,7 +38,8 @@ public final class MeleeAttacker {
     attackOrCancel(mob, target, mobId);
     Optional<Classification> classification =
         tracker.closeMelee(mobId, TargetChecks.isValidTarget(target, mob), tick);
-    classification.ifPresent(found -> hub.attacked(mobId, tick, found));
+    classification.ifPresent(found -> followUps.hub().attacked(mobId, tick, found));
+    classification.ifPresent(found -> followUps.effects().apply(target, attack, found.outcome()));
     return classification;
   }
 
