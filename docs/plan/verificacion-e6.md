@@ -142,3 +142,12 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
 ### Hallazgo D-01 — Sobrevivir sin pelear puntúa como el mejor plan
 
 El plan 3 sacó el mejor éxito (0,64) con casi nada de daño (1,4), porque contra un jugador muy bueno la supervivencia pesa 0,6 y la suma premia quedarse lejos. Con más planes, el grupo aprendería a no pelear. **Es un problema de diseño del CT-27, no un bug del código.** Va a Nico como decisión.
+
+**Qué vio Nico (corrida 5).**
+- **Equipo:** armadura de diamante sin encantar, escudo con Irrompibilidad III y espada de diamante.
+- **Zombie esquivo:** se corre a los costados de la mira y no entra en su alcance, aunque no notó que se alejara. Lo que más lo desconcertó es el esquive de mira estando dentro de su alcance. Falta aclarar si eso está bien o mal.
+- **Esqueletos:** tensan, se dan vuelta, disparan y siguen a su objetivo; **WP-24G verificado**. Algunos tiros anticipados les siguen pegando a aliados: **el B-04 sigue**, así que toca probar la H2.
+- **Arañas:** atacan, pero Nico las mata enseguida.
+- **Peligro:** llegó a 1 en el primer test y a 0,92 en el segundo, con dos `spawngroup`. No sabe si los grupos se unificaron.
+- **Reclutamiento:** los mobs vanilla no se suman a los grupos y siguen con su IA, e incluso un esqueleto vanilla le pegó a uno del grupo. **No es un bug:** el reclutamiento por cercanía y la unificación de grupos son de la fase 2 (`requerimientos.md`, tabla de etapas). Opus le había dicho a Nico que los grupos reclutan; fue un error de Opus. Hoy solo `spawngroup` arma grupos.
+- **D-01:** Nico aprobó que la supervivencia multiplique (WP-30D).
