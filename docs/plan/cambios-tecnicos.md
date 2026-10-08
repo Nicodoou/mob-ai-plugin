@@ -28,6 +28,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-23](#ct-23--andanada) Andanada | 7 oct 2026 | Nico | WP-24E (por especificar, antes de la puerta E6) |
 | [CT-24](#ct-24--alcance-del-jugador-según-su-arma) Alcance del jugador según su arma | 8 oct 2026 | Nico | WP-23C |
 | [CT-25](#ct-25--esquivo-calculado) Esquivo calculado | 8 oct 2026 | Nico | WP-23D |
+| [CT-26](#ct-26--tensar-el-arco) Tensar el arco | 8 oct 2026 | Nico | WP-24G |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -390,3 +391,25 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 - La física del suelo está deducida del código de Minecraft, no medida. Se confirma en el juego: el zombie tiene que salir antes del 100 %.
 - Con espada, el zombie casi nunca entra contra un jugador atento: es lo esperado y la memoria lo aprende.
 - `getCooldownPeriod` es API de Paper.
+
+## CT-26 — Tensar el arco
+
+**Qué cambia.** El esqueleto ya no dispara en el acto. Antes de cada tiro:
+1. se planta;
+2. gira el cuerpo hacia el jugador;
+3. levanta los brazos y tensa el arco 20 ticks, como en vanilla;
+4. recién ahí suelta, con la puntería calculada en ese momento.
+
+La cadencia no cambia: empieza a tensar 20 ticks antes de que le toque el tiro.
+
+En `HOLD_FIRE` (andanada), el esqueleto ya ubicado se queda tenso y suelta en el acto cuando llega `VOLLEY`. El tiro oportuno espera con el arco tenso.
+
+**Por qué.** Nico, corrida 4:
+- los esqueletos no tensaban el arco;
+- disparaban caminando o de espaldas (B-06).
+
+**Impacto.** `ShootGoal`, `ShotRhythm.canDraw`, `BowDraw`, `BodyFacing`, `BowShooter.draw` y `lower`, y `VersionTranslator.drawBow` y `lowerBow` (`setAggressive`, `startUsingItem`, `clearActiveItem`).
+
+**Riesgos.**
+- Que el arco de un mob en uso no muestre la animación en el cliente.
+- Un esqueleto plantado es un blanco más fácil: es el costo de que se vea bien, y vanilla lo compensa moviéndose de costado (fuera de alcance por ahora).
