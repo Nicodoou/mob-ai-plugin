@@ -385,3 +385,18 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Revisión.** Código conforme; desvío aceptado: `shotNow` se partió en `chosenAttack` y `opportunisticShot` por las 20 líneas. 781 pruebas; las 2 roturas del WP y la mía (distancia con altura y un bloque de menos) mordieron. CI verde.
 
 **Opinión del código.** Lo bueno: la andanada se arma con piezas que ya existían (alcance, línea limpia, ritmo de tiro guardado durante la presión). Lo flojo: cada cuerpo a cuerpo se abre hacia atrás desde donde está, sin coordinar hacia qué lado; si dos quedan en la misma línea de un esqueleto, ese esqueleto espera. Riesgo: todo esto se juzga en el juego.
+
+## B-04 — Carril del tiro anticipado (PR #47, Opus)
+
+**Qué hizo.** El esqueleto verificaba la línea de tiro hacia el centro del jugador, pero el tiro anticipado sale hacia donde el jugador va a estar. Ahora `ShotAim.isLaneClear` verifica el carril del tiro real, y `ShootGoal` elige el tiro antes de verificarlo.
+
+**Revisión.**
+- La prueba que reproduce el bug falló primero con la verificación vieja.
+- Build, cobertura y CI en verde.
+
+**Opinión del código.**
+- **Lo bueno:** el carril se calcula con la misma puntería que dispara, así que no pueden divergir.
+- **Lo flojo:**
+  - con el carril tapado, la espera del tiro oportuno sigue corriendo;
+  - `HighGroundFinder` todavía mide la altura con la línea al centro, que alcanza para elegir puesto.
+- **Riesgo:** aliados que se mueven durante el vuelo (H2).

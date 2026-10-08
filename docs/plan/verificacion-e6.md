@@ -84,6 +84,11 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
   - **H1:** la línea de tiro se verifica hacia el centro del cuerpo del jugador, pero el anticipado apunta adonde va a estar. La flecha sale por otro carril, y ese carril no se verificó. Predicción: con un aliado en el carril del punto anticipado y no en el del centro, la verificación da libre.
   - H2: el aliado entra al carril durante el vuelo (a 20–30 bloques, la flecha tarda más de un segundo). Predicción: tiros a aliados también en el directo, con aliados que se mueven (los zombies que presionan). Los 3 directos de este tramo la apoyan.
   - H3: la línea es recta, pero la flecha hace un arco. Predicción: los aliados golpeados están cerca de la mitad del camino, más altos que la línea. Es la menos probable, porque el arco pasa por arriba de los aliados.
+- **H1 aprobada por Nico y confirmada.** La prueba `ShotAimTest.laneIsCheckedTowardsWhereTheShotFlies` falló con la verificación hacia el centro del cuerpo.
+- **Arreglo (#47):**
+  - `ShotAim.isLaneClear` verifica el carril hacia el punto al que apunta cada tiro.
+  - `ShootGoal` elige el tiro primero y verifica después su carril.
+- **Falta:** confirmar en el juego. Si siguen los tiros a aliados, se prueba la H2.
 
 ### B-05 — El esquivo entra y sale frente al escudo
 
@@ -94,5 +99,6 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
 ### Pendientes de la corrida
 
 - **Animación de tensar el arco** (no es un bug: el WP-24B dispara sin animación). Va con un CT.
-- **"De espaldas":** falta que Nico aclare.
+- **B-06, esqueletos que disparan de espaldas (aclarado por Nico):** disparan mientras caminan hacia su puesto o se alejan, con el cuerpo de espaldas al jugador. `ShootGoal` dispara sin mirar hacia dónde está orientado el cuerpo. Va con la animación de tensar el arco, en el mismo CT, aprobado por Nico: el esqueleto se planta y gira hacia el jugador para tensar.
+- **B-05:** Nico quiere debatir qué hace el zombie esquivo frente a un jugador que se queda cubierto y cargado.
 - **Por verificar todavía:** la andanada (no salió ningún plan `VOLLEY`), las arañas, el alcance de la lanza y la rotación de la flecha.
