@@ -67,7 +67,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30C | Retirada aprendida | E6 | pendiente | Opus | — | CT-28 |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
-| WP-26 | Consulta de memoria | E6 | especificado | Sonnet | — | `/mobai memory` con el peligro; las métricas ya las cubre el log de debug |
+| WP-26 | Consulta de memoria | E6 | en curso | Sonnet | — | `/mobai memory` con el peligro; las métricas ya las cubre el log de debug |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
 
 ## Puertas de etapa
