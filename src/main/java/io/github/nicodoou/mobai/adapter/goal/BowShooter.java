@@ -16,7 +16,10 @@ import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
-/** The only place that looses arrows; every arrow opens an attempt in the attack tracker. */
+/**
+ * The only place that draws bows and looses arrows; every arrow opens an attempt in the attack
+ * tracker.
+ */
 public final class BowShooter {
   private final AttackTracker tracker;
   private final ServerClock clock;
@@ -38,6 +41,14 @@ public final class BowShooter {
 
   public boolean isLaneClear(ShotRequest request, List<Vec3> allies) {
     return parts.aim().isLaneClear(request, allies);
+  }
+
+  public void draw(Mob shooter) {
+    parts.translator().drawBow(shooter);
+  }
+
+  public void lower(Mob shooter) {
+    parts.translator().lowerBow(shooter);
   }
 
   public void shoot(Mob shooter, Player target, Attack attack) {

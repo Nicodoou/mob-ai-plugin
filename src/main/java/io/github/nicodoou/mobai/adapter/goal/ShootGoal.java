@@ -52,9 +52,12 @@ public final class ShootGoal implements Goal<Mob> {
   private final ShotRhythm shots;
   private final OpportunisticWait opportunism = new OpportunisticWait();
   private final HighGroundFinder highGround;
+  private final BowDraw draw;
   // The higher spot the shooter is heading for; empty when it has none.
   private Optional<Vec3> perch = Optional.empty();
   private long nextPerchSearchTick = Long.MIN_VALUE;
+  // Whether the last positioning left it within reach of its place.
+  private boolean inPlace;
 
   public ShootGoal(Mob mob, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "ShootGoal.mob");
@@ -63,6 +66,7 @@ public final class ShootGoal implements Goal<Mob> {
     this.rhythm = new MeleeRhythm(context.tools().timing().clock());
     this.shots = new ShotRhythm(context.tools().timing().clock());
     this.highGround = new HighGroundFinder(context.tools().waypoints());
+    this.draw = new BowDraw(context.tools().timing().clock());
   }
 
   @Override
@@ -77,6 +81,7 @@ public final class ShootGoal implements Goal<Mob> {
 
   @Override
   public void stop() {
+    lowerBow();
     mob.getPathfinder().stopPathfinding();
   }
 
@@ -110,8 +115,12 @@ public final class ShootGoal implements Goal<Mob> {
 
   private void engage(RoleAssignment order, Player target) {
     mob.lookAt(target);
+    if (draw.isDrawing()) {
+      holdDraw(order, target);
+      return;
+    }
     keepPositionIfDue(target);
-    shootIfReady(order, target);
+    startDrawIfReady(order, target);
   }
 
   private void keepPositionIfDue(Player target) {
@@ -122,6 +131,7 @@ public final class ShootGoal implements Goal<Mob> {
       walkToFiringSpot(target);
     } else {
       perch = Optional.empty();
+      inPlace = false;
       mob.getPathfinder().moveTo(target, WALK_SPEED);
     }
     rhythm.markRepath();
@@ -132,9 +142,11 @@ public final class ShootGoal implements Goal<Mob> {
     searchPerchIfDue(target, spot);
     Vec3 destination = currentPerch(target).orElse(spot);
     if (mobPosition().minus(destination).horizontal().length() <= SLOT_TOLERANCE_BLOCKS) {
+      inPlace = true;
       mob.getPathfinder().stopPathfinding();
       return;
     }
+    inPlace = false;
     mob.getPathfinder()
         .moveTo(
             new Location(mob.getWorld(), destination.x(), destination.y(), destination.z()),
@@ -207,30 +219,64 @@ public final class ShootGoal implements Goal<Mob> {
     return centers;
   }
 
-  private void shootIfReady(RoleAssignment order, Player target) {
+  private boolean canAim(Player target) {
+    return mob.hasLineOfSight(target) && distanceTo(target) <= attack().shootMaxDistanceBlocks();
+  }
+
+  private void startDrawIfReady(RoleAssignment order, Player target) {
+    if (!shots.canDraw() || !canAim(target) || (order.role() == Role.HOLD_FIRE && !inPlace)) {
+      opportunism.reset();
+      return;
+    }
+    mob.getPathfinder().stopPathfinding();
+    draw.start();
+    bow().draw(mob);
+    faceBodyTowards(target);
+  }
+
+  private void holdDraw(RoleAssignment order, Player target) {
+    if (!canAim(target)) {
+      opportunism.reset();
+      lowerBow();
+      return;
+    }
+    faceBodyTowards(target);
+    if (!draw.isFull()) {
+      return;
+    }
     if (order.role() == Role.HOLD_FIRE) {
       opportunism.reset();
       return;
     }
-    if (!shots.canShoot()
-        || !mob.hasLineOfSight(target)
-        || distanceTo(target) > attack().shootMaxDistanceBlocks()) {
-      opportunism.reset();
-      return;
+    shotNow(order, target).ifPresent(attack -> releaseOrLower(target, attack));
+  }
+
+  private void releaseOrLower(Player target, Attack attack) {
+    if (isLaneClear(target, attack)) {
+      bow().shoot(mob, target, attack);
+      shots.markShot();
     }
-    shotNow(order, target)
-        .filter(attack -> isLaneClear(target, attack))
-        .ifPresent(
-            attack -> {
-              context.tools().weapons().bow().shoot(mob, target, attack);
-              shots.markShot();
-            });
+    lowerBow();
+  }
+
+  private void lowerBow() {
+    if (draw.isDrawing()) {
+      bow().lower(mob);
+      draw.release();
+    }
+  }
+
+  private void faceBodyTowards(Player target) {
+    mob.setBodyYaw(BodyFacing.yawTowards(mobPosition(), position(target)));
+  }
+
+  private BowShooter bow() {
+    return context.tools().weapons().bow();
   }
 
   // Checked towards where this very shot is aimed: a lead shot flies down another lane (B-04).
   private boolean isLaneClear(Player target, Attack attack) {
-    BowShooter bow = context.tools().weapons().bow();
-    return bow.isLaneClear(bow.requestFor(mob, target, attack), allyCenters(target));
+    return bow().isLaneClear(bow().requestFor(mob, target, attack), allyCenters(target));
   }
 
   private static Attack chosenAttack(RoleAssignment order) {
