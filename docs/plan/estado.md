@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, mergeado #42; falta verificar 24C y 24D en el juego) → WP-23B (golpe esquivo, CT-19, mergeado #43; falta verificar en el juego) → WP-24E (andanada, CT-23) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
+2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, mergeado #42; falta verificar 24C y 24D en el juego) → WP-23B (golpe esquivo, CT-19, mergeado #43; falta verificar en el juego) → WP-23C (alcance según el arma, CT-24, en curso) → WP-24E (andanada, CT-23) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -53,6 +53,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-23 | Golpe paciente | E6 | mergeado | Sonnet | [#36](https://github.com/Nicodoou/mob-ai-plugin/pull/36) | CT-17 (apertura y abandono). Verificación en el juego por Nico |
 | WP-22E | Flanqueadores proporcionales | E6 | mergeado | Sonnet | [#37](https://github.com/Nicodoou/mob-ai-plugin/pull/37) | CT-18, pedido de Nico. Antes del WP-24 |
 | WP-23B | Golpe esquivo | E6 | mergeado | Sonnet | [#43](https://github.com/Nicodoou/mob-ai-plugin/pull/43) | CT-19, opción 2 de Nico. Después del WP-24 |
+| WP-23C | Alcance del jugador según su arma | E6 | en curso | Sonnet | — | CT-24, pedido de Nico. Al mergear, actualizar las claves del `config.yml` del server de prueba |
 | WP-24A | Rastreo de flechas | E6 | mergeado | Sonnet | [#38](https://github.com/Nicodoou/mob-ai-plugin/pull/38) | CT-20 |
 | WP-24B | Esqueletos que disparan | E6 | mergeado | Sonnet | [#39](https://github.com/Nicodoou/mob-ai-plugin/pull/39) | CT-20. Después del 24A. Verificar que un grupo de solo esqueletos ya no cierre planes con éxito 0 (puerta E5) |
 | WP-24C | Esqueletos en formación | E6 | mergeado | Sonnet | [#41](https://github.com/Nicodoou/mob-ai-plugin/pull/41) | CT-21 |
@@ -79,6 +80,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 
 | Decisión | Dónde se cierra |
 | --- | --- |
+| `PressGoal` maneja tres modos (frontal, paciente y esquivo) con `if` sobre la sugerencia. Nico va a sumar más ataques: con el cuarto modo, separar cada uno en una clase de táctica (`MeleeTactic`: paciente, esquiva, frontal) que `PressGoal` elige por el ataque sugerido | Antes de agregar el próximo ataque de zombie |
 | El cerebro le sugiere el golpe de flanco también a un zombie que presiona; `PressGoal` pega de frente y registra eso (lo ejecutado), así que la sugerencia se desperdicia. Propuesta: que `AttackSuggester` no ofrezca `ZOMBIE_FLANK_STRIKE` fuera del rol `FLANK` (CT-08 ya lo elige solo para los flanqueadores). Cambia sorteos de varias pruebas del cerebro | WP chico de limpieza, junto con los ciclos de paquetes |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |
 | `PlanEndDetector.hasRetreated` con miembros que se suman a mitad de plan: «se fueron» = iniciales − roles actuales da negativo y la regla se vuelve menos sensible. Propuesta: `gone = max(0, iniciales − roles)` y comparar contra `max(iniciales, roles)` | WP de limpieza después de E3 (junto con los ciclos de paquetes); el WP-11 puede mostrar si importa |

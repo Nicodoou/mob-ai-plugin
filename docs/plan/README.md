@@ -139,6 +139,7 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-23B | Golpe esquivo | WP-24 | Sonnet | CT-19 |
 | WP-24A | Rastreo de flechas | WP-22E | Sonnet | Proyectiles en `AttackTracker`, `ProjectileListener`, `ProjectileResolver` (CT-20) |
 | WP-24B | Esqueletos que disparan | WP-24A | Sonnet | `ShootGoal`, `BowShooter`, `ShotAim`, tiro oportuno (CT-20) |
+| WP-23C | Alcance del jugador según su arma | WP-23B | Sonnet | CT-24 |
 | WP-24C | Esqueletos en formación | WP-24B | Sonnet | `ShooterFormation`, línea de tiro limpia, arcos (CT-21) |
 | WP-24D | Esqueletos en altura | WP-24C | Sonnet | CT-22 |
 | WP-24E | Andanada | WP-23B | Opus | Estrategia `VOLLEY` (CT-23) |
@@ -389,6 +390,7 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D34. Sin planes con el grupo en retirada** (CT-13, WP-22A). Un grupo con más de la mitad de los mobs en 30 % de vida o menos no planifica: reagrupa, y si la ventana vence sigue reagrupando sin que la ventana aprenda.
 - **D38. Flanqueadores proporcionales** (CT-18, WP-22E). En la estrategia de flanqueo, flanquea la mitad de cada tipo de mob cuerpo a cuerpo; el sobrante impar va a un zombie.
 - **D39. Golpe esquivo** (CT-19, WP-23B). Ataque aprendible de zombie: retrocede ante el golpe cargado del jugador y pega mientras el arma se recarga.
+- **D43. Alcance del jugador según su arma** (CT-24, WP-23C). Flanqueo y esquive se miden como el alcance real del jugador más un margen.
 - **D40. Esqueletos en formación** (CT-21, WP-24C). Entre 20 y 30 bloques, repartidos parejo alrededor del objetivo, con arco y sin disparar con un aliado en la línea de tiro.
 - **D41. Esqueletos en altura** (CT-22, WP-24D). Buscan el lugar más alto cerca de su puesto, con vista y camino.
 - **D42. Andanada** (CT-23, WP-24E). Estrategia nueva y aprendible: los zombies se abren, los esqueletos disparan juntos, los zombies vuelven.

@@ -26,6 +26,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-21](#ct-21--esqueletos-en-formación) Esqueletos en formación | 7 oct 2026 | Nico (prueba del WP-24B) | WP-24C |
 | [CT-22](#ct-22--esqueletos-en-altura) Esqueletos en altura | 7 oct 2026 | Nico | WP-24D (por especificar) |
 | [CT-23](#ct-23--andanada) Andanada | 7 oct 2026 | Nico | WP-24E (por especificar, antes de la puerta E6) |
+| [CT-24](#ct-24--alcance-del-jugador-según-su-arma) Alcance del jugador según su arma | 8 oct 2026 | Nico | WP-23C |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -351,3 +352,13 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 **Por qué.** Nico: sinergia entre zombies y esqueletos en vez de fuego amigo.
 
 **Impacto.** Cerebro (fases dentro del plan), goals (abrirse y volver) y tirador (ventana de disparo). Es el cambio más grande de la etapa.
+
+## CT-24 — Alcance del jugador según su arma
+
+**Qué cambia.** El alcance del jugador ya no es fijo (3 bloques): es el `maxReach` del componente `ATTACK_RANGE` del arma en la mano (las lanzas), o el atributo `ENTITY_INTERACTION_RANGE`. La distancia del flanqueador mientras lo ven (CT-16) y la del zombie esquivo (CT-19) pasan a ser **alcance + margen**: `flank-distance-blocks` (4) se reemplaza por `flank-margin-blocks` (1) y `evasive-distance-blocks` (3,5) por `evasive-margin-blocks` (0,5). Con una espada da lo mismo que antes.
+
+**Por qué.** Nico: con una lanza el jugador pega más lejos, y un flanqueador o un zombie esquivo a 4 o 3,5 bloques quedarían dentro de su alcance.
+
+**Impacto.** `VersionTranslator.playerReach` (Paper detrás del traductor), `PlayerReach` en `Weapons`, `PlayerTarget`, `Waypoints.flankStep` y `evadePoint`, `FlankGoal`, `PressGoal`, configuración. El dominio no conoce el alcance del jugador.
+
+**Riesgos.** La API de componentes de ítems es reciente en Paper. Los `config.yml` existentes tienen las claves viejas y el plugin no arranca hasta cambiarlas (el del server de prueba lo actualiza Opus).
