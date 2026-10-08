@@ -16,7 +16,8 @@ public record StoredGroup(
     List<Member> members,
     List<StoredAttackRecord> attackRecords,
     List<StoredStrategyRecord> strategyRecords,
-    List<StoredDangerRecord> dangerRecords) {
+    List<StoredDangerRecord> dangerRecords,
+    List<StoredRecipeModel> recipeModels) {
   public StoredGroup {
     Objects.requireNonNull(id, "StoredGroup.id");
     Objects.requireNonNull(policy, "StoredGroup.policy");
@@ -28,6 +29,7 @@ public record StoredGroup(
     attackRecords = List.copyOf(attackRecords);
     strategyRecords = List.copyOf(strategyRecords);
     dangerRecords = List.copyOf(dangerRecords);
+    recipeModels = List.copyOf(recipeModels);
     requireDistinct(members, Member::id, "members");
     requireDistinct(members, Member::joinOrder, "join orders");
     requireDistinct(
@@ -35,6 +37,7 @@ public record StoredGroup(
     requireDistinct(
         strategyRecords, entry -> List.of(entry.player(), entry.strategy()), "strategyRecords");
     requireDistinct(dangerRecords, StoredDangerRecord::player, "dangerRecords");
+    requireDistinct(recipeModels, StoredRecipeModel::player, "recipeModels");
   }
 
   private static <T> void requireDistinct(List<T> entries, Function<T, ?> key, String label) {

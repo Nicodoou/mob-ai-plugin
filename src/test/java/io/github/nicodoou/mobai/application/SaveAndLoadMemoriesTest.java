@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 
 class SaveAndLoadMemoriesTest {
   private final PlayerId player = new PlayerId(new UUID(2, 1));
-  private final StoredState state = new StoredState(500, 650);
+  private final StoredState state = new StoredState(500, 650, List.of());
   private final SettingsHolder settings = new SettingsHolder(TestSettings.defaults());
   private final ActiveGroups savedGroups = new ActiveGroups();
   private final InMemoryMemoryRepository inner = new InMemoryMemoryRepository();
@@ -83,7 +83,7 @@ class SaveAndLoadMemoriesTest {
 
     LoadReport report = new LoadMemories(new ActiveGroups(), settings, inner).execute();
 
-    assertThat(report.state()).isEqualTo(Optional.of(new StoredState(500, 650)));
+    assertThat(report.state()).isEqualTo(Optional.of(new StoredState(500, 650, List.of())));
   }
 
   @Test
@@ -115,6 +115,7 @@ class SaveAndLoadMemoriesTest {
         SelectionPolicyType.THOMPSON_SAMPLING,
         0,
         List.of(new Member(mobId, MobKind.ZOMBIE, 1)),
+        List.of(),
         List.of(),
         List.of(),
         List.of());

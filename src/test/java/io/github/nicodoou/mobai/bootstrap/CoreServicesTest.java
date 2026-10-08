@@ -23,6 +23,7 @@ import io.github.nicodoou.mobai.testsupport.InMemoryMemoryRepository;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.SeededRandomSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,12 +93,12 @@ class CoreServicesTest {
 
     StoredState state = core.storedState();
 
-    assertThat(state).isEqualTo(new StoredState(1234, 600));
+    assertThat(state).isEqualTo(new StoredState(1234, 600, List.of()));
   }
 
   @Test
   void restoreAppliesTheSavedState() {
-    core.restore(new StoredState(5000, 700));
+    core.restore(new StoredState(5000, 700, List.of()));
 
     assertThat(core.clock().currentTick()).isEqualTo(5000);
     assertThat(core.regroupWindow().currentTicks()).isEqualTo(700);

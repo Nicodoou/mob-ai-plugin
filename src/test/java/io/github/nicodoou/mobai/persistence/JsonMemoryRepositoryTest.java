@@ -46,7 +46,7 @@ class JsonMemoryRepositoryTest {
   }
 
   private static StoredState sampleState() {
-    return new StoredState(123_000, 600);
+    return new StoredState(123_000, 600, List.of());
   }
 
   private static StoredGroup sampleGroup(long n) {
@@ -61,6 +61,7 @@ class JsonMemoryRepositoryTest {
         List.of(
             new StoredStrategyRecord(
                 PLAYER, new StrategyId("FLANK"), new AttackRecord(0.4, 1.0, 700))),
+        List.of(),
         List.of());
   }
 
@@ -72,7 +73,8 @@ class JsonMemoryRepositoryTest {
         group.members(),
         group.attackRecords(),
         group.strategyRecords(),
-        List.of(new StoredDangerRecord(PLAYER, new DangerRecord(12.5, 3.25, 700))));
+        List.of(new StoredDangerRecord(PLAYER, new DangerRecord(12.5, 3.25, 700))),
+        group.recipeModels());
   }
 
   private static StoredMemories memoriesOf(StoredGroup... groups) {

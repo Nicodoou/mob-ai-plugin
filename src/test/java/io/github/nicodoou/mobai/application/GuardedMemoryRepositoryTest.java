@@ -15,7 +15,7 @@ class GuardedMemoryRepositoryTest {
   private static final String LOCKED_MESSAGE =
       "Memories were never loaded successfully; saving now would delete stored groups";
 
-  private final StoredMemories memories = new StoredMemories(new StoredState(500, 650), List.of());
+  private final StoredMemories memories = new StoredMemories(new StoredState(500, 650, List.of()), List.of());
   private final InMemoryMemoryRepository inner = new InMemoryMemoryRepository();
 
   @Test
