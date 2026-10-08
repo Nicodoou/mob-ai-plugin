@@ -116,6 +116,7 @@ class SaveAndLoadMemoriesTest {
         0,
         List.of(new Member(mobId, MobKind.ZOMBIE, 1)),
         List.of(),
+        List.of(),
         List.of());
   }
 

@@ -3,9 +3,11 @@ package io.github.nicodoou.mobai.application;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.memory.AttackRecord;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.memory.MemoryRecords;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
+import io.github.nicodoou.mobai.domain.port.StoredDangerRecord;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
 import io.github.nicodoou.mobai.domain.port.StoredStrategyRecord;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
@@ -29,7 +31,8 @@ public final class StoredMemoriesMapper {
         group.lifecycle().planSequence(),
         group.roster().members(),
         storedAttackRecords(group.memory()),
-        storedStrategyRecords(group.memory()));
+        storedStrategyRecords(group.memory()),
+        storedDangerRecords(group.memory()));
   }
 
   public Group toGroup(StoredGroup stored, SettingsHolder settings) {
@@ -65,11 +68,19 @@ public final class StoredMemoriesMapper {
         .toList();
   }
 
+  private static List<StoredDangerRecord> storedDangerRecords(GroupMemory memory) {
+    Map<PlayerId, DangerRecord> records = memory.dangerRecords();
+    return records.keySet().stream()
+        .sorted(BY_PLAYER)
+        .map(player -> new StoredDangerRecord(player, records.get(player)))
+        .toList();
+  }
+
   private static GroupKnowledge restoredKnowledge(StoredGroup stored, SettingsHolder settings) {
     return new GroupKnowledge(
         GroupMemory.restore(
             settings.section(MobAiSettings::memory),
-            new MemoryRecords(attackMaps(stored), strategyMaps(stored), Map.of())),
+            new MemoryRecords(attackMaps(stored), strategyMaps(stored), dangerMap(stored))),
         new ThreatLedger(settings.section(MobAiSettings::target)));
   }
 
@@ -89,5 +100,13 @@ public final class StoredMemoriesMapper {
           .put(entry.strategy(), entry.record());
     }
     return maps;
+  }
+
+  private static Map<PlayerId, DangerRecord> dangerMap(StoredGroup stored) {
+    Map<PlayerId, DangerRecord> map = new LinkedHashMap<>();
+    for (StoredDangerRecord entry : stored.dangerRecords()) {
+      map.put(entry.player(), entry.record());
+    }
+    return map;
   }
 }

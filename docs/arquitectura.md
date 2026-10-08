@@ -23,7 +23,8 @@ El dominio contiene todas las reglas del juego y ninguna dependencia: decide qu�
 | Rol | Tarea asignada a un miembro | Presionar, flanquear, cortar retirada, retirarse, apoyar |
 | Estrategia | Plan contra un objetivo | Nombre, requisitos mínimos de composición, roles que reparte |
 | RegistroAtaque | Historial de un ataque o estrategia contra un jugador | Éxitos, intentos, último tick de actualización |
-| MemoriaGrupo | Todo lo que un grupo aprendió | Jugador → ataque → registro; jugador → estrategia → registro |
+| RegistroPeligro | Cuánto le cuesta un jugador al grupo (CT-27) | Vida perdida por el grupo, daño hecho al jugador, último tick de actualización |
+| MemoriaGrupo | Todo lo que un grupo aprendió | Jugador → ataque → registro; jugador → estrategia → registro; jugador → registro de peligro |
 | MemoriaGlobal | Patrones por categoría de equipo | Categoría de equipo → estrategia → registro |
 | CategoriaEquipo | Equipo agrupado en clases gruesas | Tier de armadura, protección alta o baja, arma principal, escudo |
 | Cerebro | La lógica que decide | Recibe una foto y la memoria; devuelve una decisión |
@@ -113,7 +114,7 @@ La persistencia guarda la memoria en JSON y es reemplazable: implementa un puert
 | Memoria global por categoría de equipo | Un archivo único | Cada intervalo de guardado y al apagar |
 | Contador de ticks del reloj del server | Archivo de estado | Junto con las memorias |
 
-- **Formato versionado:** cada archivo lleva un número de versión, para poder migrar datos si cambia la estructura.
+- **Formato versionado:** cada archivo lleva un número de versión, para poder migrar datos si cambia la estructura. La versión actual es la 2, que suma los registros de peligro al archivo del grupo; un archivo en versión 1 se migra con la lista vacía.
 - **Guardado sin trabar el server:** en el hilo principal se copia la memoria a datos simples (es rápido); la escritura del archivo corre en otro hilo.
 - **Escritura segura:** se escribe en un archivo temporal y después se reemplaza el real, para que un corte de luz no deje un JSON roto.
 - **Grupos y miembros no se guardan como entidades:** al reiniciar, se reconstruyen por cercanía; lo que sobrevive es la memoria.
@@ -411,6 +412,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Grupo, miembro, rol | `Group`, `Member`, `Role` | Dominio |
 | Estrategia de grupo, composición del grupo | `GroupStrategy`, `GroupComposition` | Dominio |
 | Registro de ataque | `AttackRecord` | Dominio |
+| Registro de peligro, nivel de peligro y pesos del éxito | `DangerRecord`, `DangerObservation`, `MemoryRecords`, `DangerLevel`, `SuccessWeights` | Dominio |
 | Memoria del grupo, memoria global | `GroupMemory`, `GlobalMemory` | Dominio |
 | Categoría de equipo | `GearCategory` | Dominio |
 | Cerebro | `Brain` | Dominio |
@@ -485,8 +487,8 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Reloj propio, azar e ids de grupo reales | `ServerTickCounter`, `JdkRandomSource`, `RandomGroupIdSource` | Adaptadores |
 | Configuración y mensajes | `ConfigLoader`, `InvalidConfigException`, `Messages`, `MessageKey` | Adaptadores |
 | Movimiento real del jugador, lecturas puras de entidades | `MovementTracker`, `EntityReadings` | Adaptadores |
-| Datos guardados: carga, memorias, estado, grupo y registros | `MemoryLoad`, `StoredMemories`, `StoredState`, `StoredGroup`, `StoredAttackRecord`, `StoredStrategyRecord` | Dominio (puerto) |
-| Persistencia JSON: repositorio, archivos, escritor seguro, versiones y formato | `JsonMemoryRepository`, `MemoryFiles`, `AtomicFileWriter`, `SchemaMigrator`, `GroupFileMapper`, `GroupFile`, `StateFile`, `MemberEntry`, `RecordEntry` | Persistencia |
+| Datos guardados: carga, memorias, estado, grupo y registros | `MemoryLoad`, `StoredMemories`, `StoredState`, `StoredGroup`, `StoredAttackRecord`, `StoredStrategyRecord`, `StoredDangerRecord` | Dominio (puerto) |
+| Persistencia JSON: repositorio, archivos, escritor seguro, versiones y formato | `JsonMemoryRepository`, `MemoryFiles`, `AtomicFileWriter`, `SchemaMigrator`, `GroupFileMapper`, `GroupFile`, `StateFile`, `MemberEntry`, `RecordEntry`, `DangerEntry` | Persistencia |
 | Casos de uso nuevos | `RemoveMember`, `RecordDamageTaken`, `RecordPlayerDeath`, `ResetMemories`, `DescribeGroup`, `DescribePlayerMemory` | Aplicación |
 | Datos guardados | `StoredMemories`, `StoredGroup`, `StoredMember`, `StoredRecord` | Dominio (puerto) |
 | Scheduler de decisión, aplicador de decisiones | `DecisionScheduler`, `DecisionApplier` | Adaptadores |

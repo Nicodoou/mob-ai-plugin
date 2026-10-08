@@ -9,4 +9,5 @@ record GroupFile(
     long lastPlanSequence,
     List<MemberEntry> members,
     List<RecordEntry> attackRecords,
-    List<RecordEntry> strategyRecords) {}
+    List<RecordEntry> strategyRecords,
+    List<DangerEntry> dangerRecords) {}

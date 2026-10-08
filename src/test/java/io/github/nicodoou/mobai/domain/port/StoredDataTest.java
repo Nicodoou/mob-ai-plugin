@@ -35,6 +35,7 @@ class StoredDataTest {
         planSequence,
         members,
         attackRecords,
+        List.of(),
         List.of());
   }
 
