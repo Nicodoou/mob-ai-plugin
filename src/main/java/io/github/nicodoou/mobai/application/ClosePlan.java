@@ -3,6 +3,7 @@ package io.github.nicodoou.mobai.application;
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.group.Group;
+import io.github.nicodoou.mobai.domain.memory.DangerObservation;
 import io.github.nicodoou.mobai.domain.memory.RecordChange;
 import io.github.nicodoou.mobai.domain.memory.StrategyObservation;
 import java.util.Objects;
@@ -23,10 +24,21 @@ public final class ClosePlan {
   }
 
   private static RecordChange record(Group group, ClosedPlan plan) {
-    return group
+    RecordChange change =
+        group
+            .memory()
+            .recordStrategy(
+                new StrategyObservation(
+                    plan.target(),
+                    plan.strategy(),
+                    plan.success(),
+                    OWN_PLAN_WEIGHT,
+                    plan.endTick()));
+    group
         .memory()
-        .recordStrategy(
-            new StrategyObservation(
-                plan.target(), plan.strategy(), plan.success(), OWN_PLAN_WEIGHT, plan.endTick()));
+        .recordDanger(
+            new DangerObservation(
+                plan.target(), plan.groupHealthLost(), plan.damageDealt(), plan.endTick()));
+    return change;
   }
 }

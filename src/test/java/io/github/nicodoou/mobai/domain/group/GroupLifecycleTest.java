@@ -156,6 +156,8 @@ class GroupLifecycleTest {
                 PlanEndReason.TIMED_OUT,
                 0.4 * 0.5 + 0.4 * 0.25 + 0.2 * 1,
                 new PlanScores(0.5, 0.25, 1),
+                0,
+                0,
                 5.0,
                 100,
                 700));

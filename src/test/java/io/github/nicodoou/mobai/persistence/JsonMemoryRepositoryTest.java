@@ -7,8 +7,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.nicodoou.mobai.domain.group.Member;
 import io.github.nicodoou.mobai.domain.memory.AttackRecord;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.port.MemoryLoad;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
+import io.github.nicodoou.mobai.domain.port.StoredDangerRecord;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
 import io.github.nicodoou.mobai.domain.port.StoredMemories;
 import io.github.nicodoou.mobai.domain.port.StoredState;
@@ -58,7 +60,19 @@ class JsonMemoryRepositoryTest {
                 PLAYER, Attack.ZOMBIE_FRONT_STRIKE, new AttackRecord(1.37, 2.5, 100))),
         List.of(
             new StoredStrategyRecord(
-                PLAYER, new StrategyId("FLANK"), new AttackRecord(0.4, 1.0, 700))));
+                PLAYER, new StrategyId("FLANK"), new AttackRecord(0.4, 1.0, 700))),
+        List.of());
+  }
+
+  private static StoredGroup withDanger(StoredGroup group) {
+    return new StoredGroup(
+        group.id(),
+        group.policy(),
+        group.lastPlanSequence(),
+        group.members(),
+        group.attackRecords(),
+        group.strategyRecords(),
+        List.of(new StoredDangerRecord(PLAYER, new DangerRecord(12.5, 3.25, 700))));
   }
 
   private static StoredMemories memoriesOf(StoredGroup... groups) {
@@ -92,6 +106,15 @@ class JsonMemoryRepositoryTest {
     assertThat(load.state()).isEqualTo(Optional.of(sampleState()));
     assertThat(load.groups()).isEqualTo(List.of(sampleGroup(1)));
     assertThat(load.quarantinedFiles()).isEmpty();
+  }
+
+  @Test
+  void dangerRecordsSurviveSaveAndLoad() {
+    repository().save(memoriesOf(withDanger(sampleGroup(1))));
+
+    var load = repository().load();
+
+    assertThat(load.groups()).isEqualTo(List.of(withDanger(sampleGroup(1))));
   }
 
   @Test
@@ -142,7 +165,7 @@ class JsonMemoryRepositoryTest {
 
     JsonObject json = readJson(groupFile(1));
 
-    assertThat(json.get("schemaVersion").getAsInt()).isEqualTo(1);
+    assertThat(json.get("schemaVersion").getAsInt()).isEqualTo(2);
     assertThat(json.get("groupId").getAsString()).isEqualTo("00000000-0000-0000-0000-000000000001");
     assertThat(json.get("policy").getAsString()).isEqualTo("THOMPSON_SAMPLING");
     assertThat(json.get("lastPlanSequence").getAsLong()).isEqualTo(3);
@@ -217,7 +240,7 @@ class JsonMemoryRepositoryTest {
   void loadRejectsANewerSchemaVersionAndKeepsTheFile() throws IOException {
     repository().save(memoriesOf(sampleGroup(1)));
     JsonObject json = readJson(groupFile(1));
-    json.addProperty("schemaVersion", 2);
+    json.addProperty("schemaVersion", 3);
     String newer = json.toString();
     Files.writeString(groupFile(1), newer);
 

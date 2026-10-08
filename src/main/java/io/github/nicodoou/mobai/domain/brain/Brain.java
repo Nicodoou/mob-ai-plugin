@@ -6,6 +6,7 @@ import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.decision.GroupDecision;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.decision.StrategyCheck;
+import io.github.nicodoou.mobai.domain.group.DangerLevel;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
@@ -14,10 +15,12 @@ import io.github.nicodoou.mobai.domain.group.PlanLifecycle;
 import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.group.PlanStart;
 import io.github.nicodoou.mobai.domain.group.Role;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.selection.SelectionCandidate;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicy;
 import io.github.nicodoou.mobai.domain.selection.SelectionResult;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
@@ -270,13 +273,17 @@ public final class Brain {
 
   // The evaluation finishes in the same decision; the next plan starts in the next one (D10).
   private Outcome closeAndEvaluate(Turn turn, PlanEndReason endReason) {
-    ClosedPlan closed = turn.lifecycle().closePlan(endReason, turn.snapshot().tick(), scoring());
+    ClosedPlan closed =
+        turn.lifecycle().closePlan(endReason, turn.snapshot().tick(), scoring(turn));
     turn.lifecycle().finishEvaluation();
     return new Outcome(ordersAfterEvaluation(turn), Optional.of(closed));
   }
 
-  private PlanScoring scoring() {
-    return new PlanScoring(settings.get().plan(), settings.get().success());
+  private PlanScoring scoring(Turn turn) {
+    long tick = turn.snapshot().tick();
+    DangerRecord record = turn.group().memory().dangerRecord(currentPlan(turn).target(), tick);
+    SuccessSettings success = settings.get().success();
+    return new PlanScoring(settings.get().plan(), success, DangerLevel.of(record, success));
   }
 
   // A plan closed between decisions (the target died) is evaluated here.

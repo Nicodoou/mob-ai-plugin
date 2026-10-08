@@ -104,3 +104,11 @@ success:
   survival-weight: 0.2
   # Rapidez: comparada con matar al objetivo en estos ticks.
   reference-kill-ticks: 600
+  # Contra jugadores muy buenos, el peso de la supervivencia sube de survival-weight hasta este valor.
+  survival-weight-max: 0.6
+  # Vida que pierde el grupo por cada punto de daño que le hace al jugador: desde low el peso empieza
+  # a subir; en high llega al máximo.
+  danger-ratio-low: 2.0
+  danger-ratio-high: 8.0
+  # Daño de referencia: con poca pelea, el jugador cuenta como normal.
+  danger-prior-damage: 10.0

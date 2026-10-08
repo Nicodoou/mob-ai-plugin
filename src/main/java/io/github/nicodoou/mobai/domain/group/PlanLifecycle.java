@@ -218,6 +218,8 @@ public final class PlanLifecycle {
         reason,
         scoring.successOf(scores),
         scores,
+        scoring.danger(),
+        scoring.healthLostOf(plan),
         plan.damageDealt(),
         plan.startTick(),
         tick);

@@ -10,6 +10,8 @@ import io.github.nicodoou.mobai.domain.group.Member;
 import io.github.nicodoou.mobai.domain.group.PlanStart;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.memory.AttackObservation;
+import io.github.nicodoou.mobai.domain.memory.DangerObservation;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.memory.StrategyObservation;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
@@ -66,6 +68,17 @@ class StoredMemoriesMapperTest {
             tuple(player, Attack.ZOMBIE_FRONT_STRIKE),
             tuple(player, Attack.SKELETON_DIRECT_SHOT),
             tuple(otherPlayer, Attack.SPIDER_BITE));
+  }
+
+  @Test
+  void dangerRecordsSurviveTheMapper() {
+    Group group = newGroup(1);
+    group.memory().recordDanger(new DangerObservation(player, 40, 10, 1_000));
+
+    Group restored = mapper.toGroup(mapper.toStored(group), settings);
+
+    assertThat(restored.memory().dangerRecord(player, 1_000))
+        .isEqualTo(new DangerRecord(40, 10, 1_000));
   }
 
   @Test

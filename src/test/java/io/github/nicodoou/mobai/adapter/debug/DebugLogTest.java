@@ -43,6 +43,8 @@ class DebugLogTest {
             PlanEndReason.TARGET_DIED,
             1.0,
             new PlanScores(1, 1, 1),
+            0,
+            0,
             20.0,
             100,
             TICK);
@@ -55,7 +57,7 @@ class DebugLogTest {
                 + groupId(1).shortId()
                 + " plan=3 strategy=FLANK target="
                 + player.shortId()
-                + " reason=TARGET_DIED success=1.00 scores=1.00/1.00/1.00 damage=20.0");
+                + " reason=TARGET_DIED success=1.00 scores=1.00/1.00/1.00 danger=0.00 damage=20.0");
   }
 
   @Test

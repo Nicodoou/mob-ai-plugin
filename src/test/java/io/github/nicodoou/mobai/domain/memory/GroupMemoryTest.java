@@ -187,12 +187,41 @@ class GroupMemoryTest {
   void restoreKeepsTheRecords() {
     hit(PLAYER_1, Attack.ZOMBIE_FRONT_STRIKE, 10);
     memory.recordStrategy(new StrategyObservation(PLAYER_2, FLANK, 0.5, 1.0, 20));
+    memory.recordDanger(new DangerObservation(PLAYER_1, 12, 3, 30));
 
     GroupMemory restored =
-        GroupMemory.restore(() -> settings, memory.attackRecords(), memory.strategyRecords());
+        GroupMemory.restore(
+            () -> settings,
+            new MemoryRecords(
+                memory.attackRecords(), memory.strategyRecords(), memory.dangerRecords()));
 
     assertThat(restored.attackRecords()).isEqualTo(memory.attackRecords());
     assertThat(restored.strategyRecords()).isEqualTo(memory.strategyRecords());
+    assertThat(restored.dangerRecords()).isEqualTo(memory.dangerRecords());
+  }
+
+  @Test
+  void dangerIsRecordedPerPlayerAndDecays() {
+    memory.recordDanger(new DangerObservation(PLAYER_1, 40, 10, 1_000));
+
+    DangerRecord decayed = memory.dangerRecord(PLAYER_1, 13_000);
+    DangerRecord other = memory.dangerRecord(PLAYER_2, 13_000);
+    memory.recordDanger(new DangerObservation(PLAYER_1, 40, 10, 13_000));
+
+    assertThat(decayed.healthLost()).isCloseTo(20, within(1e-9));
+    assertThat(decayed.damageDealt()).isCloseTo(5, within(1e-9));
+    assertThat(other).isEqualTo(DangerRecord.empty(13_000));
+    assertThat(memory.dangerRecord(PLAYER_1, 13_000).healthLost()).isCloseTo(60, within(1e-9));
+    assertThat(memory.dangerRecord(PLAYER_1, 13_000).damageDealt()).isCloseTo(15, within(1e-9));
+  }
+
+  @Test
+  void clearPlayerForgetsTheDanger() {
+    memory.recordDanger(new DangerObservation(PLAYER_1, 40, 10, 1_000));
+
+    memory.clearPlayer(PLAYER_1);
+
+    assertThat(memory.dangerRecord(PLAYER_1, 1_000)).isEqualTo(DangerRecord.empty(1_000));
   }
 
   @Test

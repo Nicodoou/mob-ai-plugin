@@ -9,6 +9,7 @@ import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.memory.AttackRecord;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.memory.RecordChange;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
@@ -44,6 +45,17 @@ class ClosePlanTest {
     assertThat(change).isEmpty();
   }
 
+  @Test
+  void closingAPlanRecordsTheDanger() {
+    Group group = newGroup(1);
+    activeGroups.add(group);
+
+    closePlan.execute(closedEvent());
+
+    assertThat(group.memory().dangerRecord(player, 700))
+        .isEqualTo(new DangerRecord(12.0, 3.0, 700));
+  }
+
   private PlanClosed closedEvent() {
     return new PlanClosed(
         new ClosedPlan(
@@ -53,6 +65,8 @@ class ClosePlanTest {
             PlanEndReason.TIMED_OUT,
             0.4,
             new PlanScores(1, 1, 1),
+            0,
+            12.0,
             3.0,
             100,
             700));

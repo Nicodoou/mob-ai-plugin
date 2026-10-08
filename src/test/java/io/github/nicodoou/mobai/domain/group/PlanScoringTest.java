@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.PlanScores;
+import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
@@ -155,5 +156,16 @@ class PlanScoringTest {
     double success = scoring.successOf(scores);
 
     assertThat(success).isCloseTo(0.65, within(1e-9));
+  }
+
+  @Test
+  void successUsesTheDangerWeights() {
+    MobAiSettings settings = TestSettings.defaults();
+    PlanScoring dangerous = new PlanScoring(settings.plan(), settings.success(), 1);
+    PlanScores scores = new PlanScores(1, 0.5, 0.25);
+
+    double success = dangerous.successOf(scores);
+
+    assertThat(success).isCloseTo(0.45, within(1e-9));
   }
 }

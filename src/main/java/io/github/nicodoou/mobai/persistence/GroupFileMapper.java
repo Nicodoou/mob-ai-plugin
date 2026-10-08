@@ -2,7 +2,9 @@ package io.github.nicodoou.mobai.persistence;
 
 import io.github.nicodoou.mobai.domain.group.Member;
 import io.github.nicodoou.mobai.domain.memory.AttackRecord;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
+import io.github.nicodoou.mobai.domain.port.StoredDangerRecord;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import io.github.nicodoou.mobai.domain.port.StoredStrategyRecord;
@@ -24,7 +26,8 @@ final class GroupFileMapper {
         group.lastPlanSequence(),
         group.members().stream().map(GroupFileMapper::toEntry).toList(),
         group.attackRecords().stream().map(GroupFileMapper::toEntry).toList(),
-        group.strategyRecords().stream().map(GroupFileMapper::toEntry).toList());
+        group.strategyRecords().stream().map(GroupFileMapper::toEntry).toList(),
+        group.dangerRecords().stream().map(GroupFileMapper::toEntry).toList());
   }
 
   StoredGroup fromFile(GroupFile file) {
@@ -40,6 +43,9 @@ final class GroupFileMapper {
             .toList(),
         required(file.strategyRecords(), "GroupFile.strategyRecords").stream()
             .map(GroupFileMapper::toStrategyRecord)
+            .toList(),
+        required(file.dangerRecords(), "GroupFile.dangerRecords").stream()
+            .map(GroupFileMapper::toDangerRecord)
             .toList());
   }
 
@@ -72,6 +78,23 @@ final class GroupFileMapper {
         record.successes(),
         record.attempts(),
         record.lastUpdateTick());
+  }
+
+  private static DangerEntry toEntry(StoredDangerRecord stored) {
+    DangerRecord record = stored.record();
+    return new DangerEntry(
+        stored.player().value().toString(),
+        record.healthLost(),
+        record.damageDealt(),
+        record.lastUpdateTick());
+  }
+
+  private static StoredDangerRecord toDangerRecord(DangerEntry entry) {
+    required(entry, "GroupFile.dangerRecords[]");
+    PlayerId player =
+        new PlayerId(UUID.fromString(required(entry.playerId(), "DangerEntry.playerId")));
+    return new StoredDangerRecord(
+        player, new DangerRecord(entry.healthLost(), entry.damageDealt(), entry.lastUpdateTick()));
   }
 
   private static Member toMember(MemberEntry entry) {
