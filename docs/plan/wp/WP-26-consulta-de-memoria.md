@@ -143,7 +143,7 @@ memory-attack: "<gray>  ataque <white><attack></white>: <white><rate>%</white> Â
 | `viewCarriesTheDanger` | grupo con `recordDanger` de 80/10 en el tick `TICK`: `danger` 0,5 (con `TestSettings`: low 2, high 8, previo 10) y `dangerRecord` 80/10 |
 | `groupRememberedOnlyByItsDangerIsListed` | grupo sin ataques ni estrategias, solo con peligro: aparece |
 
-El constructor existente pasa a recibir `() -> TestSettings.settings().success()` o el accessor equivalente de `TestSettings`.
+El constructor existente pasa a recibir `() -> TestSettings.defaults().success()`.
 
 ### `MemoryReportTest` (4)
 
