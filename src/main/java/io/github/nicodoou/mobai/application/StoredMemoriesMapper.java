@@ -6,9 +6,11 @@ import io.github.nicodoou.mobai.domain.memory.AttackRecord;
 import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.memory.MemoryRecords;
+import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
 import io.github.nicodoou.mobai.domain.port.StoredDangerRecord;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
+import io.github.nicodoou.mobai.domain.port.StoredRecipeModel;
 import io.github.nicodoou.mobai.domain.port.StoredStrategyRecord;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -32,13 +34,17 @@ public final class StoredMemoriesMapper {
         group.roster().members(),
         storedAttackRecords(group.memory()),
         storedStrategyRecords(group.memory()),
-        storedDangerRecords(group.memory()));
+        storedDangerRecords(group.memory()),
+        storedRecipeModels(group.memory()));
   }
 
   public Group toGroup(StoredGroup stored, SettingsHolder settings) {
     Group group = new Group(stored.id(), stored.policy(), restoredKnowledge(stored, settings));
     stored.members().forEach(group.roster()::restoreMember);
     group.lifecycle().restorePlanSequence(stored.lastPlanSequence());
+    stored
+        .recipeModels()
+        .forEach(model -> group.memory().storeRecipeModel(model.player(), model.record()));
     return group;
   }
 
@@ -73,6 +79,14 @@ public final class StoredMemoriesMapper {
     return records.keySet().stream()
         .sorted(BY_PLAYER)
         .map(player -> new StoredDangerRecord(player, records.get(player)))
+        .toList();
+  }
+
+  private static List<StoredRecipeModel> storedRecipeModels(GroupMemory memory) {
+    Map<PlayerId, RecipeModelRecord> records = memory.recipeModels();
+    return records.keySet().stream()
+        .sorted(BY_PLAYER)
+        .map(player -> new StoredRecipeModel(player, records.get(player)))
         .toList();
   }
 

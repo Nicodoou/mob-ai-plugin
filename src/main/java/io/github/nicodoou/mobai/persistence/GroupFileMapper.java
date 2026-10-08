@@ -1,8 +1,8 @@
 package io.github.nicodoou.mobai.persistence;
 
 import io.github.nicodoou.mobai.domain.group.Member;
-import io.github.nicodoou.mobai.domain.memory.AttackRecord;
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
+import io.github.nicodoou.mobai.domain.memory.AttackRecord;
 import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;

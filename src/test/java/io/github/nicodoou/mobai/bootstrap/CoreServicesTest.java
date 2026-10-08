@@ -21,6 +21,7 @@ import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.GroupSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.InMemoryMemoryRepository;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
+import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.SeededRandomSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.List;
@@ -114,6 +115,27 @@ class CoreServicesTest {
 
     assertThat(report.loadedGroups()).hasSize(1);
     assertThat(freshCore.activeGroups().groupOf(mob(1))).isPresent();
+  }
+
+  @Test
+  void traitsTravelWithTheStoredState() {
+    Group group = recruitedGroup();
+    GroupSnapshot snapshot =
+        new GroupSnapshotBuilder()
+            .withGroupId(group.id())
+            .withTick(BrainFixture.START_TICK)
+            .withMob(new MobSnapshotBuilder().withId(mob(1)).withKind(MobKind.ZOMBIE).build())
+            .withPlayer(new PlayerSnapshotBuilder().withId(PLAYER).withBlocking(true).build())
+            .build();
+    core.tickGroups().execute(snapshot);
+    StoredState state = core.storedState();
+    CoreServices freshCore = newCore();
+
+    freshCore.restore(state);
+
+    assertThat(state.traits()).hasSize(1);
+    assertThat(state.traits().get(0).player()).isEqualTo(PLAYER);
+    assertThat(freshCore.storedState().traits()).isEqualTo(state.traits());
   }
 
   private CoreServices newCore() {
