@@ -169,6 +169,10 @@ Desde el 8 oct 2026 el orquestador puede correr en la nube (claude.ai/code). Ah�
 - **El `mobai-debug.log` lo adjunta o pega Nico** después de cada prueba en el juego.
 - **`gh`** se invoca como `gh` si está en el PATH; la ruta de Windows es solo para la PC de Nico.
 - **Nunca** pidas reiniciar o tocar el server de Nico sin que él lo diga.
+- **Sin JDK 25 ni `repo.papermc.io`** (la red los bloquea; habilitar `api.foojay.io`, `api.adoptium.net` y `repo.papermc.io` lo arregla): `./gradlew` no corre. El build lo verifica el CI del PR.
+- **Pruebas del dominio y roturas sin Gradle:** el dominio es Java puro y compila con el JDK 21 del contenedor. Bajá `junit-platform-console-standalone`, `assertj-core` y `byte-buddy` de Maven Central (si da 429, `repo.maven.apache.org`), compilá `src/main/java/.../domain` con `javac --release 21` y las pruebas del WP encima, y corré el launcher con los jars **explícitos** en `-cp` (no expande `lib/*`). Así se corren las roturas en la revisión (WP-25).
+- **Push:** `git push` a ramas nuevas y a `main` funciona; borrar ramas remotas da 403.
+- **Dos orquestadores:** si la sesión local también orquesta, rebasá antes de cada push y no toquen los mismos archivos.
 
 ## 10. Documentos
 

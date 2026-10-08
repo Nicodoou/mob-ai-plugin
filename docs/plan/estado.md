@@ -76,7 +76,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30D | La supervivencia multiplica | E6 | mergeado | Sonnet | [#54](https://github.com/Nicodoou/mob-ai-plugin/pull/54) | D-01 del test fuerte, aprobado por Nico |
 | WP-30C | Retirada aprendida | E6 | pendiente | Opus | — | CT-28 |
-| WP-25 | Arañas: mordida con lentitud | E6 | en curso | Sonnet | — | La lentitud solo con acierto, sin renovar ni acumular. Primer WP lanzado desde la nube: sin compilación local, la revisión y las roturas las corre un Opus local |
+| WP-25 | Arañas: mordida con lentitud | E6 | en revisión | Sonnet | [#55](https://github.com/Nicodoou/mob-ai-plugin/pull/55) | La lentitud solo con acierto, sin renovar ni acumular. Revisado en la nube: código igual al WP, CI verde, las 12 pruebas y las 6 roturas (4 del WP y 2 propias) corridas con JDK 21 sobre el dominio. Falta la revisión local (build completo) y el merge |
 | WP-26 | Consulta de memoria | E6 | mergeado | Sonnet | [#52](https://github.com/Nicodoou/mob-ai-plugin/pull/52) | `/mobai memory` con el peligro; las métricas ya las cubre el log de debug |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
 
