@@ -20,9 +20,10 @@ CT-25, diseño de Nico; arregla el B-05. El zombie esquivo (`zombie.evasive_stri
 | --- | --- |
 | El jugador no lo mira | Entra y pega |
 | El jugador lo mira, cubierto con el escudo y con el arma al 100 % | El golpe es inevitable: se pone **a un costado de la mira**, a su alcance, y le pega al escudo para desgastarlo |
-| Le queda tiempo para salir antes del 100 % | Entra y pega (o sigue pegando) |
-| No le queda tiempo y está dentro del alcance | Retrocede: al 100 % ya está afuera |
-| No le queda tiempo y está afuera | Espera en el borde, mirando |
+| Le sobra tiempo para salir antes del 100 % | Entra y pega (o sigue pegando) |
+| Dentro del alcance, con el tiempo justo para salir | Retrocede: al 100 % ya está afuera |
+| Dentro del alcance, sin tiempo para salir | Pega igual: el golpe del jugador le llega de todos modos (Nico) |
+| Afuera, sin tiempo para entrar, pegar y salir | Espera en el borde, mirando |
 
 La carga por espera agotada (`CHARGE`) desaparece: era la causa del B-05.
 
@@ -57,9 +58,10 @@ La carga por espera agotada (`CHARGE`) desaparece: era la causa del B-05.
 5. **Decisión** (`EvasiveRules`, pura), en este orden:
    1. el jugador no lo mira (fuera de su vista, `isOutOfSight`) → `STRIKE_EVASIVE`;
    2. lo mira, se cubre (`isBlocking`) y tiene el arma al 100 % → `SIDE_STEP`;
-   3. `falta de carga > tiempo necesario + evasive-safety-ticks` → `STRIKE_EVASIVE`;
-   4. si no, dentro de la distancia de peligro → `BACK_OFF`;
-   5. si no → `HOLD`.
+   3. `falta de carga > tiempo necesario + evasive-safety-ticks` → `STRIKE_EVASIVE` (le sobra tiempo);
+   4. afuera de la distancia de peligro → `HOLD`;
+   5. dentro, con `falta de carga >= tiempo necesario` → `BACK_OFF` (llega justo);
+   6. dentro, con `falta de carga < tiempo necesario` → `STRIKE_EVASIVE`: ya no llega a salir y el golpe le va a llegar igual, así que pega primero.
 
    `evasive-safety-ticks` (4) cubre la demora de reacción: el goal decide uno sí y uno no de los ticks del juego, y el camino tarda en arrancar. No depende de la velocidad del mob, que sí sale del cálculo.
 6. **Al costado de la mira** (`SIDE_STEP`):
@@ -298,7 +300,13 @@ final class EvasiveRules {
     if (reading.chargeTicksLeft() > reading.ticksNeeded() + safetyTicks) {
       return EvasiveMove.STRIKE_EVASIVE;
     }
-    return reading.withinReach() ? EvasiveMove.BACK_OFF : EvasiveMove.HOLD;
+    if (!reading.withinReach()) {
+      return EvasiveMove.HOLD;
+    }
+    // Too late to get out: the player's hit lands anyway, so it lands one of its own first.
+    return reading.chargeTicksLeft() >= reading.ticksNeeded()
+        ? EvasiveMove.BACK_OFF
+        : EvasiveMove.STRIKE_EVASIVE;
   }
 }
 ```
@@ -368,16 +376,17 @@ Borrá `evasion`, el uso de `EvasiveWait`, `threatOf` y todo lo de `CHARGE`. `la
 | `nothingToCoverTakesNoTime` | distancia 0 y −1 → 0 |
 | `standingMobNeverGetsThere` | velocidad 0 → `MAX_TICKS` |
 
-### `EvasiveRulesTest` (6), con `SAFETY_TICKS = 4`
+### `EvasiveRulesTest` (7), con `SAFETY_TICKS = 4`
 
 | Prueba | Lectura | Esperado |
 | --- | --- | --- |
 | `unwatchedZombieStrikes` | `watched` false, lo demás como en el peor caso (cubierto y cargado, falta 0, necesita 10, dentro) | `STRIKE_EVASIVE` |
 | `shieldedAndChargedPlayerIsSideStepped` | `watched`, `shieldedAndCharged`, falta 0, necesita 10; dentro y afuera | `SIDE_STEP` en los dos |
 | `itStrikesWhileThereIsTimeToGetOut` | `watched`, falta 15, necesita 10, dentro | `STRIKE_EVASIVE` |
-| `itBacksOffJustInTime` | `watched`, falta 14, necesita 10, dentro | `BACK_OFF` |
+| `itBacksOffJustInTime` | `watched`, falta 14, necesita 10, dentro; y falta 10, necesita 10, dentro | `BACK_OFF` en los dos |
+| `itStrikesWhenItCannotGetOutAnyway` | `watched`, sin escudo, falta 9, necesita 10, dentro; y falta 0, necesita 10, dentro | `STRIKE_EVASIVE` en los dos |
 | `itHoldsAtTheEdgeWithoutTimeToComeIn` | `watched`, falta 20, necesita 25, afuera; y falta 30, necesita 25, afuera | `HOLD`; `STRIKE_EVASIVE` |
-| `chargedPlayerIsNeverChargedAt` | regresión del B-05: `watched`, sin escudo, falta 0, necesita 10, dentro, llamada 100 veces | `BACK_OFF` todas las veces |
+| `raisedShieldKeepsItBesideTheAim` | regresión del B-05: `watched`, `shieldedAndCharged`, falta 0, necesita 10, dentro, llamada 100 veces | `SIDE_STEP` todas las veces (nunca entra y sale) |
 
 ### `CombatGeometryTest` (+2)
 
@@ -402,7 +411,7 @@ Borrá `evasion`, el uso de `EvasiveWait`, `threatOf` y todo lo de `CHARGE`. `la
 | `SettingsValidationTest`, fuera de rango | el caso del umbral pasa a ser `evasiveSafetyTicks` −1 → `AttackSettings.evasiveSafetyTicks must be at least 0, got -1`; se suma `evasiveAimMarginDegrees` 91.0 → `AttackSettings.evasiveAimMarginDegrees must be between 0.0 and 90.0, got 91.0`; los demás casos de `AttackSettings` cambian `0.8, 0.5` por `0.5, 4, 15.0` (o su valor fuera de rango en la misma posición) |
 | `EvasiveWaitTest` | se borra (la clase ya no existe) |
 
-Total: **13 pruebas nuevas**.
+Total: **14 pruebas nuevas**.
 
 ## Pruebas que muerden
 
@@ -410,14 +419,15 @@ Total: **13 pruebas nuevas**.
 | --- | --- | --- | --- |
 | 1 | En `EscapeTiming`, sacar `velocity *= GROUND_DRAG_PER_TICK` | 1 bloque en 6 ticks | `zombieCoversOneBlockInTenTicks` |
 | 2 | En `EscapeTiming`, `acceleration = MOB_MOVE_INPUT_SCALE * speed` (sin el cuadrado) | 1 bloque en 4 ticks | `zombieCoversOneBlockInTenTicks` |
-| 3 | En `EvasiveRules`, `>=` en lugar de `>` | falta 14, necesita 10 + 4 → `STRIKE_EVASIVE` | `itBacksOffJustInTime` |
+| 3 | En `EvasiveRules`, `>=` en lugar de `>` en el primer corte | falta 14, necesita 10 + 4 → `STRIKE_EVASIVE` | `itBacksOffJustInTime` |
+| 5 | En `EvasiveRules`, `>` en lugar de `>=` en el último corte | falta 10, necesita 10 → `STRIKE_EVASIVE` | `itBacksOffJustInTime` |
 | 4 | En `Waypoints.sideStepPoint`, no sumar el margen | 11,31° | `sideStepPointClearsTheMobsWidthPlusTheMargin` |
 
 ## Verificación en el server (Nico, después del merge)
 
 Opus actualiza el `config.yml` del server de prueba (borra `evasive-charge-threshold` y suma las dos claves nuevas). De noche, `/mobai debug all full`; repetí `spawngroup` hasta que un zombie tenga `zombie.evasive_strike`:
 
-1. **Con espada:** el zombie se queda casi siempre en el borde (con espada no le da el tiempo). Si pegás al aire, entra, pega y sale antes de que vuelvas a tener el arma cargada.
+1. **Con espada:** desde afuera, el zombie se queda casi siempre en el borde (con espada no le da el tiempo). Si pegás al aire, entra, pega y sale antes de que vuelvas a tener el arma cargada. Si ya está encima y no llega a salir, pega igual en vez de huir.
 2. **Con hacha:** entra y pega más seguido; sale antes de que el hacha llegue al 100 %.
 3. **Con escudo arriba y el arma cargada:** el zombie se corre a un costado de la mira y le pega al escudo. El escudo pierde durabilidad (en dificultad normal; en fácil el golpe no llega a 3 de daño). Ya no entra y sale sin parar.
 4. **Con Speed II** (`/effect give @e[type=zombie] speed 60 1`): sale más tarde y vuelve antes.
@@ -446,6 +456,6 @@ Opus actualiza el `config.yml` del server de prueba (borra `evasive-charge-thres
 ## Aceptación
 
 - [ ] Exactamente los archivos de la tabla, con las firmas especificadas.
-- [ ] Las 13 pruebas nuevas con sus nombres exactos, en verde; la suite completa en verde.
-- [ ] Las 4 roturas mordieron.
+- [ ] Las 14 pruebas nuevas con sus nombres exactos, en verde; la suite completa en verde.
+- [ ] Las 5 roturas mordieron.
 - [ ] Build, cobertura y CI en verde.

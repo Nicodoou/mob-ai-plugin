@@ -373,7 +373,9 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 
 **Reglas:**
 - Pega si le da el tiempo.
-- Si no le da: retrocede cuando está dentro del alcance, o espera en el borde cuando está afuera.
+- Dentro del alcance, con el tiempo justo para salir: retrocede.
+- Dentro del alcance, sin tiempo para salir: pega igual, porque el golpe del jugador le llega de todos modos (Nico).
+- Afuera, sin tiempo para entrar, pegar y salir: espera en el borde.
 - Si el jugador lo mira cubierto con el escudo y el arma al 100 %, el golpe es inevitable: se pone a un costado de la mira (el ancho del mob más un margen) y le pega al escudo para desgastarlo.
 - `evasive-charge-threshold` se reemplaza por `evasive-safety-ticks` (4) y `evasive-aim-margin-degrees` (15).
 
