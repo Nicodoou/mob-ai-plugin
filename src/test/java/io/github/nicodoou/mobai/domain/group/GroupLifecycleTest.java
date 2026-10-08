@@ -293,6 +293,7 @@ class GroupLifecycleTest {
     group.lifecycle().finishRegrouping();
 
     assertThat(group.lifecycle().regrouping()).isEmpty();
+    assertThat(group.lifecycle().capture().rallyPoint()).isEmpty();
 
     group.lifecycle().regroupWithoutPlan(1200);
 
