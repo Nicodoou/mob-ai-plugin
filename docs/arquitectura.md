@@ -505,6 +505,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Set de prueba, refuerzo de un grupo | `TestGroup`, `ReinforceCommand`, `GroupSpawner.reinforce` | Adaptador |
 | Modelo del aprendizaje de recetas (CT-30): precisión, información, sorteo | `LinearPosterior`, `Cholesky` | Dominio |
 | Receta jugada, reparto por tipo, límites, rasgos, pico en [0, 1], búsqueda de la receta (CT-30) | `PlanRecipe`, `RoleSplit`, `RecipeBounds`, `RecipeFeatures`, `UnitIntervalPeak`, `RecipeSearch` | Dominio |
+| Rasgos del jugador (escudo, a distancia, armadura) y rasgos de la receta cruzados con ellos (CT-30) | `PlayerTraits`, `ContextualFeatures` | Dominio |
 
 «Escape» se reserva para el mob (RF-08: `MemberEscaped`, `RecordEscape`). Cuando el que se va es el jugador, el plan cierra con `TARGET_LOST`; nunca se lo llama escape en el código.
 
