@@ -55,7 +55,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-22E | Flanqueadores proporcionales | E6 | mergeado | Sonnet | [#37](https://github.com/Nicodoou/mob-ai-plugin/pull/37) | CT-18, pedido de Nico. Antes del WP-24 |
 | WP-23B | Golpe esquivo | E6 | mergeado | Sonnet | [#43](https://github.com/Nicodoou/mob-ai-plugin/pull/43) | CT-19, opción 2 de Nico. Después del WP-24 |
 | WP-23C | Alcance del jugador según su arma | E6 | mergeado | Sonnet | [#44](https://github.com/Nicodoou/mob-ai-plugin/pull/44) | CT-24, pedido de Nico. Al mergear, actualizar las claves del `config.yml` del server de prueba |
-| WP-23D | Esquivo calculado | E6 | especificado | Sonnet | — | CT-25, B-05. Al mergear, actualizar el `config.yml` del server de prueba |
+| WP-23D | Esquivo calculado | E6 | en curso | Sonnet | — | CT-25, B-05. Al mergear, actualizar el `config.yml` del server de prueba |
 | WP-24A | Rastreo de flechas | E6 | mergeado | Sonnet | [#38](https://github.com/Nicodoou/mob-ai-plugin/pull/38) | CT-20 |
 | WP-24B | Esqueletos que disparan | E6 | mergeado | Sonnet | [#39](https://github.com/Nicodoou/mob-ai-plugin/pull/39) | CT-20. Después del 24A. Verificar que un grupo de solo esqueletos ya no cierre planes con éxito 0 (puerta E5) |
 | WP-24C | Esqueletos en formación | E6 | mergeado | Sonnet | [#41](https://github.com/Nicodoou/mob-ai-plugin/pull/41) | CT-21 |
