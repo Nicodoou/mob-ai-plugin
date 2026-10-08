@@ -16,6 +16,7 @@ import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.group.PlanStart;
 import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.selection.SelectionCandidate;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicy;
@@ -30,6 +31,10 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.GroupStrategy;
+import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
+import io.github.nicodoou.mobai.domain.strategy.RecipeRequest;
 import io.github.nicodoou.mobai.domain.strategy.VolleyStrategy;
 import io.github.nicodoou.mobai.domain.target.TargetQuery;
 import io.github.nicodoou.mobai.domain.target.TargetSelection;
@@ -59,6 +64,7 @@ public final class Brain {
     requireSnapshotOfGroup(group, snapshot);
     requireMembers(group, snapshot);
     Turn turn = new Turn(group, snapshot, newDraft(group, snapshot));
+    parts.traitLedger().observe(snapshot);
     Outcome outcome = step(turn);
     return result(turn, outcome);
   }
@@ -111,8 +117,7 @@ public final class Brain {
       return holdBack(turn);
     }
     turn.lifecycle().beginPlanning();
-    GroupStrategy strategy = chooseStrategy(turn, target.get());
-    startPlan(turn, strategy, target.get());
+    openPlan(turn, target.get());
     retreatLowHealth(turn);
     return Outcome.withOrders(planOrders(turn));
   }
@@ -168,19 +173,53 @@ public final class Brain {
         .toList();
   }
 
+  // The planner is read every decision, so /mobai reload switches it for the next plan.
+  private void openPlan(Turn turn, PlayerId target) {
+    switch (settings.get().learning().planner()) {
+      case STRATEGIES -> startPlan(turn, chooseStrategy(turn, target), target);
+      case RECIPES -> startRecipePlan(turn, planRecipe(turn, target), target);
+    }
+  }
+
+  private RecipePlay planRecipe(Turn turn, PlayerId target) {
+    RecipePlanner planner = parts.recipePlanner();
+    long tick = turn.snapshot().tick();
+    LinearPosterior model = planner.current(turn.group().memory().recipeModel(target), tick);
+    PlayerTraits traits = parts.traitLedger().traitsOf(target);
+    return planner.plan(new RecipeRequest(model, traits, turn.snapshot(), target));
+  }
+
   // The plan keeps the strategy's roles as starting roles, so a recovered mob returns to them.
-  private void startPlan(Turn turn, GroupStrategy strategy, PlayerId target) {
-    double targetMaxHealth = turn.snapshot().player(target).orElseThrow().maxHealth();
-    Plan plan =
-        turn.lifecycle()
-            .startPlan(
-                new PlanStart(
-                    strategy.id(),
-                    target,
-                    strategy.assignRoles(turn.snapshot(), target),
-                    targetMaxHealth,
-                    turn.snapshot().tick(),
-                    Optional.empty()));
+  private static void startPlan(Turn turn, GroupStrategy strategy, PlayerId target) {
+    beginPlan(
+        turn,
+        new PlanStart(
+            strategy.id(),
+            target,
+            strategy.assignRoles(turn.snapshot(), target),
+            targetMaxHealth(turn, target),
+            turn.snapshot().tick(),
+            Optional.empty()));
+  }
+
+  private static void startRecipePlan(Turn turn, RecipePlay play, PlayerId target) {
+    beginPlan(
+        turn,
+        new PlanStart(
+            RecipePlanner.STRATEGY_ID,
+            target,
+            play.roles(),
+            targetMaxHealth(turn, target),
+            turn.snapshot().tick(),
+            Optional.of(play)));
+  }
+
+  private static double targetMaxHealth(Turn turn, PlayerId target) {
+    return turn.snapshot().player(target).orElseThrow().maxHealth();
+  }
+
+  private static void beginPlan(Turn turn, PlanStart start) {
+    Plan plan = turn.lifecycle().startPlan(start);
     turn.lifecycle().recordGroupHealth(healthOf(turn.snapshot()));
     turn.draft().plan(plan.id());
   }
@@ -195,10 +234,21 @@ public final class Brain {
 
   private void retreatLowHealth(Turn turn) {
     for (MobSnapshot mob : turn.snapshot().mobs()) {
-      if (parts.retreatRule().shouldRetreat(mob)) {
+      if (shouldRetreat(turn, mob)) {
         startRetreat(turn, mob);
       }
     }
+  }
+
+  // CT-30: a recipe plan brings its own retreat threshold; the group retreat (CT-13) stays fixed.
+  private boolean shouldRetreat(Turn turn, MobSnapshot mob) {
+    Optional<RecipePlay> recipe = currentPlan(turn).recipe();
+    if (recipe.isPresent()) {
+      return parts
+          .retreatRule()
+          .shouldRetreatAt(mob, recipe.get().recipe().retreatHealthFraction());
+    }
+    return parts.retreatRule().shouldRetreat(mob);
   }
 
   private Outcome execute(Turn turn) {
@@ -236,13 +286,13 @@ public final class Brain {
       returnFromRetreat(turn, mob);
       return;
     }
-    if (!retreating && parts.retreatRule().shouldRetreat(mob)) {
+    if (!retreating && shouldRetreat(turn, mob)) {
       startRetreat(turn, mob);
     }
   }
 
   private void assignJoiningRole(Turn turn, MobSnapshot mob) {
-    if (parts.retreatRule().shouldRetreat(mob)) {
+    if (shouldRetreat(turn, mob)) {
       startRetreat(turn, mob);
       return;
     }
@@ -388,7 +438,7 @@ public final class Brain {
     if (planned == Role.RETREAT) {
       return retreatOrder(turn, mob, Optional.of(plan.target()));
     }
-    Role role = phasedRole(turn, planned);
+    Role role = phasedRole(turn, mob, planned);
     if (role == Role.FALL_BACK || role == Role.HOLD_FIRE) {
       return new RoleAssignment(
           mob.id(), role, Optional.of(plan.target()), Optional.empty(), false, Optional.empty());
@@ -399,14 +449,34 @@ public final class Brain {
     return fighterOrder(turn, mob, role);
   }
 
-  // CT-23: in a volley plan the phase decides what each planned role does right now; the plan
-  // itself keeps PRESS and SHOOT, so retreats and group-retreat checks are unaffected.
-  private Role phasedRole(Turn turn, Role planned) {
+  // The plan itself keeps PRESS and SHOOT, so retreats and group-retreat checks are unaffected by
+  // the phases: CT-30 holds a recipe's reserve back until its delay, and CT-23 lets the volley
+  // phase decide what each planned role does right now.
+  private Role phasedRole(Turn turn, MobSnapshot mob, Role planned) {
     Plan plan = currentPlan(turn);
-    if (!plan.strategy().equals(VolleyStrategy.ID)) {
+    long ageTicks = plan.ageTicks(turn.snapshot().tick());
+    if (planned == Role.PRESS && isHeldInReserve(plan, mob.id(), ageTicks)) {
+      return Role.FALL_BACK;
+    }
+    if (!isVolleyPlan(plan)) {
       return planned;
     }
-    VolleyPhase phase = volleyCycle.phaseAt(plan.ageTicks(turn.snapshot().tick()));
+    return volleyRole(planned, volleyCycle.phaseAt(ageTicks));
+  }
+
+  private static boolean isHeldInReserve(Plan plan, MobId mob, long ageTicks) {
+    return plan.recipe()
+        .filter(play -> play.reserve().contains(mob))
+        .filter(play -> ageTicks < play.recipe().reserveDelayTicks())
+        .isPresent();
+  }
+
+  private static boolean isVolleyPlan(Plan plan) {
+    boolean isVolleyRecipe = plan.recipe().map(play -> play.recipe().volley()).orElse(false);
+    return plan.strategy().equals(VolleyStrategy.ID) || isVolleyRecipe;
+  }
+
+  private static Role volleyRole(Role planned, VolleyPhase phase) {
     if (planned == Role.PRESS) {
       return phase == VolleyPhase.PRESSING ? Role.PRESS : Role.FALL_BACK;
     }

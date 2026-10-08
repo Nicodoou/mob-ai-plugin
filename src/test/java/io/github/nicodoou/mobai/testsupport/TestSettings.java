@@ -23,6 +23,14 @@ public final class TestSettings {
   private TestSettings() {}
 
   public static MobAiSettings defaults() {
+    return withPlanner(PlannerKind.STRATEGIES);
+  }
+
+  public static MobAiSettings withRecipes() {
+    return withPlanner(PlannerKind.RECIPES);
+  }
+
+  private static MobAiSettings withPlanner(PlannerKind planner) {
     return new MobAiSettings(
         new GroupSettings(12, 10, 24.0),
         new MemorySettings(12_000, 0.7, 0.5),
@@ -36,7 +44,7 @@ public final class TestSettings {
         new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50, 12.0, 3.0),
         new VolleySettings(60, 20, 30, 1.5),
         new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
-        new LearningSettings(PlannerKind.STRATEGIES, 0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000));
+        new LearningSettings(planner, 0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000));
   }
 
   public static PlanScoring scoring() {

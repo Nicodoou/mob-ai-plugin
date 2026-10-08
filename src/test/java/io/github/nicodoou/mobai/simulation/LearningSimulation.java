@@ -34,7 +34,9 @@ import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.strategy.StrategyCatalog;
+import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
 import io.github.nicodoou.mobai.domain.target.KillTimeEstimator;
 import io.github.nicodoou.mobai.domain.target.SpiderTargetRule;
 import io.github.nicodoou.mobai.domain.target.TargetSelector;
@@ -178,7 +180,9 @@ final class LearningSimulation {
               new RetreatRule(settings::plan, settings::retreat),
               new RegroupRule(settings::retreat, regroupWindow),
               regroupWindow,
-              new RallyPointRule(settings::retreat)));
+              new RallyPointRule(settings::retreat),
+              new RecipePlanner(() -> settings, brainRandom, new CombatGeometry()),
+              new TraitLedger(settings::learning)));
     }
 
     private void advance() {

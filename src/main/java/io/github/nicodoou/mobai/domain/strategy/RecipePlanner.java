@@ -10,6 +10,7 @@ import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
+import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
@@ -31,6 +32,9 @@ import java.util.stream.Collectors;
  * Plans with learned recipes (CT-30): the current model, the recipe and its roles, and learning.
  */
 public final class RecipePlanner {
+  // The id recipe plans carry where a strategy id is expected (status, debug log).
+  public static final StrategyId STRATEGY_ID = new StrategyId("RECIPE");
+
   private static final int BIAS_INDEX = 0;
   private static final double HALF = 0.5;
 
