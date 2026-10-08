@@ -128,9 +128,9 @@ learning:
   # Exploración del sorteo: en el juego y en el modo entrenamiento.
   exploration-scale: 1.0
   training-exploration-scale: 2.0
-  # Cuándo entra la reserva de zombies (ticks) y umbral máximo de retirada que se prueba.
+  # Cuándo entra la reserva de zombies (ticks) y umbral máximo de retirada que se prueba (por debajo de recovery-health-fraction).
   min-reserve-delay-ticks: 20
   max-reserve-delay-ticks: 400
-  max-retreat-health-fraction: 0.6
+  max-retreat-health-fraction: 0.5
   # Vida media de lo que se recuerda de cada jugador (escudo, arco, armadura).
   traits-half-life-ticks: 6000

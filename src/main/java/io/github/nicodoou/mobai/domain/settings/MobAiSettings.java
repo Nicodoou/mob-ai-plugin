@@ -31,6 +31,7 @@ public record MobAiSettings(
     Objects.requireNonNull(success, "MobAiSettings.success");
     Objects.requireNonNull(learning, "MobAiSettings.learning");
     requireRecoveryAboveRetreat(plan, retreat);
+    requireRecoveryAboveLearnedRetreat(learning, retreat);
   }
 
   // Without this margin a mob would change role on every decision.
@@ -41,6 +42,18 @@ public record MobAiSettings(
               + retreat.recoveryHealthFraction()
               + " <= "
               + plan.retreatHealthFraction());
+    }
+  }
+
+  // A recipe could otherwise retreat a mob at the same health that sends it back to fight.
+  private static void requireRecoveryAboveLearnedRetreat(
+      LearningSettings learning, RetreatSettings retreat) {
+    if (learning.maxRetreatHealthFraction() >= retreat.recoveryHealthFraction()) {
+      throw new IllegalArgumentException(
+          "LearningSettings.maxRetreatHealthFraction must be below RetreatSettings.recoveryHealthFraction, got "
+              + learning.maxRetreatHealthFraction()
+              + " >= "
+              + retreat.recoveryHealthFraction());
     }
   }
 }
