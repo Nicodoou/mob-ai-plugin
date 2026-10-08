@@ -116,3 +116,29 @@ Lo que se ve al probar en el juego cada WP de la etapa E6, con los logs y las tr
 **Anotado:**
 - regla del manual: al mergear un WP que suma mensajes, actualizar también el `messages.yml` de prueba;
 - decisión abierta: que una clave de mensaje que falta use el texto del jar con un aviso, en vez de deshabilitar el plugin. Los servers reales van a pasar por esto en cada actualización.
+
+## Test fuerte — 8 oct 2026, corrida 5
+
+**Log (desde el tick 1.244.845; unos 4.000 ticks, 3,4 minutos).** Hubo 5 planes del mismo grupo, `b586bb1e`:
+
+| Plan | Estrategia | Cierre | Éxito | Daño / rapidez / supervivencia | Peligro | Daño hecho |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | DIRECT_ASSAULT | TIMED_OUT | 0,43 | 0,52 / 0,26 / 0,60 | 0,00 | 5,2 |
+| 2 | PIN_AND_SHOOT | GROUP_RETREATED | 0,43 | 0,21 / 0,23 / 0,64 | 0,76 | 2,1 |
+| 3 | FLANK | TIMED_OUT | **0,64** | 0,14 / 0,07 / **1,00** | 1,00 | 1,4 |
+| 4 | FLANK | GROUP_RETREATED | 0,28 | 0,00 / 0,00 / 0,48 | 0,95 | 0,0 |
+| 5 | DIRECT_ASSAULT | GROUP_RETREATED | 0,22 | 0,14 / 0,13 / 0,27 | 1,00 | 1,4 |
+
+- **El peligro funciona:** pasó de 0 a 0,76 con un solo plan. En ese plan el grupo perdió unos 80 de vida y le hizo 5,2 de daño a Nico.
+- **Es poco para ver aprendizaje:** 5 planes, cuando hacen falta entre 10 y 20.
+- **Tiros de esqueleto:** 9 aciertos y 4 parciales en 48 (19 %), 3 a aliados (todos anticipados) y 2 con Nico invulnerable. Uno de los esqueletos disparó 32 veces.
+- **Zombies:**
+  - el esquivo pegó 3 veces y 1 parcial;
+  - el frontal, 2 y 1 parcial;
+  - el paciente, 1.
+- **Arañas:** 3 mordidas, todas con Nico invulnerable.
+- **Andanada:** ningún plan `VOLLEY`.
+
+### Hallazgo D-01 — Sobrevivir sin pelear puntúa como el mejor plan
+
+El plan 3 sacó el mejor éxito (0,64) con casi nada de daño (1,4), porque contra un jugador muy bueno la supervivencia pesa 0,6 y la suma premia quedarse lejos. Con más planes, el grupo aprendería a no pelear. **Es un problema de diseño del CT-27, no un bug del código.** Va a Nico como decisión.
