@@ -690,3 +690,25 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Opinión del código.**
 - **Lo bueno:** se midió antes de tocar el juego, con un control sin rasgos que muestra por qué hacen falta.
 - **Lo flojo y el riesgo principal:** la puerta mide el modelo contra un mundo sintético hecho con las mismas formas (parábolas, interacciones elegidas) que el modelo sabe representar, así que el PASS es optimista por construcción. La validación real es en el juego: la puerta G1 con Nico y sus testers, comparando `planner: recipes` contra `strategies`.
+
+## WP-33D — Rasgos del jugador y configuración `learning` (PR #63, Sonnet; especificado en la nube)
+
+**Qué hizo.**
+- **Foto del jugador:** suma `holdingRanged`, arco o ballesta en la mano principal, leído por `VersionTranslator`.
+- **`TraitLedger`:** promedio con olvido por tiempo de escudo, arma a distancia y armadura de cada jugador. Ignora una segunda observación en el mismo tick, y tiene `capture` y `restore`.
+- **Sección `learning`:** el conmutador `planner` (por defecto `STRATEGIES`) y los números calibrados en el WP-33C.
+- Nadie lo usa todavía: llega con el WP-33E.
+
+**Revisión local.**
+- Rebase sobre main; build y CI en verde.
+- Mis roturas mordieron:
+  - sin la guarda del mismo tick → 1 prueba;
+  - el peso sin olvido → 2.
+- `config.yml` de prueba con la sección `learning`.
+
+**Opinión del código.**
+- **Lo bueno:** el promedio con olvido es simple y está probado, y el conmutador deja el juego igual hasta decidir.
+- **Lo flojo:**
+  - "a distancia" solo mira la mano principal (una ballesta en la otra mano no cuenta);
+  - "escudo" se muestrea en cada decisión, no en cada tick.
+- **Riesgo:** ninguno nuevo en el juego, porque todavía no decide nada.
