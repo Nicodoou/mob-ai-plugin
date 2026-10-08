@@ -35,13 +35,20 @@ public final class PlanScoring {
         damageScore(plan, reason), speedScore(plan, reason, endTick), survivalScore(plan));
   }
 
+  // CT-27, D-01: survival scales the attack instead of adding to it, so a plan that never fights
+  // scores nothing however safe it kept the group.
   public double successOf(PlanScores scores) {
     SuccessWeights weights = SuccessWeights.forDanger(success, danger);
-    double weighted =
-        weights.damage() * scores.damage()
-            + weights.speed() * scores.speed()
-            + weights.survival() * scores.survival();
-    return Math.min(1, weighted);
+    double kept = 1 - weights.survival() + weights.survival() * scores.survival();
+    return Math.min(1, attackOf(scores, weights) * kept);
+  }
+
+  private static double attackOf(PlanScores scores, SuccessWeights weights) {
+    double attackWeight = weights.damage() + weights.speed();
+    if (attackWeight == 0) {
+      return 1;
+    }
+    return (weights.damage() * scores.damage() + weights.speed() * scores.speed()) / attackWeight;
   }
 
   public double danger() {
