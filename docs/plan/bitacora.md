@@ -568,3 +568,22 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Opinión del código.**
 - **Lo bueno:** el costo es por tiro y no por tick, y la proyección usa la misma flecha que se dispara.
 - **Lo flojo:** la velocidad de un mob que recién arranca o frena es engañosa por un tick o dos, y `clearLane` (elegir puesto) sigue mirando posiciones quietas.
+
+## WP-25 — Arañas: mordida con lentitud (PR #55, Sonnet; especificado en la nube)
+
+**Qué hizo.**
+- **`BiteSlowness`,** puro en el dominio: una mordida de araña que acierta (`Hit`) aplica Lentitud con el nivel y la duración de `spider`. No renueva ni acumula si el jugador ya tiene Lentitud.
+- **`EffectGrant`:** el efecto a aplicar.
+- **`HitEffects`:** lo aplica en el adaptador, con `VersionTranslator.potionEffectOf(EffectGrant)`.
+- **`MeleeAttacker`:** después de clasificar el golpe, llama a la traza y a los efectos (`StrikeFollowUps`).
+
+**Revisión.**
+- La nube corrió las 12 pruebas y 6 roturas sobre el dominio.
+- En local: build completo en verde y dos roturas mías, que mordieron (2 pruebas cada una):
+  - renovar con Lentitud I activa;
+  - aplicar también con golpe parcial.
+- CI en verde.
+
+**Opinión del código.**
+- **Lo bueno:** la regla es pura y chica, y el efecto pasa por el traductor.
+- **Lo flojo:** `StrikeFollowUps` agrupa dos cosas distintas para respetar los 3 parámetros. El efecto en el jugador se verifica en el juego.

@@ -11,7 +11,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 - **La sesión local** hace el build completo, la revisión local de cada PR (roturas incluidas), el merge, el server de prueba y los logs de Nico.
 - Antes de cada push, rebase. `estado.md` lo edita la sesión que cambia el estado del WP.
 
-1. **Local, ahora:** revisión local y merge del WP-25 (#55).
+1. **Local:** WP-25 (#55) revisado y mergeado el 8 oct.
 2. **Nube, ahora:** especificar y lanzar, en este orden (los dos aprobados por Nico el 8 oct):
    - **WP-31: `/mobai reinforce <grupo>`.** Comando de prueba que suma el set de prueba (el mismo que `spawngroup`: 4 zombies, 3 esqueletos y las arañas) a un grupo existente y **conserva su memoria**. Respeta `group.max-size`; los que no entran no se crean. Sirve para que Nico siga peleando contra un grupo que ya lo conoce cuando le quedan 1 o 2 vivos. Mirá `GroupSpawner` (ya usa `recruitMob.execute(request)` para sumar a un grupo) y `SpawnGroupCommand`. Sonnet.
    - **WP-32 con CT-29: punto de reunión al reagruparse.** Hoy el reagrupamiento (CT-07) es "cada uno se retira y se cura", y el grupo no se vuelve a juntar. Diseño aprobado:
@@ -79,7 +79,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30D | La supervivencia multiplica | E6 | mergeado | Sonnet | [#54](https://github.com/Nicodoou/mob-ai-plugin/pull/54) | D-01 del test fuerte, aprobado por Nico |
 | WP-30C | Retirada aprendida | E6 | pendiente | Opus | — | CT-28 |
-| WP-25 | Arañas: mordida con lentitud | E6 | en revisión | Sonnet | [#55](https://github.com/Nicodoou/mob-ai-plugin/pull/55) | La lentitud solo con acierto, sin renovar ni acumular. Revisado en la nube: código igual al WP, CI verde, las 12 pruebas y las 6 roturas (4 del WP y 2 propias) corridas con JDK 21 sobre el dominio. Falta la revisión local (build completo) y el merge |
+| WP-25 | Arañas: mordida con lentitud | E6 | mergeado | Sonnet | [#55](https://github.com/Nicodoou/mob-ai-plugin/pull/55) | Especificado y lanzado desde la nube; revisión local y merge por Opus local |
 | WP-26 | Consulta de memoria | E6 | mergeado | Sonnet | [#52](https://github.com/Nicodoou/mob-ai-plugin/pull/52) | `/mobai memory` con el peligro; las métricas ya las cubre el log de debug |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
 
