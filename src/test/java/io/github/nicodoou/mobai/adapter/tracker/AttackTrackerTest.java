@@ -377,7 +377,12 @@ class AttackTrackerTest {
         .lifecycle()
         .startPlan(
             new PlanStart(
-                new StrategyId("DIRECT_ASSAULT"), player, Map.of(mob(1), Role.PRESS), 20.0, 100));
+                new StrategyId("DIRECT_ASSAULT"),
+                player,
+                Map.of(mob(1), Role.PRESS),
+                20.0,
+                100,
+                Optional.empty()));
   }
 
   private static MobId mob(long n) {

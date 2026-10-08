@@ -32,24 +32,28 @@ public final class BrainFixture {
   public static final int CATALOG_SPIDERS = 2;
   private static final int SPARE_INDEXES = 1000;
 
-  private final MobAiSettings settings = TestSettings.defaults();
-  private final RegroupWindow regroupWindow = new RegroupWindow(settings::retreat);
+  private final MobAiSettings settings;
+  private final RegroupWindow regroupWindow;
   private final Group group;
+  private final BrainParts parts;
   private final Brain brain;
 
-  private BrainFixture(SelectionPolicyType policy, RandomSource random) {
+  private BrainFixture(SelectionPolicyType policy, RandomSource random, MobAiSettings settings) {
+    this.settings = settings;
+    this.regroupWindow = new RegroupWindow(settings::retreat);
     this.group =
         new Group(
             GROUP_ID,
             policy,
             new GroupKnowledge(
                 new GroupMemory(settings::memory), new ThreatLedger(settings::target)));
-    this.brain = new Brain(() -> settings, parts(random));
+    this.parts = BrainParts.standard(() -> settings, random, regroupWindow);
+    this.brain = new Brain(() -> settings, parts);
   }
 
   /** Random policy with every index fixed by hand. */
   public static BrainFixture scripted(ScriptedRandomSource random) {
-    return new BrainFixture(SelectionPolicyType.RANDOM, random);
+    return new BrainFixture(SelectionPolicyType.RANDOM, random, TestSettings.defaults());
   }
 
   /** Random policy that picks the given strategy index and then the first attack every time. */
@@ -60,7 +64,18 @@ public final class BrainFixture {
   }
 
   public static BrainFixture seeded(long seed) {
-    return new BrainFixture(SelectionPolicyType.THOMPSON_SAMPLING, new SeededRandomSource(seed));
+    return new BrainFixture(
+        SelectionPolicyType.THOMPSON_SAMPLING,
+        new SeededRandomSource(seed),
+        TestSettings.defaults());
+  }
+
+  /** Thompson sampling with the recipe planner switched on (CT-30). */
+  public static BrainFixture seededWithRecipes(long seed) {
+    return new BrainFixture(
+        SelectionPolicyType.THOMPSON_SAMPLING,
+        new SeededRandomSource(seed),
+        TestSettings.withRecipes());
   }
 
   public Group group() {
@@ -73,6 +88,10 @@ public final class BrainFixture {
 
   public Brain brain() {
     return brain;
+  }
+
+  public BrainParts parts() {
+    return parts;
   }
 
   public BrainResult decide(GroupSnapshot snapshot) {
@@ -136,9 +155,5 @@ public final class BrainFixture {
     List<MobSnapshot> copy = new ArrayList<>(mobs);
     copy.set(index, mob);
     return List.copyOf(copy);
-  }
-
-  private BrainParts parts(RandomSource random) {
-    return BrainParts.standard(() -> settings, random, regroupWindow);
   }
 }

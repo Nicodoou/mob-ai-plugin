@@ -126,7 +126,8 @@ class TraceLevelsTest {
             0,
             20.0,
             TICK,
-            TICK);
+            TICK,
+            Optional.empty());
     return new TraceEvent.PlanEvent(groupId(1), TICK, plan);
   }
 

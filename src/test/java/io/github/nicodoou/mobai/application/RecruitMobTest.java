@@ -20,6 +20,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.testsupport.SequentialGroupIdSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -148,7 +149,12 @@ class RecruitMobTest {
         .lifecycle()
         .startPlan(
             new PlanStart(
-                new StrategyId("DIRECT_ASSAULT"), player, Map.of(mob(1), Role.PRESS), 20.0, 100));
+                new StrategyId("DIRECT_ASSAULT"),
+                player,
+                Map.of(mob(1), Role.PRESS),
+                20.0,
+                100,
+                Optional.empty()));
 
     RecruitResult result =
         recruitMob.execute(RecruitRequest.near(mob(2), MobKind.ZOMBIE, groupId(1)));

@@ -14,6 +14,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +36,9 @@ class PlanScoringTest {
     roles.put(MOB_1, Role.PRESS);
     roles.put(MOB_2, Role.FLANK);
     return Plan.start(
-        PLAN_ID, new PlanStart(FLANK_STRATEGY, ALICE, roles, TARGET_MAX_HEALTH, START_TICK));
+        PLAN_ID,
+        new PlanStart(
+            FLANK_STRATEGY, ALICE, roles, TARGET_MAX_HEALTH, START_TICK, Optional.empty()));
   }
 
   private static Map<MobId, Double> health(double mob1, double mob2) {
@@ -132,7 +135,9 @@ class PlanScoringTest {
   void aPlanWithoutMobsLosesNobody() {
     Plan plan =
         Plan.start(
-            PLAN_ID, new PlanStart(FLANK_STRATEGY, ALICE, Map.of(), TARGET_MAX_HEALTH, START_TICK));
+            PLAN_ID,
+            new PlanStart(
+                FLANK_STRATEGY, ALICE, Map.of(), TARGET_MAX_HEALTH, START_TICK, Optional.empty()));
 
     PlanScores scores = scoring.scoresOf(plan, PlanEndReason.TIMED_OUT, 1_600);
 

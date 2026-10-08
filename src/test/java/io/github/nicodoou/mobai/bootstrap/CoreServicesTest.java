@@ -24,6 +24,7 @@ import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.SeededRandomSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +42,9 @@ class CoreServicesTest {
     group.lifecycle().beginPlanning();
     group
         .lifecycle()
-        .startPlan(new PlanStart(STRATEGY, PLAYER, Map.of(mob(1), Role.PRESS), 20.0, 100));
+        .startPlan(
+            new PlanStart(
+                STRATEGY, PLAYER, Map.of(mob(1), Role.PRESS), 20.0, 100, Optional.empty()));
 
     core.recordPlayerDeath().execute(PLAYER, 160);
 
@@ -56,7 +59,9 @@ class CoreServicesTest {
     group.lifecycle().beginPlanning();
     group
         .lifecycle()
-        .startPlan(new PlanStart(STRATEGY, PLAYER, Map.of(mob(1), Role.PRESS), 20.0, 100));
+        .startPlan(
+            new PlanStart(
+                STRATEGY, PLAYER, Map.of(mob(1), Role.PRESS), 20.0, 100, Optional.empty()));
     group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, TestSettings.scoring());
     group.lifecycle().finishEvaluation();
 

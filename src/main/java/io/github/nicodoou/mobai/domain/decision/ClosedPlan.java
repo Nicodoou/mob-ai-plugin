@@ -4,7 +4,9 @@ import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
 import java.util.Objects;
+import java.util.Optional;
 
 public record ClosedPlan(
     PlanId id,
@@ -17,7 +19,8 @@ public record ClosedPlan(
     double groupHealthLost,
     double damageDealt,
     long startTick,
-    long endTick) {
+    long endTick,
+    Optional<RecipePlay> recipe) {
 
   public ClosedPlan {
     Objects.requireNonNull(id, "ClosedPlan.id");
@@ -25,6 +28,7 @@ public record ClosedPlan(
     Objects.requireNonNull(target, "ClosedPlan.target");
     Objects.requireNonNull(reason, "ClosedPlan.reason");
     Objects.requireNonNull(scores, "ClosedPlan.scores");
+    Objects.requireNonNull(recipe, "ClosedPlan.recipe");
     if (!(success >= 0 && success <= 1)) {
       throw new IllegalArgumentException(
           "ClosedPlan.success must be between 0.0 and 1.0, got " + success);

@@ -81,7 +81,8 @@ class DescribeGroupTest {
   }
 
   private PlanStart directAssault() {
-    return new PlanStart(DIRECT_ASSAULT, player, Map.of(mob(1), Role.PRESS), 20, 100);
+    return new PlanStart(
+        DIRECT_ASSAULT, player, Map.of(mob(1), Role.PRESS), 20, 100, Optional.empty());
   }
 
   private Group groupWithMember(long n) {

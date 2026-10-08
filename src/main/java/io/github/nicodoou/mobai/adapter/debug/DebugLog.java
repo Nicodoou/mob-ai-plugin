@@ -2,6 +2,9 @@ package io.github.nicodoou.mobai.adapter.debug;
 
 import io.github.nicodoou.mobai.domain.attack.AttackFacts;
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
+import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -30,6 +33,10 @@ public final class DebugLog {
   }
 
   static String planLine(TraceEvent.PlanEvent event) {
+    return strategyPart(event) + event.plan().recipe().map(DebugLog::recipePart).orElse("");
+  }
+
+  private static String strategyPart(TraceEvent.PlanEvent event) {
     ClosedPlan plan = event.plan();
     return String.format(
         Locale.ROOT,
@@ -47,6 +54,25 @@ public final class DebugLog {
         plan.scores().survival(),
         plan.danger(),
         plan.damageDealt());
+  }
+
+  private static String recipePart(RecipePlay play) {
+    PlanRecipe recipe = play.recipe();
+    PlayerTraits traits = play.traits();
+    return String.format(
+        Locale.ROOT,
+        " recipe=z%d/%d/%d s%d/%d volley=%s delay=%d retreat=%.2f traits=%.2f/%.2f/%.2f",
+        recipe.zombies().press(),
+        recipe.zombies().flank(),
+        recipe.zombies().reserve(),
+        recipe.spiders().press(),
+        recipe.spiders().flank(),
+        recipe.volley(),
+        recipe.reserveDelayTicks(),
+        recipe.retreatHealthFraction(),
+        traits.shield(),
+        traits.ranged(),
+        traits.armor());
   }
 
   static String attackLine(TraceEvent.AttackEvent event) {

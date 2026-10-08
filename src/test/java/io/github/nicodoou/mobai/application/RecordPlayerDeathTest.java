@@ -6,6 +6,7 @@ import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.event.DomainEvent;
 import io.github.nicodoou.mobai.domain.event.DomainEventPublisher;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
+import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.group.GroupState;
@@ -20,11 +21,14 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
+import io.github.nicodoou.mobai.testsupport.SeededRandomSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +43,13 @@ class RecordPlayerDeathTest {
   private final RecordPlayerDeath recordPlayerDeath;
 
   RecordPlayerDeathTest() {
-    publisher.subscribe(PlanClosed.class, new ClosePlan(activeGroups)::execute);
+    publisher.subscribe(
+        PlanClosed.class,
+        new ClosePlan(
+                activeGroups,
+                new RecipePlanner(
+                    TestSettings::defaults, new SeededRandomSource(1), new CombatGeometry()))
+            ::execute);
     publisher.subscribe(DomainEvent.class, published::add);
     recordPlayerDeath =
         new RecordPlayerDeath(
@@ -109,7 +119,9 @@ class RecordPlayerDeathTest {
     group.lifecycle().beginPlanning();
     group
         .lifecycle()
-        .startPlan(new PlanStart(STRATEGY, player, Map.of(mob(mobNumber), Role.PRESS), 20.0, 100));
+        .startPlan(
+            new PlanStart(
+                STRATEGY, player, Map.of(mob(mobNumber), Role.PRESS), 20.0, 100, Optional.empty()));
     return group;
   }
 

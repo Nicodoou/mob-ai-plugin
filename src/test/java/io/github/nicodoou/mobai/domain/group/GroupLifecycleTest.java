@@ -35,7 +35,7 @@ class GroupLifecycleTest {
   private static final Vec3 RALLY_POINT = new Vec3(14, 64, 0);
 
   private final PlanStart start =
-      new PlanStart(FLANK_STRATEGY, ALICE, Map.of(MOB_1, Role.PRESS), 20, 100);
+      new PlanStart(FLANK_STRATEGY, ALICE, Map.of(MOB_1, Role.PRESS), 20, 100, Optional.empty());
   private Group group;
 
   @BeforeEach
@@ -118,7 +118,9 @@ class GroupLifecycleTest {
   @Test
   void startPlanRejectsRolesForNonMembers() {
     MobId stranger = new MobId(new UUID(9, 9));
-    PlanStart foreign = new PlanStart(FLANK_STRATEGY, ALICE, Map.of(stranger, Role.PRESS), 20, 100);
+    PlanStart foreign =
+        new PlanStart(
+            FLANK_STRATEGY, ALICE, Map.of(stranger, Role.PRESS), 20, 100, Optional.empty());
     group.lifecycle().beginPlanning();
 
     assertThatThrownBy(() -> group.lifecycle().startPlan(foreign))
@@ -163,7 +165,8 @@ class GroupLifecycleTest {
                 0,
                 5.0,
                 100,
-                700));
+                700,
+                Optional.empty()));
     assertThat(group.lifecycle().committedTarget()).contains(ALICE);
     assertThat(group.drainEvents()).containsExactly(new PlanClosed(closed));
   }

@@ -12,6 +12,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,8 @@ class PlanTest {
   }
 
   private static Plan newPlan() {
-    return Plan.start(PLAN_ID, new PlanStart(FLANK_STRATEGY, ALICE, twoRoles(), 20, 100));
+    return Plan.start(
+        PLAN_ID, new PlanStart(FLANK_STRATEGY, ALICE, twoRoles(), 20, 100, Optional.empty()));
   }
 
   @Test
@@ -140,7 +142,8 @@ class PlanTest {
   @Test
   void rolesCannotBeChangedFromOutside() {
     Map<MobId, Role> roles = twoRoles();
-    Plan plan = Plan.start(PLAN_ID, new PlanStart(FLANK_STRATEGY, ALICE, roles, 20, 100));
+    Plan plan =
+        Plan.start(PLAN_ID, new PlanStart(FLANK_STRATEGY, ALICE, roles, 20, 100, Optional.empty()));
 
     roles.put(MOB_1, Role.SHOOT);
 
