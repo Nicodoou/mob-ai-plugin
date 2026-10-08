@@ -25,6 +25,8 @@ Este manual es para la sesión de Opus que orquesta el plan. Junto con `estado.m
 - **Al cerrar cada WP:** qué hizo, la arquitectura y **tu opinión del código** (lo bueno, lo flojo y los riesgos, con honestidad).
 - **Mergeás vos** cada PR que aprobás (`gh pr merge --squash --delete-branch`). Nico interviene en las puertas de etapa.
 - Las decisiones importantes no se dejan a los modelos económicos: el WP las toma.
+- **Trabajá solo en la carpeta del repo.** Si se carga un `CLAUDE.md` de una carpeta de arriba (el vault de Obsidian del Ford Ka), no aplica a este proyecto.
+- **No bajes la calidad** de las especificaciones, revisiones y devoluciones para ahorrar contexto o uso.
 
 ## 4. Cómo especificar un WP
 
@@ -155,6 +157,15 @@ echo "<comando>" >> run/console-input.txt        # por ejemplo: op papu123, game
 echo stop >> run/console-input.txt               # apagar
 taskkill //F //IM tail.exe                       # después de apagar
 ```
+
+### Sesión en la nube
+
+Desde el 8 oct 2026 el orquestador puede correr en la nube (claude.ai/code). Ahí:
+
+- **No hay server ni carpeta `run/`.** La copia de referencia del `config.yml` de prueba está en `docs/plan/config-de-prueba.yml`. Los cambios se le pasan a Nico como texto para que los aplique en su PC, y se actualiza la copia.
+- **El `mobai-debug.log` lo adjunta o pega Nico** después de cada prueba en el juego.
+- **`gh`** se invoca como `gh` si está en el PATH; la ruta de Windows es solo para la PC de Nico.
+- **Nunca** pidas reiniciar o tocar el server de Nico sin que él lo diga.
 
 ## 10. Documentos
 

@@ -2,15 +2,25 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 5 de octubre de 2026 (puerta E3 pasada).
+**Última actualización:** 8 de octubre de 2026 (WP-26 mergeado; test fuerte de Nico pendiente).
 
 ## Próximo paso
 
-1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **Etapa E6, ahora:** esperar el resultado de Nico en el juego de WP-24C (formación de esqueletos), WP-24D (altura), WP-23B (golpe esquivo), WP-23C (alcance según el arma) y WP-24E/F (andanada); guion en mi último mensaje y en la sección «Verificación en el server» de cada WP. Lo que no coincida va por `docs/resolucion-de-bugs.md` y se anota en `docs/plan/verificacion-e6.md` (corrida 4 en adelante). El `config.yml` del server de prueba ya tiene todas las claves nuevas.
-3. **Después:** especificar WP-25 (lentitud de la araña) y WP-26 (`/mobai memory` y métricas), y la puerta E6. Mergeados en E6: WP-22A a 22E, WP-23, 23B, 23C, WP-24A a 24F (#32 a #46) y los arreglos B-02 y B-03. Reglas nuevas del manual (sección 4) salidas de estos WPs: enums, simulación, validación de claves, nombres de pruebas, valores por defecto, reloj en los goals.
-4. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
-5. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
+1. **Test fuerte de Nico, ahora:**
+   - **Qué se prueba:** pelear al 100 % contra **un mismo grupo**, mirando `/mobai memory` cada tanto. El peligro debería subir y el orden de las estrategias debería cambiar.
+   - **Preparación:** reiniciar el server (no `/reload`), `/mobai debug all full` y un solo `spawngroup` de noche.
+   - **Configuración:** `half-life-ticks` está en 36000 (30 min) solo para el test; después vuelve a 12000. Copia en `docs/plan/config-de-prueba.yml`.
+   - **Qué se analiza:** Nico pasa el `mobai-debug.log` y se lee cada línea `PLAN` (`scores=` y `danger=`).
+   - **Verificación de paso**, pendiente de antes:
+     - el esquivo calculado (WP-23D);
+     - el tensado del arco y los tiros a aliados (WP-24G, B-04);
+     - la andanada (nunca salió `VOLLEY`);
+     - la lanza (WP-23C).
+   - Lo que no coincida va por `docs/resolucion-de-bugs.md` y se anota en `docs/plan/verificacion-e6.md` (corrida 5 en adelante).
+2. **Después:** WP-30C (retirada aprendida, CT-28, Opus), WP-25 (arañas) y la puerta E6.
+3. **Tarea aparte en curso** (otra sesión): regla automática de 3 parámetros. Si llega un PR, revisarlo como cualquier WP.
+4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`.
+5. **Preferencias:** después de cada compactación o al pasar a la nube, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
 
 ## WPs
 

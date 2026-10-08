@@ -1,0 +1,112 @@
+# Copia del config.yml del server de prueba (run/plugins/MobAI/config.yml, que Git ignora).
+# Tomada el 8 oct 2026 para el test fuerte: half-life-ticks en 36000 (30 min); volver a 12000 después.
+# Si cambiás uno, cambiá el otro.
+# MobAI: configuración. Los valores son los del catálogo del MVP.
+# Los tiempos van en ticks (20 ticks = 1 segundo) y las distancias, en bloques.
+# Después de editar, aplicá los cambios con /mobai reload.
+
+group:
+  # Mobs por grupo como máximo.
+  max-size: 12
+  # Cada cuántos ticks decide el cerebro de cada grupo.
+  decision-interval-ticks: 10
+  # Distancia a la que un grupo ve a los jugadores.
+  detection-radius-blocks: 24.0
+
+memory:
+  # Ticks para que lo aprendido pese la mitad (12.000 = 10 minutos de server prendido).
+  half-life-ticks: 36000
+  # Entre 0 y 1: más alto, aprende más rápido (1,0 calibrado en la simulación).
+  learning-speed: 1.0
+  # Cuánto vale un golpe bloqueado con escudo frente a uno que entra (0 a 1).
+  partial-hit-weight: 0.5
+
+selection:
+  # THOMPSON_SAMPLING, EPSILON_GREEDY, EXPLORE_FIRST o RANDOM (entre comillas).
+  default-policy: "THOMPSON_SAMPLING"
+  memory-multiplier-min: 0.5
+  memory-multiplier-max: 1.5
+  # Para EPSILON_GREEDY: probabilidad de elegir al azar.
+  epsilon: 0.1
+  # Para EXPLORE_FIRST: intentos al azar antes de usar la memoria.
+  explore-first-attempts: 10
+
+target:
+  # Cuánto tiempo cuenta el daño que hizo un jugador para su amenaza.
+  threat-window-ticks: 600
+  # Bonus por seguir con el mismo objetivo (0,2 = +20 %).
+  commitment-bonus: 0.2
+  base-threat: 1.0
+  approach-speed-blocks-per-second: 3.0
+  weakness-threat-multiplier-per-level: 0.5
+
+plan:
+  max-duration-ticks: 600
+  target-lost-distance-blocks: 32.0
+  target-lost-ticks: 200
+  # Vida (fracción) a la que un mob pasa a retirarse.
+  retreat-health-fraction: 0.3
+  # Fracción de la vida del objetivo que hay que sacarle para un plan exitoso.
+  full-success-damage-fraction: 0.5
+
+attack:
+  projectile-timeout-ticks: 60
+  patient-strike-max-wait-ticks: 60
+  opportunistic-shot-max-wait-ticks: 60
+  shoot-min-distance-blocks: 20.0
+  shoot-max-distance-blocks: 30.0
+  flank-margin-blocks: 1.0
+  retreat-distance-blocks: 16.0
+  # Golpe esquivo: carga del arma del jugador (0 a 1) desde la que el zombie se aparta, y hasta dónde.
+  evasive-margin-blocks: 0.5
+  evasive-safety-ticks: 4
+  evasive-aim-margin-degrees: 15.0
+
+spider:
+  # Lentitud I por 3 segundos.
+  slowness-duration-ticks: 60
+  slowness-level: 1
+
+persistence:
+  # Cada cuánto se guardan las memorias (6.000 = 5 minutos); también se guardan al apagar.
+  save-interval-ticks: 6000
+
+debug:
+  # OFF, DECISIONS o FULL (entre comillas: sin comillas, YAML lee OFF como false).
+  default-trace-level: "OFF"
+  flight-recorder-events: 200
+
+retreat:
+  # Vida (fracción) a la que un mob vuelve a pelear; tiene que ser mayor que retreat-health-fraction.
+  recovery-health-fraction: 0.6
+  # Sin jugadores a esta distancia, un mob en retirada se cura.
+  heal-safe-distance-blocks: 12.0
+  # Ventana de reagrupamiento: arranca en este valor y aprende entre el mínimo y el máximo.
+  regroup-initial-ticks: 600
+  regroup-min-ticks: 200
+  regroup-max-ticks: 1200
+  regroup-step-ticks: 50
+volley:
+  # Andanada (CT-23): los cuerpo a cuerpo presionan, se abren, y los esqueletos disparan juntos.
+  # Múltiplos de 10: el grupo decide cada 10 ticks.
+  press-ticks: 60
+  fall-back-ticks: 20
+  fire-ticks: 30
+  # Cuánto más allá del alcance del jugador se abren los cuerpo a cuerpo.
+  fall-back-margin-blocks: 1.5
+
+success:
+  # Éxito de un plan (CT-27): daño hecho, rapidez y supervivencia del grupo, con estos pesos (suman 1).
+  damage-weight: 0.4
+  speed-weight: 0.4
+  survival-weight: 0.2
+  # Rapidez: comparada con matar al objetivo en estos ticks.
+  reference-kill-ticks: 600
+  # Contra jugadores muy buenos, el peso de la supervivencia sube de survival-weight hasta este valor.
+  survival-weight-max: 0.6
+  # Vida que pierde el grupo por cada punto de daño que le hace al jugador: desde low el peso empieza
+  # a subir; en high llega al máximo.
+  danger-ratio-low: 2.0
+  danger-ratio-high: 8.0
+  # Daño de referencia: con poca pelea, el jugador cuenta como normal.
+  danger-prior-damage: 10.0
