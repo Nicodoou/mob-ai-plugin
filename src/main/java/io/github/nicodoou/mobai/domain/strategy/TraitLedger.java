@@ -54,8 +54,12 @@ public final class TraitLedger {
     if (previous != null && previous.lastTick() == tick) {
       return;
     }
-    double keep = previous == null ? 0 : keepFactor(tick - previous.lastTick());
-    sums.put(player.id(), decayedWith(previous, keep, player, tick));
+    TraitSums observed = observationOf(player, tick);
+    sums.put(
+        player.id(),
+        previous == null
+            ? observed
+            : decayedWith(previous, observed, keepFactor(tick - previous.lastTick())));
   }
 
   private double keepFactor(long elapsedTicks) {
@@ -63,18 +67,22 @@ public final class TraitLedger {
     return Math.pow(HALF, Math.max(0, elapsedTicks) / (double) halfLifeTicks);
   }
 
-  private static TraitSums decayedWith(
-      TraitSums previous, double keep, PlayerSnapshot player, long tick) {
-    double shield = previous == null ? 0 : previous.shield();
-    double ranged = previous == null ? 0 : previous.ranged();
-    double armor = previous == null ? 0 : previous.armor();
-    double weight = previous == null ? 0 : previous.weight();
+  private static TraitSums observationOf(PlayerSnapshot player, long tick) {
     return new TraitSums(
-        shield * keep + (player.blocking() ? 1 : 0),
-        ranged * keep + (player.holdingRanged() ? 1 : 0),
-        armor * keep + armorObservation(player),
-        weight * keep + OBSERVATION_WEIGHT,
+        player.blocking() ? 1 : 0,
+        player.holdingRanged() ? 1 : 0,
+        armorObservation(player),
+        OBSERVATION_WEIGHT,
         tick);
+  }
+
+  private static TraitSums decayedWith(TraitSums previous, TraitSums observed, double keep) {
+    return new TraitSums(
+        previous.shield() * keep + observed.shield(),
+        previous.ranged() * keep + observed.ranged(),
+        previous.armor() * keep + observed.armor(),
+        previous.weight() * keep + observed.weight(),
+        observed.lastTick());
   }
 
   private static double armorObservation(PlayerSnapshot player) {
