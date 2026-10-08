@@ -9,6 +9,7 @@ import static io.github.nicodoou.mobai.testsupport.BrainFixture.bobAt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.AttackChoice;
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
@@ -16,6 +17,7 @@ import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.decision.StrategyCheck;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
+import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
@@ -34,6 +36,7 @@ import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.ScriptedRandomSource;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +46,7 @@ class BrainObservingTest {
   private static final int HURT_MAJORITY = 5;
   private static final int HURT_HALF = 4;
   private static final long INITIAL_WINDOW_TICKS = 600;
+  private static final Vec3 RALLY = new Vec3(5 + 6 * Math.sqrt(2), 64, 5 + 6 * Math.sqrt(2));
 
   @Test
   void withoutPlayersTheGroupStaysIdle() {
@@ -190,8 +194,34 @@ class BrainObservingTest {
               assertThat(order.suggestedAttack()).isEmpty();
             });
     assertThat(fixture.group().lifecycle().planSequence()).isZero();
-    assertThat(fixture.group().lifecycle().regroupStartTick()).hasValue(START_TICK);
+    assertThat(fixture.group().lifecycle().regrouping().map(Regrouping::startTick))
+        .contains(START_TICK);
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
+  }
+
+  @Test
+  void holdingBackRalliesAwayFromTheNearestPlayer() {
+    BrainFixture fixture = BrainFixture.choosingStrategy(0);
+    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_MAJORITY);
+
+    BrainResult result = fixture.decide(START_TICK, mobs, alice());
+
+    assertThat(result.decision().assignments())
+        .hasSize(9)
+        .allSatisfy(order -> assertRally(order.rallyPoint()));
+  }
+
+  @Test
+  void retreatingDuringAPlanHasNoRallyPoint() {
+    BrainFixture fixture = BrainFixture.choosingStrategy(0);
+    List<MobSnapshot> mobs =
+        BrainFixture.withHealth(fixture.catalogGroup(), FIRST_ZOMBIE, LOW_HEALTH);
+
+    BrainResult result = fixture.decide(START_TICK, mobs, alice());
+
+    RoleAssignment order = result.decision().assignments().get(FIRST_ZOMBIE);
+    assertThat(order.role()).isEqualTo(Role.RETREAT);
+    assertThat(order.rallyPoint()).isEmpty();
   }
 
   @Test
@@ -203,6 +233,13 @@ class BrainObservingTest {
 
     assertThat(result.decision().state()).isEqualTo(GroupState.EXECUTING);
     assertThat(result.trace().stillRetreated()).isFalse();
+  }
+
+  private static void assertRally(Optional<Vec3> point) {
+    assertThat(point).isPresent();
+    assertThat(point.get().x()).isCloseTo(RALLY.x(), within(1e-9));
+    assertThat(point.get().y()).isCloseTo(RALLY.y(), within(1e-9));
+    assertThat(point.get().z()).isCloseTo(RALLY.z(), within(1e-9));
   }
 
   private static List<MobSnapshot> hurt(List<MobSnapshot> mobs, int count) {

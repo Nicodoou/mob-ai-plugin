@@ -5,15 +5,20 @@ import static io.github.nicodoou.mobai.testsupport.BrainFixture.GROUP_ID;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.START_TICK;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.alice;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.withHealth;
+import static io.github.nicodoou.mobai.testsupport.BrainFixture.withPosition;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.group.GroupState;
+import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +30,9 @@ class BrainRegroupingTest {
   private static final long REGROUP_START_TICK = START_TICK + 10;
   private static final long INITIAL_WINDOW_TICKS = 600;
   private static final long LENGTHENED_WINDOW_TICKS = 650;
+  private static final double RALLY_OFFSET = 6 * Math.sqrt(2);
+  private static final Vec3 RALLY = new Vec3(5 + RALLY_OFFSET, 64, 5 + RALLY_OFFSET);
+  private static final int MOVED_MOB = 0;
 
   private final BrainFixture fixture = BrainFixture.choosingStrategy(0);
   private List<MobSnapshot> mobs;
@@ -82,7 +90,7 @@ class BrainRegroupingTest {
     assertThat(result.decision().state()).isEqualTo(GroupState.OBSERVING);
     assertThat(result.decision().assignments()).isEmpty();
     assertThat(result.decision().target()).isEmpty();
-    assertThat(fixture.group().lifecycle().regroupStartTick()).isEmpty();
+    assertThat(fixture.group().lifecycle().regrouping()).isEmpty();
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(LENGTHENED_WINDOW_TICKS);
   }
 
@@ -97,8 +105,8 @@ class BrainRegroupingTest {
     assertThat(result.decision().assignments())
         .hasSize(mobs.size())
         .allSatisfy(order -> assertThat(order.role()).isEqualTo(Role.RETREAT));
-    assertThat(fixture.group().lifecycle().regroupStartTick())
-        .hasValue(REGROUP_START_TICK + INITIAL_WINDOW_TICKS);
+    assertThat(fixture.group().lifecycle().regrouping().map(Regrouping::startTick))
+        .contains(REGROUP_START_TICK + INITIAL_WINDOW_TICKS);
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
 
     BrainResult next =
@@ -123,6 +131,41 @@ class BrainRegroupingTest {
   }
 
   @Test
+  void regroupingOrdersCarryTheRallyPoint() {
+    BrainResult result = fixture.decide(START_TICK + 100, wounded, alice());
+
+    assertThat(result.decision().assignments())
+        .hasSize(mobs.size())
+        .allSatisfy(order -> assertPoint(order.rallyPoint(), RALLY));
+    assertPoint(fixture.group().lifecycle().regrouping().flatMap(Regrouping::rallyPoint), RALLY);
+  }
+
+  @Test
+  void rallyPointStaysWhileRegrouping() {
+    List<MobSnapshot> moved = withPosition(wounded, MOVED_MOB, new Vec3(100, 64, 100));
+
+    BrainResult result = fixture.decide(START_TICK + 100, moved, alice());
+
+    assertThat(result.decision().assignments())
+        .hasSize(mobs.size())
+        .allSatisfy(order -> assertPoint(order.rallyPoint(), RALLY));
+  }
+
+  @Test
+  void restartingTheWindowRecomputesTheRallyPoint() {
+    List<MobSnapshot> moved = withPosition(wounded, MOVED_MOB, new Vec3(-89, 64, 5));
+    Vec3 recomputed = new Vec3(-5 - RALLY_OFFSET, 64, 5 + RALLY_OFFSET);
+
+    BrainResult result = fixture.decide(REGROUP_START_TICK + INITIAL_WINDOW_TICKS, moved, alice());
+
+    assertThat(result.decision().assignments())
+        .hasSize(mobs.size())
+        .allSatisfy(order -> assertPoint(order.rallyPoint(), recomputed));
+    assertPoint(
+        fixture.group().lifecycle().regrouping().flatMap(Regrouping::rallyPoint), recomputed);
+  }
+
+  @Test
   void nextDecisionAfterRegroupingPlansAgain() {
     fixture.decide(START_TICK + 100, mobs, alice());
 
@@ -133,5 +176,12 @@ class BrainRegroupingTest {
     assertThat(result.decision().plan()).contains(new PlanId(GROUP_ID, 2));
     assertThat(result.decision().target()).contains(ALICE);
     assertThat(result.decision().assignments()).hasSize(mobs.size());
+  }
+
+  private static void assertPoint(Optional<Vec3> point, Vec3 expected) {
+    assertThat(point).isPresent();
+    assertThat(point.get().x()).isCloseTo(expected.x(), within(1e-9));
+    assertThat(point.get().y()).isCloseTo(expected.y(), within(1e-9));
+    assertThat(point.get().z()).isCloseTo(expected.z(), within(1e-9));
   }
 }

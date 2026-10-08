@@ -7,10 +7,10 @@ import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 
 public final class PlanLifecycle {
@@ -28,6 +28,8 @@ public final class PlanLifecycle {
   private PlanEndReason lastEndReason;
   private long lastEndTick;
   private long regroupStartTick = NO_REGROUP;
+  // null outside REGROUPING or while no rally point was chosen; exposed only as Optional
+  private Vec3 rallyPoint;
 
   PlanLifecycle(GroupId groupId, GroupRoster roster, PendingEvents events) {
     this.groupId = Objects.requireNonNull(groupId, "PlanLifecycle.groupId");
@@ -64,8 +66,9 @@ public final class PlanLifecycle {
         committedTarget(),
         Optional.ofNullable(lastEndReason),
         lastEndTick,
-        regroupStartTick(),
-        planSequence);
+        regrouping().stream().mapToLong(Regrouping::startTick).findFirst(),
+        planSequence,
+        Optional.ofNullable(rallyPoint));
   }
 
   public void restore(LifecycleCapture capture) {
@@ -78,13 +81,15 @@ public final class PlanLifecycle {
     lastEndReason = capture.lastEndReason().orElse(null);
     lastEndTick = capture.lastEndTick();
     regroupStartTick = capture.regroupStartTick().orElse(NO_REGROUP);
+    rallyPoint = capture.rallyPoint().orElse(null);
     planSequence = capture.planSequence();
   }
 
-  public OptionalLong regroupStartTick() {
-    return regroupStartTick == NO_REGROUP
-        ? OptionalLong.empty()
-        : OptionalLong.of(regroupStartTick);
+  public Optional<Regrouping> regrouping() {
+    if (regroupStartTick == NO_REGROUP) {
+      return Optional.empty();
+    }
+    return Optional.of(new Regrouping(regroupStartTick, Optional.ofNullable(rallyPoint)));
   }
 
   public void beginPlanning() {
@@ -143,6 +148,7 @@ public final class PlanLifecycle {
     if (lastEndReason == PlanEndReason.GROUP_RETREATED) {
       state = GroupState.REGROUPING;
       regroupStartTick = lastEndTick;
+      rallyPoint = null;
       return;
     }
     state = GroupState.OBSERVING;
@@ -152,6 +158,7 @@ public final class PlanLifecycle {
     requireState(GroupState.REGROUPING, "finish regrouping");
     state = GroupState.OBSERVING;
     regroupStartTick = NO_REGROUP;
+    rallyPoint = null;
   }
 
   // CT-13: a group too hurt to fight regroups without opening a plan.
@@ -160,12 +167,18 @@ public final class PlanLifecycle {
     requireTick(tick);
     state = GroupState.REGROUPING;
     regroupStartTick = tick;
+    rallyPoint = null;
   }
 
   public void restartRegroupWindow(long tick) {
     requireState(GroupState.REGROUPING, "restart the regroup window");
     requireTick(tick);
     regroupStartTick = tick;
+  }
+
+  public void rallyAt(Vec3 point) {
+    requireState(GroupState.REGROUPING, "set a rally point");
+    rallyPoint = Objects.requireNonNull(point, "PlanLifecycle.rallyPoint");
   }
 
   private static void requireTick(long tick) {

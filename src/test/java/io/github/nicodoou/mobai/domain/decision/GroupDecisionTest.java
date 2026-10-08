@@ -52,6 +52,7 @@ class GroupDecisionTest {
   }
 
   private static RoleAssignment assignment(MobId mob) {
-    return new RoleAssignment(mob, Role.PRESS, Optional.empty(), Optional.empty(), false);
+    return new RoleAssignment(
+        mob, Role.PRESS, Optional.empty(), Optional.empty(), false, Optional.empty());
   }
 }

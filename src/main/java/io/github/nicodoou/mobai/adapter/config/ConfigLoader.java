@@ -121,7 +121,9 @@ public final class ConfigLoader {
         wholeNumber(root, "retreat.regroup-initial-ticks"),
         wholeNumber(root, "retreat.regroup-min-ticks"),
         wholeNumber(root, "retreat.regroup-max-ticks"),
-        wholeNumber(root, "retreat.regroup-step-ticks"));
+        wholeNumber(root, "retreat.regroup-step-ticks"),
+        number(root, "retreat.rally-distance-blocks"),
+        number(root, "retreat.rally-arrival-blocks"));
   }
 
   private VolleySettings volley(ConfigurationSection root) {

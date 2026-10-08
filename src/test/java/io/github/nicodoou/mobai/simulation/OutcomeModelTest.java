@@ -27,7 +27,12 @@ class OutcomeModelTest {
 
   private static RoleAssignment order(Role role, Attack attack) {
     return new RoleAssignment(
-        new MobId(new UUID(0, 1)), role, Optional.of(ALICE), Optional.of(attack), false);
+        new MobId(new UUID(0, 1)),
+        role,
+        Optional.of(ALICE),
+        Optional.of(attack),
+        false,
+        Optional.empty());
   }
 
   private double share(

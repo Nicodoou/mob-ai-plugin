@@ -1,6 +1,7 @@
 package io.github.nicodoou.mobai.domain.group;
 
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -12,16 +13,19 @@ public record LifecycleCapture(
     Optional<PlanEndReason> lastEndReason,
     long lastEndTick,
     OptionalLong regroupStartTick,
-    long planSequence) {
+    long planSequence,
+    Optional<Vec3> rallyPoint) {
   public LifecycleCapture {
     Objects.requireNonNull(state, "LifecycleCapture.state");
     Objects.requireNonNull(plan, "LifecycleCapture.plan");
     Objects.requireNonNull(committedTarget, "LifecycleCapture.committedTarget");
     Objects.requireNonNull(lastEndReason, "LifecycleCapture.lastEndReason");
     Objects.requireNonNull(regroupStartTick, "LifecycleCapture.regroupStartTick");
+    Objects.requireNonNull(rallyPoint, "LifecycleCapture.rallyPoint");
     requireNotPlanning(state);
     requirePlanMatchesState(state, plan);
     requireRegroupStartMatchesState(state, regroupStartTick);
+    requireRallyOnlyWhileRegrouping(state, rallyPoint);
     requireEndReasonWhileEvaluating(state, lastEndReason);
     requireCounters(lastEndTick, planSequence);
     plan.ifPresent(present -> requireSequenceMatches(present, planSequence));
@@ -49,6 +53,13 @@ public record LifecycleCapture(
     if (regroupStartTick.isPresent() != (state == GroupState.REGROUPING)) {
       throw new IllegalArgumentException(
           "LifecycleCapture.regroupStartTick must be present only while REGROUPING, got " + state);
+    }
+  }
+
+  private static void requireRallyOnlyWhileRegrouping(GroupState state, Optional<Vec3> rallyPoint) {
+    if (rallyPoint.isPresent() && state != GroupState.REGROUPING) {
+      throw new IllegalArgumentException(
+          "LifecycleCapture.rallyPoint must be absent outside REGROUPING, got " + state);
     }
   }
 

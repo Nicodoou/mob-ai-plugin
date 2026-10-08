@@ -6,7 +6,9 @@ public record RetreatSettings(
     long regroupInitialTicks,
     long regroupMinTicks,
     long regroupMaxTicks,
-    long regroupStepTicks) {
+    long regroupStepTicks,
+    double rallyDistanceBlocks,
+    double rallyArrivalBlocks) {
   public RetreatSettings {
     SettingsChecks.requireBetween(
         new NamedSetting("RetreatSettings.recoveryHealthFraction", recoveryHealthFraction), 0, 1);
@@ -21,5 +23,7 @@ public record RetreatSettings(
         regroupMinTicks,
         regroupMaxTicks);
     SettingsChecks.requireAtLeast("RetreatSettings.regroupStepTicks", regroupStepTicks, 1);
+    SettingsChecks.requirePositive("RetreatSettings.rallyDistanceBlocks", rallyDistanceBlocks);
+    SettingsChecks.requirePositive("RetreatSettings.rallyArrivalBlocks", rallyArrivalBlocks);
   }
 }

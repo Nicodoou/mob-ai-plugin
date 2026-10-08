@@ -87,6 +87,10 @@ retreat:
   regroup-min-ticks: 200
   regroup-max-ticks: 1200
   regroup-step-ticks: 50
+  # Al reagruparse, el grupo se junta en un punto a esta distancia de su centro, lejos del jugador (CT-29).
+  rally-distance-blocks: 12.0
+  # A esta distancia del punto de reunión, el mob ya llegó.
+  rally-arrival-blocks: 3.0
 
 volley:
   # Andanada (CT-23): los cuerpo a cuerpo presionan, se abren, y los esqueletos disparan juntos.
