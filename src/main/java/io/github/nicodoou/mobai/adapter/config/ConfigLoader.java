@@ -87,10 +87,10 @@ public final class ConfigLoader {
         wholeNumber(root, "attack.opportunistic-shot-max-wait-ticks"),
         number(root, "attack.shoot-min-distance-blocks"),
         number(root, "attack.shoot-max-distance-blocks"),
-        number(root, "attack.flank-distance-blocks"),
+        number(root, "attack.flank-margin-blocks"),
         number(root, "attack.retreat-distance-blocks"),
         number(root, "attack.evasive-charge-threshold"),
-        number(root, "attack.evasive-distance-blocks"));
+        number(root, "attack.evasive-margin-blocks"));
   }
 
   private SpiderSettings spider(ConfigurationSection root) {

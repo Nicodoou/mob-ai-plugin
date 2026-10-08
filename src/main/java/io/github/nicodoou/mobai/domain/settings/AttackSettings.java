@@ -6,10 +6,10 @@ public record AttackSettings(
     long opportunisticShotMaxWaitTicks,
     double shootMinDistanceBlocks,
     double shootMaxDistanceBlocks,
-    double flankDistanceBlocks,
+    double flankMarginBlocks,
     double retreatDistanceBlocks,
     double evasiveChargeThreshold,
-    double evasiveDistanceBlocks) {
+    double evasiveMarginBlocks) {
   public AttackSettings {
     SettingsChecks.requireAtLeast(
         "AttackSettings.projectileTimeoutTicks", projectileTimeoutTicks, 1);
@@ -19,11 +19,11 @@ public record AttackSettings(
         "AttackSettings.opportunisticShotMaxWaitTicks", opportunisticShotMaxWaitTicks, 1);
     SettingsChecks.requirePositive("AttackSettings.shootMinDistanceBlocks", shootMinDistanceBlocks);
     SettingsChecks.requirePositive("AttackSettings.shootMaxDistanceBlocks", shootMaxDistanceBlocks);
-    SettingsChecks.requirePositive("AttackSettings.flankDistanceBlocks", flankDistanceBlocks);
+    SettingsChecks.requireNonNegative("AttackSettings.flankMarginBlocks", flankMarginBlocks);
     SettingsChecks.requirePositive("AttackSettings.retreatDistanceBlocks", retreatDistanceBlocks);
     SettingsChecks.requireBetween(
         "AttackSettings.evasiveChargeThreshold", evasiveChargeThreshold, 0, 1);
-    SettingsChecks.requirePositive("AttackSettings.evasiveDistanceBlocks", evasiveDistanceBlocks);
+    SettingsChecks.requireNonNegative("AttackSettings.evasiveMarginBlocks", evasiveMarginBlocks);
     SettingsChecks.requireNotAbove(
         "AttackSettings.shootMinDistanceBlocks",
         shootMinDistanceBlocks,

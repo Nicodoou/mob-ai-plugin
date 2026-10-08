@@ -31,9 +31,9 @@ public final class Waypoints {
     this.settings = Objects.requireNonNull(settings, "Waypoints.settings");
   }
 
-  public FlankStep flankStep(PlayerPose pose, MobId self, Map<MobId, Vec3> flankers) {
-    return maneuver.next(
-        new FlankQuery(pose, self, flankers, settings.get().flankDistanceBlocks()));
+  public FlankStep flankStep(PlayerTarget target, MobId self, Map<MobId, Vec3> flankers) {
+    double keepOut = target.reachBlocks() + settings.get().flankMarginBlocks();
+    return maneuver.next(new FlankQuery(target.pose(), self, flankers, keepOut));
   }
 
   public boolean isOutOfSight(PlayerPose pose, Vec3 mobPosition) {
@@ -51,9 +51,11 @@ public final class Waypoints {
   }
 
   // Empty once the zombie is already out of the player's reach.
-  public Optional<Vec3> evadePoint(Vec3 mobPosition, Vec3 dangerPosition) {
+  public Optional<Vec3> evadePoint(Vec3 mobPosition, Vec3 dangerPosition, double reachBlocks) {
     double missing =
-        settings.get().evasiveDistanceBlocks() - horizontalDistance(mobPosition, dangerPosition);
+        reachBlocks
+            + settings.get().evasiveMarginBlocks()
+            - horizontalDistance(mobPosition, dangerPosition);
     if (missing <= 0) {
       return Optional.empty();
     }

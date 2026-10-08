@@ -53,12 +53,12 @@ attack:
   # Distancia a la que pelean los esqueletos; se ubican en el medio (CT-21).
   shoot-min-distance-blocks: 20.0
   shoot-max-distance-blocks: 30.0
-  # Distancia que mantiene el flanqueador mientras el jugador lo ve (el alcance del jugador es 3).
-  flank-distance-blocks: 4.0
+  # Lo que el flanqueador se mantiene más allá del alcance del jugador mientras lo ve.
+  flank-margin-blocks: 1.0
   retreat-distance-blocks: 16.0
-  # Golpe esquivo: carga del arma del jugador (0 a 1) desde la que el zombie se aparta, y hasta dónde.
+  # Golpe esquivo: carga del arma del jugador (0 a 1) desde la que el zombie se aparta, y cuánto más allá del alcance del jugador.
   evasive-charge-threshold: 0.8
-  evasive-distance-blocks: 3.5
+  evasive-margin-blocks: 0.5
 
 spider:
   # Lentitud I por 3 segundos.

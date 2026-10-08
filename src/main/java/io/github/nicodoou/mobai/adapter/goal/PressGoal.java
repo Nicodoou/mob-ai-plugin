@@ -143,7 +143,7 @@ public final class PressGoal implements Goal<Mob> {
       return PlayerThreat.SAFE;
     }
     Vec3 away = mobPosition.minus(PoseReader.positionOf(target.getLocation()));
-    if (away.horizontal().length() <= attack().evasiveDistanceBlocks()) {
+    if (away.horizontal().length() <= reachOf(target) + attack().evasiveMarginBlocks()) {
       return PlayerThreat.IN_DANGER;
     }
     return PlayerThreat.AT_THE_EDGE;
@@ -157,7 +157,8 @@ public final class PressGoal implements Goal<Mob> {
         waypoints()
             .evadePoint(
                 PoseReader.positionOf(mob.getLocation()),
-                PoseReader.positionOf(target.getLocation()));
+                PoseReader.positionOf(target.getLocation()),
+                reachOf(target));
     if (point.isEmpty()) {
       mob.getPathfinder().stopPathfinding();
       return;
@@ -166,6 +167,10 @@ public final class PressGoal implements Goal<Mob> {
     mob.getPathfinder()
         .moveTo(new Location(mob.getWorld(), spot.x(), spot.y(), spot.z()), WALK_SPEED);
     rhythm.markRepath();
+  }
+
+  private double reachOf(Player target) {
+    return context.tools().weapons().playerReach().blocksOf(target);
   }
 
   private AttackSettings attack() {
