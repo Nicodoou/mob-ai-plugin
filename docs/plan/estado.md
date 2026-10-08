@@ -81,6 +81,8 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-30C | Retirada aprendida | E6 | pendiente | Opus | — | CT-28 |
 | WP-25 | Arañas: mordida con lentitud | E6 | mergeado | Sonnet | [#55](https://github.com/Nicodoou/mob-ai-plugin/pull/55) | Especificado y lanzado desde la nube; revisión local y merge por Opus local |
 | WP-26 | Consulta de memoria | E6 | mergeado | Sonnet | [#52](https://github.com/Nicodoou/mob-ai-plugin/pull/52) | `/mobai memory` con el peligro; las métricas ya las cubre el log de debug |
+| WP-31 | `/mobai reinforce` | E6 | en curso | Sonnet | — | Especificado en la nube. Al mergear: sumar `reinforce-usage`, `group-full`, `group-reinforced` y la lista nueva de `unknown-subcommand` al `messages.yml` del server de prueba |
+| WP-32 | Punto de reunión al reagruparse | E6 | pendiente | Opus/Sonnet | — | CT-29 |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
 
 ## Puertas de etapa
