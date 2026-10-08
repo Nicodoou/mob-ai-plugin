@@ -625,3 +625,68 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** la regla es pura y se calcula una sola vez por reagrupamiento, que evita que el punto se corra.
 - **Lo flojo:** `PlanLifecycle` llegó a 20 métodos públicos. El próximo cambio del reagrupamiento tiene que sacar ese estado a una clase propia; lo dice el WP.
 - **Riesgo:** el punto puede caer en un lugar inalcanzable (pared o agua). Eso lo tiene que manejar el WP-32B.
+
+## WP-32B — Punto de reunión: los goals (PR #59, Sonnet; especificado en la nube)
+
+**Qué hizo.** `RetreatGoal` suma el movimiento `RALLY`: fuera de peligro, el mob camina al punto de reunión. `RallyDetour`, puro, rodea al jugador por el arco más corto (de a 45°, como el flanqueo) si la recta pasa por su alcance más el margen. Media vuelta exacta: por el lado del mob, que pasa por la espalda.
+
+**Revisión local.** Build y CI en verde. Mis roturas mordieron:
+- invertir el desempate de media vuelta → 2 pruebas;
+- sin el radio mínimo del rodeo → 1.
+
+**Opinión del código.**
+- **Lo bueno:** el argumento de que la zona sin vista es convexa evita chequear la vista en cada tramo.
+- **Lo flojo:** el punto puede caer en una pared o en el agua, y no hay plan B más allá del pathfinder.
+
+## WP-33A — Modelo bayesiano lineal (PR #60, Opus; especificado en la nube)
+
+**Qué hizo.** `LinearPosterior` en forma de información (precisión y vector):
+- prior, observación de rango 1 y olvido hacia un ancla en parámetros naturales;
+- sorteo con Cholesky (`L⁻ᵀ z`, covarianza = precisión⁻¹).
+
+`Cholesky`, propio.
+
+**Revisión local.** Build y CI en verde. Mis roturas mordieron:
+- la sustitución hacia atrás sin transponer → 8 de 17 pruebas;
+- el olvido invertido → 1.
+
+**Opinión del código.**
+- **Lo bueno:** matemática correcta y con pruebas de referencia.
+- **Lo flojo:** `mean()` y `predict()` refactorizan la matriz en cada llamada. Con 60 parámetros es barato por plan, pero no hay que llamarlo dentro de un lazo.
+
+## WP-33B — Recetas, rasgos y búsqueda (PR #61, Opus; especificado en la nube)
+
+**Qué hizo.**
+- `PlanRecipe`/`RoleSplit` con cantidades jugadas.
+- `RecipeFeatures`: 15 rasgos cuadráticos.
+- `UnitIntervalPeak`: óptimo exacto de una parábola en [0, 1].
+- `RecipeSearch`: todos los repartos jugables, con demora y umbral al óptimo exacto.
+
+**Revisión local.**
+- Se resolvió con rebase un conflicto de `arquitectura.md` con #60.
+- Build y CI en verde.
+- Mis roturas mordieron:
+  - el signo del vértice → 3 pruebas;
+  - perder el reparto con toda la reserva → 2.
+
+**Opinión del código.**
+- **Lo bueno:** la búsqueda es exacta y barata con grupos chicos.
+- **Lo flojo:** el óptimo exacto de demora y umbral supone que no interactúan con los repartos. Si se suma una interacción así, hace falta la búsqueda gruesa a fina que quedó prevista.
+
+## WP-33C — Simulación y calibración, puerta del CT-30 (PR #62, Opus; especificado en la nube)
+
+**Qué hizo.**
+- `PlayerTraits` y `ContextualFeatures` (de 15 a 60 parámetros, y el plegado de pesos con los rasgos).
+- Estilos sintéticos (`PlayStyle`), `RecipeLearner` e informe de calibración.
+- **Puerta PASS** (`calibracion-recetas.md`): con base mixta y rasgos ruidosos, la distancia al óptimo en los primeros 20 planes es de 0,031 a 0,052, contra 0,074 a 0,134 de las 4 estrategias.
+
+**Revisión local.**
+- Se resolvieron con rebase conflictos de `arquitectura.md`.
+- Build y CI en verde.
+- Mis roturas mordieron:
+  - rasgos de escudo y distancia cruzados → 1;
+  - plegado sin escalar → 1.
+
+**Opinión del código.**
+- **Lo bueno:** se midió antes de tocar el juego, con un control sin rasgos que muestra por qué hacen falta.
+- **Lo flojo y el riesgo principal:** la puerta mide el modelo contra un mundo sintético hecho con las mismas formas (parábolas, interacciones elegidas) que el modelo sabe representar, así que el PASS es optimista por construcción. La validación real es en el juego: la puerta G1 con Nico y sus testers, comparando `planner: recipes` contra `strategies`.
