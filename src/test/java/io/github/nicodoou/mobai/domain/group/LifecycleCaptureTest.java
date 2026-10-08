@@ -11,6 +11,7 @@ import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.Map;
@@ -20,6 +21,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class LifecycleCaptureTest {
+  private static final Vec3 RALLY_POINT = new Vec3(14, 64, 0);
+
   private final PlayerId player = new PlayerId(new UUID(2, 1));
 
   @Test
@@ -33,7 +36,8 @@ class LifecycleCaptureTest {
                     Optional.empty(),
                     0,
                     OptionalLong.empty(),
-                    0))
+                    0,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.state cannot be PLANNING");
   }
@@ -51,7 +55,8 @@ class LifecycleCaptureTest {
                     Optional.empty(),
                     0,
                     OptionalLong.empty(),
-                    1))
+                    1,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "LifecycleCapture.plan must be present only while EXECUTING or EVALUATING,"
@@ -69,11 +74,29 @@ class LifecycleCaptureTest {
                     Optional.empty(),
                     0,
                     OptionalLong.of(5),
-                    0))
+                    0,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "LifecycleCapture.regroupStartTick must be present only while REGROUPING,"
                 + " got OBSERVING");
+  }
+
+  @Test
+  void rallyPointOutsideRegroupingIsRejected() {
+    assertThatThrownBy(
+            () ->
+                new LifecycleCapture(
+                    GroupState.OBSERVING,
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    0,
+                    OptionalLong.empty(),
+                    0,
+                    Optional.of(RALLY_POINT)))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("LifecycleCapture.rallyPoint must be absent outside REGROUPING, got OBSERVING");
   }
 
   @Test
@@ -89,7 +112,8 @@ class LifecycleCaptureTest {
                     Optional.empty(),
                     0,
                     OptionalLong.empty(),
-                    2))
+                    2,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.planSequence must match the plan, got 2 for plan 1");
   }
@@ -121,6 +145,21 @@ class LifecycleCaptureTest {
     assertThat(capture.committedTarget()).contains(player);
     assertThat(capture.lastEndReason()).contains(PlanEndReason.GROUP_RETREATED);
     assertThat(capture.regroupStartTick()).hasValue(200);
+  }
+
+  @Test
+  void rallyPointSurvivesCaptureAndRestore() {
+    Group original = groupWithMobOne(1);
+    original.lifecycle().regroupWithoutPlan(300);
+    original.lifecycle().rallyAt(RALLY_POINT);
+    LifecycleCapture capture = original.lifecycle().capture();
+    Group restored = groupWithMobOne(1);
+
+    restored.lifecycle().restore(capture);
+
+    assertThat(capture.rallyPoint()).contains(RALLY_POINT);
+    assertThat(restored.lifecycle().regrouping())
+        .contains(new Regrouping(300, Optional.of(RALLY_POINT)));
   }
 
   @Test

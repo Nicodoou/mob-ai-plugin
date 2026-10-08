@@ -323,7 +323,7 @@ public final class Brain {
   }
 
   private Optional<RegroupEndReason> detectRegroupEnd(Turn turn) {
-    long regroupStartTick = turn.lifecycle().regroupStartTick().orElseThrow();
+    long regroupStartTick = turn.lifecycle().regrouping().orElseThrow().startTick();
     Optional<RegroupEndReason> regroupEnd =
         parts.regroupRule().detect(turn.snapshot(), regroupStartTick);
     regroupEnd.ifPresent(turn.draft()::regroupEnd);

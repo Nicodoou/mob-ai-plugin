@@ -16,6 +16,7 @@ import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.decision.StrategyCheck;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
+import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
@@ -190,7 +191,8 @@ class BrainObservingTest {
               assertThat(order.suggestedAttack()).isEmpty();
             });
     assertThat(fixture.group().lifecycle().planSequence()).isZero();
-    assertThat(fixture.group().lifecycle().regroupStartTick()).hasValue(START_TICK);
+    assertThat(fixture.group().lifecycle().regrouping().map(Regrouping::startTick))
+        .contains(START_TICK);
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
   }
 

@@ -16,9 +16,11 @@ import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,7 @@ class GroupLifecycleTest {
   private static final PlayerId ALICE = new PlayerId(new UUID(0, 10));
   private static final PlayerId BOB = new PlayerId(new UUID(0, 11));
   private static final StrategyId FLANK_STRATEGY = new StrategyId("FLANK");
+  private static final Vec3 RALLY_POINT = new Vec3(14, 64, 0);
 
   private final PlanStart start =
       new PlanStart(FLANK_STRATEGY, ALICE, Map.of(MOB_1, Role.PRESS), 20, 100);
@@ -211,13 +214,13 @@ class GroupLifecycleTest {
     group.lifecycle().finishEvaluation();
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
-    assertThat(group.lifecycle().regroupStartTick()).hasValue(700);
+    assertThat(group.lifecycle().regrouping().map(Regrouping::startTick)).contains(700L);
     assertThat(group.lifecycle().plan()).isEmpty();
 
     group.lifecycle().finishRegrouping();
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
-    assertThat(group.lifecycle().regroupStartTick()).isEmpty();
+    assertThat(group.lifecycle().regrouping()).isEmpty();
   }
 
   @Test
@@ -228,7 +231,7 @@ class GroupLifecycleTest {
     group.lifecycle().finishEvaluation();
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
-    assertThat(group.lifecycle().regroupStartTick()).isEmpty();
+    assertThat(group.lifecycle().regrouping()).isEmpty();
   }
 
   @Test
@@ -251,7 +254,7 @@ class GroupLifecycleTest {
     group.lifecycle().regroupWithoutPlan(500);
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
-    assertThat(group.lifecycle().regroupStartTick()).hasValue(500);
+    assertThat(group.lifecycle().regrouping().map(Regrouping::startTick)).contains(500L);
     assertThat(group.lifecycle().plan()).isEmpty();
     assertThat(group.lifecycle().planSequence()).isZero();
     assertThat(group.lifecycle().committedTarget()).isEmpty();
@@ -268,7 +271,39 @@ class GroupLifecycleTest {
     group.lifecycle().restartRegroupWindow(1100);
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
-    assertThat(group.lifecycle().regroupStartTick()).hasValue(1100);
+    assertThat(group.lifecycle().regrouping().map(Regrouping::startTick)).contains(1100L);
+  }
+
+  @Test
+  void rallyPointLivesOnlyWhileRegrouping() {
+    group.lifecycle().regroupWithoutPlan(500);
+
+    assertThat(group.lifecycle().regrouping()).contains(new Regrouping(500, Optional.empty()));
+
+    group.lifecycle().rallyAt(RALLY_POINT);
+
+    assertThat(group.lifecycle().regrouping())
+        .contains(new Regrouping(500, Optional.of(RALLY_POINT)));
+
+    group.lifecycle().restartRegroupWindow(900);
+
+    assertThat(group.lifecycle().regrouping())
+        .contains(new Regrouping(900, Optional.of(RALLY_POINT)));
+
+    group.lifecycle().finishRegrouping();
+
+    assertThat(group.lifecycle().regrouping()).isEmpty();
+
+    group.lifecycle().regroupWithoutPlan(1200);
+
+    assertThat(group.lifecycle().regrouping()).contains(new Regrouping(1200, Optional.empty()));
+  }
+
+  @Test
+  void rallyPointNeedsRegrouping() {
+    assertThatThrownBy(() -> group.lifecycle().rallyAt(RALLY_POINT))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Group 00000000 cannot set a rally point while OBSERVING");
   }
 
   @Test

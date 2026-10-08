@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.group.GroupState;
+import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
@@ -82,7 +83,7 @@ class BrainRegroupingTest {
     assertThat(result.decision().state()).isEqualTo(GroupState.OBSERVING);
     assertThat(result.decision().assignments()).isEmpty();
     assertThat(result.decision().target()).isEmpty();
-    assertThat(fixture.group().lifecycle().regroupStartTick()).isEmpty();
+    assertThat(fixture.group().lifecycle().regrouping()).isEmpty();
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(LENGTHENED_WINDOW_TICKS);
   }
 
@@ -97,8 +98,8 @@ class BrainRegroupingTest {
     assertThat(result.decision().assignments())
         .hasSize(mobs.size())
         .allSatisfy(order -> assertThat(order.role()).isEqualTo(Role.RETREAT));
-    assertThat(fixture.group().lifecycle().regroupStartTick())
-        .hasValue(REGROUP_START_TICK + INITIAL_WINDOW_TICKS);
+    assertThat(fixture.group().lifecycle().regrouping().map(Regrouping::startTick))
+        .contains(REGROUP_START_TICK + INITIAL_WINDOW_TICKS);
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
 
     BrainResult next =
