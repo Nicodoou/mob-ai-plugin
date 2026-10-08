@@ -14,6 +14,8 @@ final class MemoryFiles {
   private static final String GROUPS_FOLDER_NAME = "groups";
   private static final String JSON_SUFFIX = ".json";
   private static final String QUARANTINE_SUFFIX = ".corrupt";
+  private static final String BACKUPS_FOLDER_NAME = "backups";
+  private static final String BACKUP_FOLDER_PREFIX = "schema-v";
 
   private final Path root;
 
@@ -44,6 +46,28 @@ final class MemoryFiles {
           .toList();
     } catch (IOException exception) {
       throw new UncheckedIOException("Could not list " + groupsFolder(), exception);
+    }
+  }
+
+  Path backupFolder(int version) {
+    return root.resolve(BACKUPS_FOLDER_NAME).resolve(BACKUP_FOLDER_PREFIX + version);
+  }
+
+  void backupOnce(int version) {
+    Path folder = backupFolder(version);
+    if (Files.exists(folder)) {
+      return;
+    }
+    try {
+      Files.createDirectories(folder.resolve(GROUPS_FOLDER_NAME));
+      if (Files.exists(stateFile())) {
+        Files.copy(stateFile(), folder.resolve(STATE_FILE_NAME));
+      }
+      for (Path file : groupFiles()) {
+        Files.copy(file, folder.resolve(GROUPS_FOLDER_NAME).resolve(file.getFileName()));
+      }
+    } catch (IOException exception) {
+      throw new UncheckedIOException("Could not back up the memories to " + folder, exception);
     }
   }
 
