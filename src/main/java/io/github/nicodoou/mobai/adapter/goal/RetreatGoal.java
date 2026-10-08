@@ -16,7 +16,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
-/** RETREAT: hide from the danger if there is cover, otherwise walk straight away and hold. */
+/**
+ * RETREAT: hide from the danger, or walk away and hold; while regrouping, then walk to the rally
+ * point (CT-29).
+ */
 public final class RetreatGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
   private static final double WALK_SPEED = 1.0;
@@ -60,7 +63,7 @@ public final class RetreatGoal implements Goal<Mob> {
       return;
     }
     rhythm.markRepath();
-    danger().ifPresentOrElse(this::retreatFrom, this::hold);
+    danger().ifPresentOrElse(this::retreatFrom, this::withoutDanger);
   }
 
   @Override
@@ -84,6 +87,7 @@ public final class RetreatGoal implements Goal<Mob> {
   private void retreatFrom(Player danger) {
     switch (situation(danger).nextMove()) {
       case HOLD -> holdInPlace();
+      case RALLY -> rally(Optional.of(danger));
       case KEEP_COVER -> {
         // Already on a path to a hidden spot.
       }
@@ -97,7 +101,8 @@ public final class RetreatGoal implements Goal<Mob> {
         !danger.hasLineOfSight(mob),
         waypoints().retreatPoint(mobPosition(), position(danger)).isEmpty(),
         coverSpot.filter(spot -> !CoverFinder.isSeenBy(danger, mob, spot)).isPresent(),
-        context.tools().timing().clock().currentTick() >= nextCoverSearchTick);
+        context.tools().timing().clock().currentTick() >= nextCoverSearchTick,
+        rallyStep(Optional.of(danger)).isPresent());
   }
 
   private void searchCover(Player danger) {
@@ -120,7 +125,38 @@ public final class RetreatGoal implements Goal<Mob> {
       mob.getPathfinder().stopPathfinding();
       return;
     }
-    Vec3 target = point.get();
+    walkTo(point.get());
+  }
+
+  // No one to keep clear of: walk straight to the rally point, or hold if there is none.
+  private void withoutDanger() {
+    rallyStep(Optional.empty()).ifPresentOrElse(this::walkToRally, this::hold);
+  }
+
+  private void rally(Optional<Player> danger) {
+    rallyStep(danger).ifPresentOrElse(this::walkToRally, this::holdInPlace);
+  }
+
+  private void walkToRally(Vec3 step) {
+    coverSpot = Optional.empty();
+    walkTo(step);
+  }
+
+  private Optional<Vec3> rallyStep(Optional<Player> danger) {
+    RallyRoute route = context.tools().rallyRoute();
+    Optional<PlayerTarget> target = danger.map(this::targetOf);
+    return currentOrder()
+        .flatMap(RoleAssignment::rallyPoint)
+        .flatMap(point -> route.next(mobPosition(), point, target));
+  }
+
+  private PlayerTarget targetOf(Player player) {
+    return new PlayerTarget(
+        PoseReader.poseOf(player),
+        context.tools().weapons().bodies().playerReach().blocksOf(player));
+  }
+
+  private void walkTo(Vec3 target) {
     mob.getPathfinder()
         .moveTo(new Location(mob.getWorld(), target.x(), target.y(), target.z()), WALK_SPEED);
   }
