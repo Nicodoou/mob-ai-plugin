@@ -63,6 +63,9 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-24E | Andanada: estrategia y fases en el cerebro | E6 | mergeado | Opus | [#45](https://github.com/Nicodoou/mob-ai-plugin/pull/45) | CT-23. Al mergear, sumar la sección `volley` al `config.yml` del server de prueba |
 | WP-24F | Andanada: los goals | E6 | mergeado | Sonnet | [#46](https://github.com/Nicodoou/mob-ai-plugin/pull/46) | CT-23. Después del 24E |
 | WP-24G | Tensar el arco | E6 | mergeado | Sonnet | [#49](https://github.com/Nicodoou/mob-ai-plugin/pull/49) | CT-26, B-06 |
+| WP-30A | Éxito con tres medidas | E6 | especificado | Opus | — | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
+| WP-30B | Peso de la supervivencia según el jugador | E6 | pendiente | Opus | — | CT-27 |
+| WP-30C | Retirada aprendida | E6 | pendiente | Opus | — | CT-28 |
 | WP-25 | Arañas | E6 | pendiente | Sonnet | — | |
 | WP-26 | Consulta de memoria y métricas | E6 | pendiente | Sonnet | — | |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
@@ -84,7 +87,6 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 
 | Decisión | Dónde se cierra |
 | --- | --- |
-| Pedido de Nico (8 oct): que el éxito de un plan no mida solo el daño. Hoy es `daño hecho ÷ (0,5 × vida del objetivo)`, con 1 si el objetivo muere, y el tiempo para matar solo sirve para elegir objetivo. Propuesta: medir tres cosas (daño hecho, rapidez y supervivencia del grupo) y que, contra jugadores muy buenos, pese más la supervivencia. Falta acordar el diseño con Nico (CT nuevo, toca cerebro, simulación y requerimientos) | Antes de la puerta E6 o como primer cambio después del MVP, según Nico |
 | `PressGoal` maneja tres modos (frontal, paciente y esquivo) con `if` sobre la sugerencia. Nico va a sumar más ataques: con el cuarto modo, separar cada uno en una clase de táctica (`MeleeTactic`: paciente, esquiva, frontal) que `PressGoal` elige por el ataque sugerido | Antes de agregar el próximo ataque de zombie |
 | El cerebro le sugiere el golpe de flanco también a un zombie que presiona; `PressGoal` pega de frente y registra eso (lo ejecutado), así que la sugerencia se desperdicia. Propuesta: que `AttackSuggester` no ofrezca `ZOMBIE_FLANK_STRIKE` fuera del rol `FLANK` (CT-08 ya lo elige solo para los flanqueadores). Cambia sorteos de varias pruebas del cerebro | WP chico de limpieza, junto con los ciclos de paquetes |
 | Ciclos entre paquetes del dominio: `group` ↔ `decision` (`ClosedPlan` usa `PlanEndReason`) y `brain` ↔ `decision` (`DecisionTrace` usa `RegroupEndReason`). No rompen nada, pero conviene una regla de ArchUnit sin ciclos y mover los enums compartidos | Después de la puerta E3, en un WP chico de limpieza |

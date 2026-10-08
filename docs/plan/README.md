@@ -142,6 +142,9 @@ La simulación de E3 también cierra una decisión abierta de `requerimientos.md
 | WP-23C | Alcance del jugador según su arma | WP-23B | Sonnet | CT-24 |
 | WP-23D | Esquivo calculado | WP-23C | Sonnet | CT-25 |
 | WP-24G | Tensar el arco | WP-23D | Sonnet | CT-26 |
+| WP-30A | Éxito con tres medidas | WP-24G | Opus | CT-27 |
+| WP-30B | Peso de la supervivencia según el jugador | WP-30A | Opus | CT-27 |
+| WP-30C | Retirada aprendida | WP-30B | Opus | CT-28 |
 | WP-24C | Esqueletos en formación | WP-24B | Sonnet | `ShooterFormation`, línea de tiro limpia, arcos (CT-21) |
 | WP-24D | Esqueletos en altura | WP-24C | Sonnet | CT-22 |
 | WP-24E | Andanada: cerebro | WP-23C | Opus | Estrategia `VOLLEY` y fases (CT-23) |
@@ -393,6 +396,8 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D34. Sin planes con el grupo en retirada** (CT-13, WP-22A). Un grupo con más de la mitad de los mobs en 30 % de vida o menos no planifica: reagrupa, y si la ventana vence sigue reagrupando sin que la ventana aprenda.
 - **D38. Flanqueadores proporcionales** (CT-18, WP-22E). En la estrategia de flanqueo, flanquea la mitad de cada tipo de mob cuerpo a cuerpo; el sobrante impar va a un zombie.
 - **D39. Golpe esquivo** (CT-19, WP-23B). Ataque aprendible de zombie: retrocede ante el golpe cargado del jugador y pega mientras el arma se recarga.
+- **D46. Éxito con tres medidas** (CT-27, WP-30A y WP-30B). Daño, rapidez y supervivencia del grupo; contra jugadores muy buenos pesa más la supervivencia.
+- **D47. Retirada aprendida** (CT-28, WP-30C). El umbral de retirada se aprende por jugador.
 - **D45. Tensar el arco** (CT-26, WP-24G). El esqueleto se planta, gira y tensa el arco 20 ticks antes de soltar; en la andanada espera tenso.
 - **D44. Esquivo calculado** (CT-25, WP-23D). El zombie esquivo decide con tiempos calculados (la carga que le falta al arma del jugador, y su velocidad real) y, frente a un escudo con el arma cargada, se pone al costado de la mira.
 - **D43. Alcance del jugador según su arma** (CT-24, WP-23C). Flanqueo y esquive se miden como el alcance real del jugador más un margen.

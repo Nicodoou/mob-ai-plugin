@@ -29,6 +29,8 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-24](#ct-24--alcance-del-jugador-según-su-arma) Alcance del jugador según su arma | 8 oct 2026 | Nico | WP-23C |
 | [CT-25](#ct-25--esquivo-calculado) Esquivo calculado | 8 oct 2026 | Nico | WP-23D |
 | [CT-26](#ct-26--tensar-el-arco) Tensar el arco | 8 oct 2026 | Nico | WP-24G |
+| [CT-27](#ct-27--éxito-con-tres-medidas) Éxito con tres medidas | 8 oct 2026 | Nico | WP-30A, WP-30B |
+| [CT-28](#ct-28--retirada-aprendida) Retirada aprendida | 8 oct 2026 | Nico | WP-30C |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -413,3 +415,44 @@ En `HOLD_FIRE` (andanada), el esqueleto ya ubicado se queda tenso y suelta en el
 **Riesgos.**
 - Que el arco de un mob en uso no muestre la animación en el cliente.
 - Un esqueleto plantado es un blanco más fácil: es el costo de que se vea bien, y vanilla lo compensa moviéndose de costado (fuera de alcance por ahora).
+
+## CT-27 — Éxito con tres medidas
+
+**Qué cambia.** El éxito de un plan deja de medir solo el daño. Combina tres medidas, cada una de 0 a 1:
+
+- **daño:** como hasta ahora;
+- **rapidez:** la parte de la vida del objetivo que se le sacó, en proporción al tiempo, contra matarlo en 600 ticks;
+- **supervivencia del grupo:** ½ × aliados del inicio vivos al cierre + ½ × (1 − vida neta perdida ÷ vida del grupo al inicio). La vida neta descuenta la curación.
+
+**Pesos** (WP-30A): 0,4, 0,4 y 0,2, configurables.
+
+**Jugador muy bueno** (WP-30B): el grupo lleva por jugador cuánta vida pierde por cada punto de daño que le hace, con el olvido de la memoria. Cuanto más alto, más pesa la supervivencia, entre un piso y un techo configurables, y el resto se reparte entre daño y rapidez. Se detecta solo.
+
+**Por qué.** Nico: contra jugadores muy buenos conviene reforzar las estrategias que mantienen vivo al grupo. Hasta ahora, un plan que hacía daño pero perdía a medio grupo se aprendía igual de bueno.
+
+**Impacto.**
+- WP-30A: `Plan` (vida del inicio y última vista), `PlanScoring`, `PlanScores`, `ClosedPlan`, `Brain`, `RecordPlayerDeath`, `DebugLog` y la configuración `success`.
+- WP-30B: la memoria (un registro de peligro por jugador), la persistencia (versión 2 del esquema) y los pesos dinámicos.
+
+**Riesgos.**
+- Un mob que desaparece (chunk descargado) cuenta como perdido.
+- La simulación del WP-11 sortea el éxito de su propio modelo: no valida esta fórmula.
+
+## CT-28 — Retirada aprendida
+
+**Qué cambia.** El umbral de retirada individual (`plan.retreat-health-fraction`, 30 %) deja de ser fijo y pasa a aprenderse por jugador.
+
+- El grupo guarda un umbral entre 0 % (pelear hasta morir) y un techo configurable (70 %).
+- Al abrir cada plan, prueba un umbral al azar cerca del suyo. El sorteo es más abierto cuando sabe poco de ese jugador.
+- Al cerrar, compara el éxito del plan (CT-27) con el promedio contra ese jugador. Si salió mejor, el umbral se mueve hacia el que probó; si no, no se refuerza.
+- El umbral y el promedio se olvidan con la vida media de la memoria.
+
+**Por qué.** Nico: que el cerebro decida cuándo conviene retirarse. Si curarse no sirve porque el jugador persigue, que pruebe retirarse antes o pelear hasta morir.
+
+Se usa el éxito del plan, y no la curación sola, para poder comparar con no retirarse.
+
+**Impacto.** `Brain` (umbral por plan), la memoria y la persistencia, y la configuración. La retirada de grupo (CT-13) sigue fija al 30 %.
+
+**Riesgos.**
+- Aprende más lento que una estrategia, porque es un valor continuo con ruido.
+- Hay que calibrar el paso y el ruido con la simulación.
