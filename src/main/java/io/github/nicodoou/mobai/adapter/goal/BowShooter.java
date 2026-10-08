@@ -9,6 +9,7 @@ import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import java.util.List;
 import java.util.Objects;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Mob;
@@ -27,17 +28,21 @@ public final class BowShooter {
     this.parts = Objects.requireNonNull(parts, "BowShooter.parts");
   }
 
+  public ShotRequest requestFor(Mob shooter, Player target, Attack attack) {
+    return new ShotRequest(
+        attack,
+        PoseReader.positionOf(shooter.getEyeLocation()),
+        PoseReader.bodyCenterOf(target),
+        parts.movement().movementPerTick(new PlayerId(target.getUniqueId())));
+  }
+
+  public boolean isLaneClear(ShotRequest request, List<Vec3> allies) {
+    return parts.aim().isLaneClear(request, allies);
+  }
+
   public void shoot(Mob shooter, Player target, Attack attack) {
     PlayerId targetId = new PlayerId(target.getUniqueId());
-    Vec3 velocity =
-        parts
-            .aim()
-            .velocity(
-                new ShotRequest(
-                    attack,
-                    PoseReader.positionOf(shooter.getEyeLocation()),
-                    PoseReader.bodyCenterOf(target),
-                    parts.movement().movementPerTick(targetId)));
+    Vec3 velocity = parts.aim().velocity(requestFor(shooter, target, attack));
     ArrowRotation rotation = parts.aim().rotationOf(velocity);
     Arrow arrow =
         shooter.launchProjectile(

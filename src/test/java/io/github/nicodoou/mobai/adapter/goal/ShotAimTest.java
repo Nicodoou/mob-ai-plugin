@@ -79,6 +79,21 @@ class ShotAimTest {
         .hasMessage("ShotAim: ZOMBIE_FRONT_STRIKE is not a skeleton shot");
   }
 
+  // B-04: the lane has to be checked towards the point the arrow flies to, not the target.
+  @Test
+  void laneIsCheckedTowardsWhereTheShotFlies() {
+    Vec3 fastMovement = new Vec3(0, 0, 0.5);
+    Vec3 leadPoint = geometry.predictedAimPoint(eye, center, fastMovement);
+    Vec3 allyInTheLeadLane = eye.plus(leadPoint.minus(eye).times(0.8));
+    List<Vec3> allies = List.of(allyInTheLeadLane);
+
+    ShotRequest lead = new ShotRequest(Attack.SKELETON_LEAD_SHOT, eye, center, fastMovement);
+    ShotRequest direct = new ShotRequest(Attack.SKELETON_DIRECT_SHOT, eye, center, fastMovement);
+
+    assertThat(aim.isLaneClear(lead, allies)).isFalse();
+    assertThat(aim.isLaneClear(direct, allies)).isTrue();
+  }
+
   private ShotRequest request(Attack attack) {
     return new ShotRequest(attack, eye, center, movement);
   }
