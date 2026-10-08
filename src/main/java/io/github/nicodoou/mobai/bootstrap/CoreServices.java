@@ -136,7 +136,8 @@ public record CoreServices(
     return new ToolUseCases(
         new ResetMemories(activeGroups),
         new DescribeGroup(activeGroups),
-        new DescribePlayerMemory(activeGroups),
+        new DescribePlayerMemory(
+            activeGroups, foundation.settings().section(MobAiSettings::success)),
         new SaveMemories(activeGroups, repository),
         new LoadMemories(activeGroups, foundation.settings(), repository));
   }

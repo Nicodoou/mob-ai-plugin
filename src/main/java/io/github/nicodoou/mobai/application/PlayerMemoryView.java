@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.application;
 
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.memory.SuccessEstimate;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
@@ -14,10 +15,13 @@ public record PlayerMemoryView(
     GroupId group,
     PlayerId player,
     Map<Attack, SuccessEstimate> attacks,
-    Map<StrategyId, SuccessEstimate> strategies) {
+    Map<StrategyId, SuccessEstimate> strategies,
+    DangerRecord dangerRecord,
+    double danger) {
   public PlayerMemoryView {
     Objects.requireNonNull(group, "PlayerMemoryView.group");
     Objects.requireNonNull(player, "PlayerMemoryView.player");
+    Objects.requireNonNull(dangerRecord, "PlayerMemoryView.dangerRecord");
     attacks = Collections.unmodifiableMap(new LinkedHashMap<>(attacks));
     strategies = Collections.unmodifiableMap(new LinkedHashMap<>(strategies));
   }
