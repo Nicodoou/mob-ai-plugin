@@ -518,3 +518,27 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** el formato se prueba sin Paper, y el comando solo resuelve al jugador y manda las líneas.
 - **Lo flojo:** solo jugadores conectados, y todavía no muestra el umbral de retirada (llega con el WP-30C).
 - **Riesgo:** ninguno nuevo. Ojo: la regla de 3 parámetros no la verifica ninguna herramienta (ArchUnit no la cubre), así que depende de la revisión.
+
+## Regla de 3 parámetros (PR #53, tarea aparte)
+
+**Qué hizo.** La regla de la política («hasta 3 parámetros») ahora la verifica ArchUnit con `codeUnitsHaveAtMostThreeParameters`, sobre el código de producción.
+- **Exentos:** el constructor canónico de un record (el record es el objeto que agrupa), las lambdas y los constructores de clases anónimas (parámetros que genera el compilador).
+- **Violaciones corregidas:**
+  - `SettingsChecks.requireBetween` y `requireNotAbove` reciben un `NamedSetting(field, value)` package-private; los mensajes de error no cambian;
+  - `GroupMemory.applyObservation` recibe un record privado `KeyedObservation<K>`, y el peso 1,0 pasa a ser la constante `FULL_WEIGHT`.
+- **Política:** `politica-de-codigo.md` anota la exención del record.
+
+**Revisión.**
+- La sesión en la nube no puede compilar el proyecto: no hay JDK 25 y la red bloquea foojay y adoptium. El build quedó cubierto por el CI, que está en verde.
+- **La regla, probada aparte** con ArchUnit 1.5.1 sobre clases de prueba:
+  - marca un método de 4 parámetros;
+  - exime un record de 4 componentes;
+  - cuenta 2 en un constructor de enum de 2 parámetros, aunque el bytecode tiene 4 (`name` y `ordinal`); por eso `Attack` pasa.
+- **Falso positivo latente:** el constructor de una clase interna no estática cuenta el `this` externo. Hoy no hay ninguna en `main`; quedó anotado en el manual.
+
+**Opinión del código.**
+- **Lo bueno:** el cambio es chico, los mensajes de error no cambian y la exención del record está bien justificada.
+- **Lo flojo:**
+  - `SettingsChecks` queda con dos estilos: `requireBetween` y `requireNotAbove` reciben `NamedSetting`, y `requireAtLeast` y `requirePositive` siguen con `(String, valor)`. Unificarlo es un cambio cosmético para la próxima vez que se toque el archivo;
+  - el código de las pruebas no está cubierto por la regla, y es una decisión razonable.
+- **Riesgo:** ninguno. Cierra el riesgo del WP-26: la regla ya no depende de la revisión.

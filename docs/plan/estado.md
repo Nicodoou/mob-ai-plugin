@@ -2,7 +2,7 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 8 de octubre de 2026 (WP-26 mergeado; test fuerte de Nico pendiente).
+**Última actualización:** 8 de octubre de 2026 (regla de 3 parámetros mergeada, PR #53; test fuerte de Nico pendiente).
 
 ## Próximo paso
 
@@ -18,9 +18,8 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
      - la lanza (WP-23C).
    - Lo que no coincida va por `docs/resolucion-de-bugs.md` y se anota en `docs/plan/verificacion-e6.md` (corrida 5 en adelante).
 2. **Después:** WP-30C (retirada aprendida, CT-28, Opus), WP-25 (arañas) y la puerta E6.
-3. **Tarea aparte en curso** (otra sesión): regla automática de 3 parámetros. Si llega un PR, revisarlo como cualquier WP.
-4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`.
-5. **Preferencias:** después de cada compactación o al pasar a la nube, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
+3. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`.
+4. **Preferencias:** después de cada compactación o al pasar a la nube, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
 
 ## WPs
 
