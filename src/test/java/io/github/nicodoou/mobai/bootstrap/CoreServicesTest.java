@@ -57,7 +57,7 @@ class CoreServicesTest {
     group
         .lifecycle()
         .startPlan(new PlanStart(STRATEGY, PLAYER, Map.of(mob(1), Role.PRESS), 20.0, 100));
-    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, 0.5);
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, TestSettings.scoring());
     group.lifecycle().finishEvaluation();
 
     core.removeMember().execute(mob(1), RemovalCause.DIED, 300);

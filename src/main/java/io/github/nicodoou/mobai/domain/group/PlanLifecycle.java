@@ -1,11 +1,13 @@
 package io.github.nicodoou.mobai.domain.group;
 
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
+import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -111,15 +113,22 @@ public final class PlanLifecycle {
     plan = plan.withTargetSeenAt(tick);
   }
 
+  public void recordGroupHealth(Map<MobId, Double> health) {
+    if (state != GroupState.EXECUTING) {
+      return;
+    }
+    plan = plan.withHealthSeen(health);
+  }
+
   public void assignRole(MobId mobId, Role role) {
     requireState(GroupState.EXECUTING, "assign a role");
     roster.requireMembers(Set.of(mobId));
     plan = plan.withRole(mobId, role);
   }
 
-  public ClosedPlan closePlan(PlanEndReason reason, long tick, double fullSuccessDamageFraction) {
+  public ClosedPlan closePlan(PlanEndReason reason, long tick, PlanScoring scoring) {
     requireState(GroupState.EXECUTING, "close a plan");
-    ClosedPlan closed = closedPlan(reason, tick, fullSuccessDamageFraction);
+    ClosedPlan closed = closedPlan(reason, tick, scoring);
     committedTarget = plan.target();
     lastEndReason = reason;
     lastEndTick = tick;
@@ -200,14 +209,15 @@ public final class PlanLifecycle {
     roster.requireMembers(restored.roles().keySet());
   }
 
-  private ClosedPlan closedPlan(PlanEndReason reason, long tick, double fraction) {
-    double success = reason == PlanEndReason.TARGET_DIED ? 1 : plan.successFraction(fraction);
+  private ClosedPlan closedPlan(PlanEndReason reason, long tick, PlanScoring scoring) {
+    PlanScores scores = scoring.scoresOf(plan, reason, tick);
     return new ClosedPlan(
         plan.id(),
         plan.strategy(),
         plan.target(),
         reason,
-        success,
+        scoring.successOf(scores),
+        scores,
         plan.damageDealt(),
         plan.startTick(),
         tick);

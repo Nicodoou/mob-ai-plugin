@@ -124,6 +124,8 @@ El MVP prueba la idea central (mobs que aprenden de cada jugador) con tres tipos
 
 **Velocidad de aprendizaje (configurable, de 0 a 1):** controla cuánto pesa cada resultado frente al valor inicial de 50%. Se implementa como intentos virtuales al crear cada registro: intentos virtuales = 50 − 48 × velocidad. Con 1 (2 intentos virtuales, la Beta(1,1)), diez aciertos de diez dan 92%: aprende rápido pero se sesga. Con 0 (50 intentos virtuales), dan 58%: aprende de forma muy gradual y necesita muchas peleas. El 0 nunca apaga el aprendizaje. Aplica igual a todas las políticas del RF-12, puede asignarse por grupo y debe ajustarse junto con la vida media del olvido: aprendizaje lento con olvido rápido borra la memoria antes de juntar datos.
 
+**Éxito de un plan (CT-27).** Combina tres medidas de 0 a 1: daño hecho (`daño ÷ (0,5 × vida del objetivo)`, 1 si muere), rapidez (la parte de la vida sacada en proporción al tiempo, contra matarlo en 600 ticks) y supervivencia del grupo (½ aliados vivos, ½ vida neta conservada). Pesos configurables: 0,4, 0,4 y 0,2.
+
 ### RF-07 Aprendizaje cruzado
 
 1. **Observadores:** al terminar un plan, los grupos a menos de N bloques registran el resultado con peso 0,5.

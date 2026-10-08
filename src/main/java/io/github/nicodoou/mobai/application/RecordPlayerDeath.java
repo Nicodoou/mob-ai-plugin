@@ -5,6 +5,7 @@ import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
+import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +41,7 @@ public final class RecordPlayerDeath {
             .closePlan(
                 PlanEndReason.TARGET_DIED,
                 tick,
-                settings.current().plan().fullSuccessDamageFraction());
+                new PlanScoring(settings.current().plan(), settings.current().success()));
     groupEvents.publishPending(group);
     return closed;
   }

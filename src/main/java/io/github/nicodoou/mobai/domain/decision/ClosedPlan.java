@@ -12,6 +12,7 @@ public record ClosedPlan(
     PlayerId target,
     PlanEndReason reason,
     double success,
+    PlanScores scores,
     double damageDealt,
     long startTick,
     long endTick) {
@@ -21,6 +22,7 @@ public record ClosedPlan(
     Objects.requireNonNull(strategy, "ClosedPlan.strategy");
     Objects.requireNonNull(target, "ClosedPlan.target");
     Objects.requireNonNull(reason, "ClosedPlan.reason");
+    Objects.requireNonNull(scores, "ClosedPlan.scores");
     if (!(success >= 0 && success <= 1)) {
       throw new IllegalArgumentException(
           "ClosedPlan.success must be between 0.0 and 1.0, got " + success);

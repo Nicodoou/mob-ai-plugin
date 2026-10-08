@@ -36,7 +36,7 @@ class PlanSequenceRestoreTest {
     group.roster().addMember(mob(1), MobKind.ZOMBIE);
     group.lifecycle().beginPlanning();
     group.lifecycle().startPlan(pressStart());
-    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 200, 0.5);
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 200, TestSettings.scoring());
     group.lifecycle().finishEvaluation();
 
     assertThatThrownBy(() -> group.lifecycle().restorePlanSequence(0))

@@ -3,6 +3,7 @@ package io.github.nicodoou.mobai.application;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
+import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
@@ -51,6 +52,7 @@ class ClosePlanTest {
             player,
             PlanEndReason.TIMED_OUT,
             0.4,
+            new PlanScores(1, 1, 1),
             3.0,
             100,
             700));

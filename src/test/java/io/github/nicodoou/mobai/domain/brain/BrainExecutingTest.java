@@ -9,9 +9,11 @@ import static io.github.nicodoou.mobai.testsupport.BrainFixture.bobAt;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.withHealth;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.withPosition;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.AttackChoice;
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
+import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
@@ -27,6 +29,7 @@ import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.FlankStrategy;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
+import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +46,7 @@ class BrainExecutingTest {
   private static final int DECISION_TICKS = 10;
   private static final double LOW_HEALTH = 5;
   private static final double RECOVERED_HEALTH = 12;
-  private static final double FULL_SUCCESS_FRACTION = 0.5;
+  private static final double HALF_HEALTH = 10;
 
   private final BrainFixture fixture = BrainFixture.choosingStrategy(DIRECT_ASSAULT_INDEX);
 
@@ -102,6 +105,22 @@ class BrainExecutingTest {
     assertThat(result.closedPlan().orElseThrow().reason()).isEqualTo(PlanEndReason.TIMED_OUT);
     assertThat(result.decision().state()).isEqualTo(GroupState.OBSERVING);
     assertThat(result.decision().assignments()).isEmpty();
+  }
+
+  @Test
+  void closedPlanScoresTheHealthTheGroupLost() {
+    List<MobSnapshot> mobs = startPlan(fixture);
+    double startingGroupHealth = mobs.stream().mapToDouble(MobSnapshot::health).sum();
+    double lostHealth = mobs.get(FIRST_ZOMBIE).health() - HALF_HEALTH;
+    List<MobSnapshot> wounded = withHealth(mobs, FIRST_ZOMBIE, HALF_HEALTH);
+    fixture.decide(START_TICK + 300, wounded, alice());
+
+    BrainResult result = fixture.decide(START_TICK + 600, wounded, alice());
+
+    ClosedPlan closed = result.closedPlan().orElseThrow();
+    assertThat(closed.reason()).isEqualTo(PlanEndReason.TIMED_OUT);
+    assertThat(closed.scores().survival())
+        .isCloseTo(0.5 * 1 + 0.5 * (1 - lostHealth / startingGroupHealth), within(1e-9));
   }
 
   @Test
@@ -263,7 +282,7 @@ class BrainExecutingTest {
     fixture
         .group()
         .lifecycle()
-        .closePlan(PlanEndReason.TARGET_DIED, START_TICK + 5, FULL_SUCCESS_FRACTION);
+        .closePlan(PlanEndReason.TARGET_DIED, START_TICK + 5, TestSettings.scoring());
 
     BrainResult result = fixture.decide(START_TICK + 10, mobs, alice());
 

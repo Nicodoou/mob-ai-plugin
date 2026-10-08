@@ -13,7 +13,8 @@ public record MobAiSettings(
     PersistenceSettings persistence,
     DebugSettings debug,
     RetreatSettings retreat,
-    VolleySettings volley) {
+    VolleySettings volley,
+    SuccessSettings success) {
   public MobAiSettings {
     Objects.requireNonNull(group, "MobAiSettings.group");
     Objects.requireNonNull(memory, "MobAiSettings.memory");
@@ -26,6 +27,7 @@ public record MobAiSettings(
     Objects.requireNonNull(debug, "MobAiSettings.debug");
     Objects.requireNonNull(retreat, "MobAiSettings.retreat");
     Objects.requireNonNull(volley, "MobAiSettings.volley");
+    Objects.requireNonNull(success, "MobAiSettings.success");
     requireRecoveryAboveRetreat(plan, retreat);
   }
 

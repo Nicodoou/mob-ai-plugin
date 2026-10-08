@@ -20,7 +20,15 @@ class ClosedPlanTest {
     assertThatThrownBy(
             () ->
                 new ClosedPlan(
-                    PLAN_ID, FLANK_STRATEGY, ALICE, PlanEndReason.TIMED_OUT, 1.5, 5, 100, 700))
+                    PLAN_ID,
+                    FLANK_STRATEGY,
+                    ALICE,
+                    PlanEndReason.TIMED_OUT,
+                    1.5,
+                    new PlanScores(1, 1, 1),
+                    5,
+                    100,
+                    700))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("ClosedPlan.success must be between 0.0 and 1.0, got 1.5");
   }
@@ -30,7 +38,15 @@ class ClosedPlanTest {
     assertThatThrownBy(
             () ->
                 new ClosedPlan(
-                    PLAN_ID, FLANK_STRATEGY, ALICE, PlanEndReason.TIMED_OUT, 0.5, 5, 100, 99))
+                    PLAN_ID,
+                    FLANK_STRATEGY,
+                    ALICE,
+                    PlanEndReason.TIMED_OUT,
+                    0.5,
+                    new PlanScores(1, 1, 1),
+                    5,
+                    100,
+                    99))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("ClosedPlan.endTick must not be before startTick, got 99 < 100");
   }

@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.testsupport;
 
+import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.settings.DebugSettings;
@@ -11,6 +12,7 @@ import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
 import io.github.nicodoou.mobai.domain.settings.VolleySettings;
@@ -30,6 +32,12 @@ public final class TestSettings {
         new PersistenceSettings(6_000),
         new DebugSettings(TraceLevel.OFF, 200),
         new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50),
-        new VolleySettings(60, 20, 30, 1.5));
+        new VolleySettings(60, 20, 30, 1.5),
+        new SuccessSettings(0.4, 0.4, 0.2, 600));
+  }
+
+  public static PlanScoring scoring() {
+    MobAiSettings settings = defaults();
+    return new PlanScoring(settings.plan(), settings.success());
   }
 }

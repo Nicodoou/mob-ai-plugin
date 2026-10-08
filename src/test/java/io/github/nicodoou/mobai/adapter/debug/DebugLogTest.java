@@ -6,6 +6,7 @@ import io.github.nicodoou.mobai.domain.attack.AttackFacts;
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.decision.DecisionTrace;
 import io.github.nicodoou.mobai.domain.decision.GroupDecision;
+import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -41,6 +42,7 @@ class DebugLogTest {
             player,
             PlanEndReason.TARGET_DIED,
             1.0,
+            new PlanScores(1, 1, 1),
             20.0,
             100,
             TICK);
@@ -53,7 +55,7 @@ class DebugLogTest {
                 + groupId(1).shortId()
                 + " plan=3 strategy=FLANK target="
                 + player.shortId()
-                + " reason=TARGET_DIED success=1.00 damage=20.0");
+                + " reason=TARGET_DIED success=1.00 scores=1.00/1.00/1.00 damage=20.0");
   }
 
   @Test
