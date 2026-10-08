@@ -22,6 +22,8 @@ public final class MinecraftConstants {
   // Our goals attack at these vanilla rates; the kill time estimate assumes the same rates.
   public static final int MELEE_ATTACK_INTERVAL_TICKS = 20;
   public static final int SKELETON_ATTACK_INTERVAL_TICKS = 40;
+  // A bow reaches full power after 20 ticks of drawing; vanilla skeletons release it then.
+  public static final int BOW_FULL_DRAW_TICKS = 20;
   public static final double MELEE_REACH_BLOCKS = 2.0;
 
   // A survival player's reach with a plain weapon; spears reach farther (their own component).

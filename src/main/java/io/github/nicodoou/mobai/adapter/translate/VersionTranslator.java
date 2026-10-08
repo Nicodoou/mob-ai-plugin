@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -118,6 +119,17 @@ public final class VersionTranslator {
   // Skeleton arrows cannot be picked up in vanilla either; launched arrows default to allowed.
   public void forbidPickup(AbstractArrow arrow) {
     arrow.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
+  }
+
+  // Raised arms and a drawn bow are what players read as "about to shoot".
+  public void drawBow(Mob mob) {
+    mob.setAggressive(true);
+    mob.startUsingItem(EquipmentSlot.HAND);
+  }
+
+  public void lowerBow(Mob mob) {
+    mob.clearActiveItem();
+    mob.setAggressive(false);
   }
 
   // Natural skeletons carry a bow; the test group spawns bare, and one without it looks unarmed.
