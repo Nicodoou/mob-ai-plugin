@@ -96,7 +96,8 @@ volley:
   fall-back-margin-blocks: 1.5
 
 success:
-  # Éxito de un plan (CT-27): daño hecho, rapidez y supervivencia del grupo, con estos pesos (suman 1).
+  # Éxito de un plan (CT-27): el ataque (daño hecho y rapidez, con sus pesos) multiplicado por cuánto
+  # sobrevivió el grupo; survival-weight es cuánto descuenta perder al grupo entero.
   damage-weight: 0.4
   speed-weight: 0.4
   survival-weight: 0.2

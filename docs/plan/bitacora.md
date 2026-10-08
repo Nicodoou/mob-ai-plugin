@@ -542,3 +542,19 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - `SettingsChecks` queda con dos estilos: `requireBetween` y `requireNotAbove` reciben `NamedSetting`, y `requireAtLeast` y `requirePositive` siguen con `(String, valor)`. Unificarlo es un cambio cosmético para la próxima vez que se toque el archivo;
   - el código de las pruebas no está cubierto por la regla, y es una decisión razonable.
 - **Riesgo:** ninguno. Cierra el riesgo del WP-26: la regla ya no depende de la revisión.
+
+## WP-30D — La supervivencia multiplica (PR #54, Sonnet)
+
+**Qué hizo.** Corrige el hallazgo D-01 del test fuerte, como enmienda al CT-27.
+- **Fórmula nueva:** `éxito = ataque × (1 − w + w × supervivencia)`, con `ataque = (wD × daño + wR × rapidez) ÷ (wD + wR)`. Los pesos siguen saliendo del peligro.
+- **Qué arregla:** un plan sin daño ya no puntúa, aunque el grupo sobreviva.
+
+**Revisión.**
+- Las 3 pruebas nuevas, los 3 valores recalculados con su cálculo y las 3 roturas del WP; todas mordieron.
+- Mi rotura (raíz de la supervivencia) hizo fallar 4 pruebas.
+- Build y CI en verde.
+
+**Opinión del código.**
+- **Lo bueno:** el cambio es de una función, y las pruebas fijan las dos propiedades que importan: sin daño no hay éxito, y perder al grupo cuesta más contra un jugador peligroso.
+- **Lo flojo:** el diseño original (CT-27) tenía este agujero y lo encontró el test en el juego, no la especificación. Fue error de Opus.
+- **Riesgo:** con un grupo que casi nunca le hace daño al jugador, todas las estrategias quedan cerca de 0 y la memoria distingue poco entre ellas.
