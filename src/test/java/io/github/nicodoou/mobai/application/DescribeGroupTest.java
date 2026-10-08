@@ -70,7 +70,7 @@ class DescribeGroupTest {
     Group group = groupWithMember(1);
     group.lifecycle().beginPlanning();
     group.lifecycle().startPlan(directAssault());
-    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, 0.5);
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, TestSettings.scoring());
     group.lifecycle().finishEvaluation();
 
     GroupStatusView view = describeGroup.find(groupId(1).shortId()).orElseThrow();

@@ -27,6 +27,7 @@ import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.FlankStrategy;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
+import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +44,6 @@ class BrainExecutingTest {
   private static final int DECISION_TICKS = 10;
   private static final double LOW_HEALTH = 5;
   private static final double RECOVERED_HEALTH = 12;
-  private static final double FULL_SUCCESS_FRACTION = 0.5;
 
   private final BrainFixture fixture = BrainFixture.choosingStrategy(DIRECT_ASSAULT_INDEX);
 
@@ -263,7 +263,7 @@ class BrainExecutingTest {
     fixture
         .group()
         .lifecycle()
-        .closePlan(PlanEndReason.TARGET_DIED, START_TICK + 5, FULL_SUCCESS_FRACTION);
+        .closePlan(PlanEndReason.TARGET_DIED, START_TICK + 5, TestSettings.scoring());
 
     BrainResult result = fixture.decide(START_TICK + 10, mobs, alice());
 

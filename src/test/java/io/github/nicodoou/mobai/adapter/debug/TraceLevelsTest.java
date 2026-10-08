@@ -6,6 +6,7 @@ import io.github.nicodoou.mobai.domain.attack.AttackFacts;
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.decision.DecisionTrace;
 import io.github.nicodoou.mobai.domain.decision.GroupDecision;
+import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.settings.DebugSettings;
@@ -120,6 +121,7 @@ class TraceLevelsTest {
             new PlayerId(new UUID(0, 2)),
             PlanEndReason.TARGET_DIED,
             1.0,
+            new PlanScores(1, 1, 1),
             20.0,
             TICK,
             TICK);

@@ -118,10 +118,6 @@ public record Plan(
     return tick - lastTargetSeenTick;
   }
 
-  public double successFraction(double fullSuccessDamageFraction) {
-    return Math.min(1, damageDealt / (fullSuccessDamageFraction * targetMaxHealth));
-  }
-
   private Plan copyWithRoles(Map<MobId, Role> newRoles) {
     return new Plan(
         id,

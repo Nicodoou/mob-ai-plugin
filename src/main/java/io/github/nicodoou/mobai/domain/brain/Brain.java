@@ -11,6 +11,7 @@ import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.PlanLifecycle;
+import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.group.PlanStart;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.selection.SelectionCandidate;
@@ -18,6 +19,7 @@ import io.github.nicodoou.mobai.domain.selection.SelectionPolicy;
 import io.github.nicodoou.mobai.domain.selection.SelectionResult;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
+import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
@@ -27,7 +29,9 @@ import io.github.nicodoou.mobai.domain.strategy.GroupStrategy;
 import io.github.nicodoou.mobai.domain.strategy.VolleyStrategy;
 import io.github.nicodoou.mobai.domain.target.TargetQuery;
 import io.github.nicodoou.mobai.domain.target.TargetSelection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -171,7 +175,16 @@ public final class Brain {
                     strategy.assignRoles(turn.snapshot(), target),
                     targetMaxHealth,
                     turn.snapshot().tick()));
+    turn.lifecycle().recordGroupHealth(healthOf(turn.snapshot()));
     turn.draft().plan(plan.id());
+  }
+
+  private static Map<MobId, Double> healthOf(GroupSnapshot snapshot) {
+    Map<MobId, Double> health = new LinkedHashMap<>();
+    for (MobSnapshot mob : snapshot.mobs()) {
+      health.put(mob.id(), mob.health());
+    }
+    return health;
   }
 
   private void retreatLowHealth(Turn turn) {
@@ -185,6 +198,7 @@ public final class Brain {
   private Outcome execute(Turn turn) {
     turn.draft().plan(currentPlan(turn).id());
     markTargetSeenIfVisible(turn);
+    turn.lifecycle().recordGroupHealth(healthOf(turn.snapshot()));
     updateRoles(turn);
     Optional<PlanEndReason> endReason = detectPlanEnd(turn);
     if (endReason.isPresent()) {
@@ -256,14 +270,13 @@ public final class Brain {
 
   // The evaluation finishes in the same decision; the next plan starts in the next one (D10).
   private Outcome closeAndEvaluate(Turn turn, PlanEndReason endReason) {
-    ClosedPlan closed =
-        turn.lifecycle()
-            .closePlan(
-                endReason,
-                turn.snapshot().tick(),
-                settings.get().plan().fullSuccessDamageFraction());
+    ClosedPlan closed = turn.lifecycle().closePlan(endReason, turn.snapshot().tick(), scoring());
     turn.lifecycle().finishEvaluation();
     return new Outcome(ordersAfterEvaluation(turn), Optional.of(closed));
+  }
+
+  private PlanScoring scoring() {
+    return new PlanScoring(settings.get().plan(), settings.get().success());
   }
 
   // A plan closed between decisions (the target died) is evaluated here.

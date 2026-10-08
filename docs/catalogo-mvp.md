@@ -79,6 +79,8 @@ El éxito de un plan es fraccional, porque "el jugador murió" pasa demasiado po
 
 La curación del jugador durante el plan no se descuenta: mide lo que el grupo logró hacer, no el estado final.
 
+Desde el CT-27, esta fórmula es solo la medida de daño: el éxito combina daño, rapidez y supervivencia del grupo (ver «Éxito de un plan» en RF-06 de `requerimientos.md`).
+
 ### Cuándo termina un plan
 
 Gana la primera condición que se cumpla:

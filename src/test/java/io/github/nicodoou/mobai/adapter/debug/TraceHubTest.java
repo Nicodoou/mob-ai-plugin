@@ -7,6 +7,7 @@ import io.github.nicodoou.mobai.domain.attack.AttackOutcome;
 import io.github.nicodoou.mobai.domain.attack.Classification;
 import io.github.nicodoou.mobai.domain.attack.ClassificationTrace;
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
+import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
@@ -137,6 +138,7 @@ class TraceHubTest {
             new PlayerId(new UUID(0, 2)),
             PlanEndReason.TARGET_DIED,
             1.0,
+            new PlanScores(1, 1, 1),
             20.0,
             TICK,
             TICK));

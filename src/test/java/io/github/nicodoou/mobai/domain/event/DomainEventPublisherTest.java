@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
+import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
@@ -31,6 +32,7 @@ class DomainEventPublisherTest {
               new PlayerId(new UUID(0, 10)),
               PlanEndReason.TIMED_OUT,
               0.5,
+              new PlanScores(1, 1, 1),
               5,
               100,
               700));

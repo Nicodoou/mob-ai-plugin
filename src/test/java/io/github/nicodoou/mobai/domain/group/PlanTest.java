@@ -9,6 +9,7 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -64,10 +65,14 @@ class PlanTest {
   @Test
   void successIsDamageOverHalfTheTargetMaxHealth() {
     Plan plan = newPlan();
+    PlanScoring scoring = TestSettings.scoring();
 
-    assertThat(plan.withDamageDealt(5).successFraction(0.5)).isCloseTo(0.5, within(1e-9));
-    assertThat(plan.withDamageDealt(12).successFraction(0.5)).isCloseTo(1, within(1e-9));
-    assertThat(plan.successFraction(0.5)).isCloseTo(0, within(1e-9));
+    assertThat(scoring.scoresOf(plan.withDamageDealt(5), PlanEndReason.TIMED_OUT, 700).damage())
+        .isCloseTo(0.5, within(1e-9));
+    assertThat(scoring.scoresOf(plan.withDamageDealt(12), PlanEndReason.TIMED_OUT, 700).damage())
+        .isCloseTo(1, within(1e-9));
+    assertThat(scoring.scoresOf(plan, PlanEndReason.TIMED_OUT, 700).damage())
+        .isCloseTo(0, within(1e-9));
   }
 
   @Test

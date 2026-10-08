@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
+import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
@@ -29,7 +30,6 @@ class GroupLifecycleTest {
   private static final PlayerId ALICE = new PlayerId(new UUID(0, 10));
   private static final PlayerId BOB = new PlayerId(new UUID(0, 11));
   private static final StrategyId FLANK_STRATEGY = new StrategyId("FLANK");
-  private static final double FULL_SUCCESS_FRACTION = 0.5;
 
   private final PlanStart start =
       new PlanStart(FLANK_STRATEGY, ALICE, Map.of(MOB_1, Role.PRESS), 20, 100);
@@ -72,7 +72,7 @@ class GroupLifecycleTest {
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.EXECUTING);
     assertThat(plan.id()).isEqualTo(new PlanId(GROUP, 1));
 
-    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, TestSettings.scoring());
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.EVALUATING);
 
@@ -88,7 +88,7 @@ class GroupLifecycleTest {
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Group 00000000 cannot start a plan while OBSERVING");
     assertThatThrownBy(
-            () -> group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION))
+            () -> group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, TestSettings.scoring()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Group 00000000 cannot close a plan while OBSERVING");
 
@@ -102,7 +102,7 @@ class GroupLifecycleTest {
   @Test
   void planIdsCountUpPerGroup() {
     enterExecuting();
-    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, TestSettings.scoring());
     group.lifecycle().finishEvaluation();
 
     group.lifecycle().beginPlanning();
@@ -145,7 +145,7 @@ class GroupLifecycleTest {
     group.lifecycle().recordPlanDamage(ALICE, 5);
 
     ClosedPlan closed =
-        group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+        group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, TestSettings.scoring());
 
     assertThat(closed)
         .isEqualTo(
@@ -154,7 +154,8 @@ class GroupLifecycleTest {
                 FLANK_STRATEGY,
                 ALICE,
                 PlanEndReason.TIMED_OUT,
-                0.5,
+                0.4 * 0.5 + 0.4 * 0.25 + 0.2 * 1,
+                new PlanScores(0.5, 0.25, 1),
                 5.0,
                 100,
                 700));
@@ -167,7 +168,7 @@ class GroupLifecycleTest {
     enterExecuting();
 
     ClosedPlan closed =
-        group.lifecycle().closePlan(PlanEndReason.TARGET_DIED, 700, FULL_SUCCESS_FRACTION);
+        group.lifecycle().closePlan(PlanEndReason.TARGET_DIED, 700, TestSettings.scoring());
 
     assertThat(closed.success()).isCloseTo(1, within(1e-9));
   }
@@ -176,7 +177,7 @@ class GroupLifecycleTest {
   void planIsReadableDuringEvaluation() {
     enterExecuting();
 
-    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 700, TestSettings.scoring());
 
     assertThat(group.lifecycle().plan()).isPresent();
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.EVALUATING);
@@ -203,7 +204,7 @@ class GroupLifecycleTest {
   @Test
   void groupRetreatLeadsToRegrouping() {
     enterExecuting();
-    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 700, TestSettings.scoring());
 
     group.lifecycle().finishEvaluation();
 
@@ -220,7 +221,7 @@ class GroupLifecycleTest {
   @Test
   void otherEndReasonsSkipRegrouping() {
     enterExecuting();
-    group.lifecycle().closePlan(PlanEndReason.TARGET_LOST, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.TARGET_LOST, 700, TestSettings.scoring());
 
     group.lifecycle().finishEvaluation();
 
@@ -235,7 +236,7 @@ class GroupLifecycleTest {
         .hasMessage("Group 00000000 cannot finish regrouping while OBSERVING");
 
     enterExecuting();
-    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 700, FULL_SUCCESS_FRACTION);
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 700, TestSettings.scoring());
     group.lifecycle().finishEvaluation();
 
     assertThatThrownBy(() -> group.lifecycle().beginPlanning())

@@ -150,7 +150,7 @@ class RemoveMemberTest {
     group
         .lifecycle()
         .startPlan(new PlanStart(new StrategyId("DIRECT_ASSAULT"), PLAYER, roles, 20.0, 100));
-    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, 0.5);
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, TestSettings.scoring());
     group.lifecycle().finishEvaluation();
     return group;
   }

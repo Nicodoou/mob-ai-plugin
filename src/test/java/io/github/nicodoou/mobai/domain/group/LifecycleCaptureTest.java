@@ -109,7 +109,7 @@ class LifecycleCaptureTest {
   @Test
   void regroupingGroupRoundTrips() {
     Group original = executingGroup(1);
-    original.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, 0.5);
+    original.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, TestSettings.scoring());
     original.lifecycle().finishEvaluation();
     Group restored = groupWithMobOne(1);
 
