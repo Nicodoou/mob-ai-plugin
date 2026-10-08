@@ -446,3 +446,26 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - si el puesto nuevo es el mismo (el carril libre se busca hacia el centro del jugador y no hacia el punto anticipado), puede volver a tensar con el carril tapado cada ~20 ticks. Lo marcó el subagente;
   - `ShootGoal` ya es grande (31 métodos privados): candidato a partirse como `PressGoal`.
 - **Riesgo:** que el cliente no muestre la animación de tensar en un mob.
+
+## WP-30A — Éxito con tres medidas (PR #50, Opus)
+
+**Qué hizo.** CT-27, primera parte.
+- El plan guarda la vida de cada mob del inicio: la primera y la última vista.
+- `PlanScoring`, que es pura, calcula tres medidas: daño, rapidez contra matar en 600 ticks, y supervivencia (½ aliados vivos, ½ vida neta conservada).
+- El éxito es la suma con pesos 0,4/0,4/0,2, de la sección `success` de la configuración.
+- `ClosedPlan` lleva `PlanScores` y el log `PLAN` muestra `scores=`.
+
+**Revisión.**
+- 10 pruebas y 4 roturas del WP; todas mordieron.
+- Una ronda de corrección por dos huecos que encontré rompiendo el código:
+  - borrar el registro de vida del cerebro no hacía fallar nada;
+  - sacar el piso de la pérdida tampoco, aunque un mob curado por encima de su vida inicial hacía lanzar a `PlanScores`.
+- También se sumó una guarda para planes sin mobs.
+- Ahora las tres pruebas nuevas muerden. Build y CI en verde.
+- **Desvío aceptado:** `PlanTest` reescrita sobre `PlanScoring`, porque `Plan.successFraction` se borró.
+- `config.yml` del server de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:** el puntaje es puro, con cada medida en su función y números hechos a mano. El cerebro solo le pasa la vida al plan.
+- **Lo flojo:** la supervivencia se apoya en `roles` para saber quién sigue vivo, así que un mob que desaparece por chunk cuenta como muerto. Además, la simulación no ejercita la fórmula.
+- **Riesgo:** con pesos fijos, la rapidez puede dominar contra jugadores fuertes. Lo corrige el WP-30B.
