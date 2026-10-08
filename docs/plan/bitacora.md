@@ -426,3 +426,23 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - `Bodies` adentro de `Weapons` es un nombre forzado: la velocidad del mob no es un arma;
   - el punto al costado se recalcula cada 10 ticks, y un jugador que gira rápido lo alcanza antes.
 - **Riesgo:** la física del suelo está deducida del código de Minecraft, no medida. Se confirma en el juego.
+
+## WP-24G — Tensar el arco (PR #49, Sonnet)
+
+**Qué hizo.** CT-26, arregla el B-06. Antes de cada tiro, el esqueleto se planta, gira el cuerpo (`BodyFacing`, `setBodyYaw`), levanta los brazos y tensa 20 ticks (`BowDraw`, `VersionTranslator.drawBow` y `lowerBow`), y recién ahí suelta.
+- `ShotRhythm.canDraw` arranca el tensado 20 ticks antes, así que la cadencia sigue siendo un tiro cada 40 ticks.
+- En `HOLD_FIRE`, el esqueleto ubicado espera tenso; el tiro oportuno también espera tenso.
+
+**Revisión.**
+- Las 8 pruebas y las 4 roturas del WP mordieron; mis dos roturas también:
+  - `release` sin resetear → `releaseStopsTheDraw`;
+  - tensado de 10 ticks → `fullAfterTwentyTicks` y `drawStartsTwentyTicksBeforeTheShot`.
+- Build y CI en verde.
+- **Una ronda de corrección por un hueco del WP (mío):** con el carril tapado al soltar, el esqueleto volvía a tensar en el mismo lugar sin caminar nunca. Ahora `needsNewSpot` lo obliga a repatear antes de tensar otra vez.
+
+**Opinión del código.**
+- **Lo bueno:** el tensado es un estado chico, medido con el reloj y con prueba; Paper queda detrás del traductor.
+- **Lo flojo:**
+  - si el puesto nuevo es el mismo (el carril libre se busca hacia el centro del jugador y no hacia el punto anticipado), puede volver a tensar con el carril tapado cada ~20 ticks. Lo marcó el subagente;
+  - `ShootGoal` ya es grande (31 métodos privados): candidato a partirse como `PressGoal`.
+- **Riesgo:** que el cliente no muestre la animación de tensar en un mob.
