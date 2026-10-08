@@ -102,14 +102,13 @@ public record CoreServices(
 
   private static Messaging messaging(Foundation foundation, RandomSource random) {
     DomainEventPublisher publisher = new DomainEventPublisher();
-    ClosePlan closePlan = new ClosePlan(foundation.activeGroups());
-    publisher.subscribe(PlanClosed.class, closePlan::execute);
     RecordingRandomSource randomDraws = new RecordingRandomSource(random);
     SettingsHolder settings = foundation.settings();
-    Brain brain =
-        new Brain(
-            settings::current,
-            BrainParts.standard(settings::current, randomDraws, foundation.regroupWindow()));
+    BrainParts parts =
+        BrainParts.standard(settings::current, randomDraws, foundation.regroupWindow());
+    ClosePlan closePlan = new ClosePlan(foundation.activeGroups(), parts.recipePlanner());
+    publisher.subscribe(PlanClosed.class, closePlan::execute);
+    Brain brain = new Brain(settings::current, parts);
     return new Messaging(publisher, new GroupEvents(publisher), randomDraws, brain);
   }
 
