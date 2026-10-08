@@ -397,6 +397,7 @@ Los documentos dejan estos puntos abiertos, o los resuelven de una forma que no 
 - **D38. Flanqueadores proporcionales** (CT-18, WP-22E). En la estrategia de flanqueo, flanquea la mitad de cada tipo de mob cuerpo a cuerpo; el sobrante impar va a un zombie.
 - **D39. Golpe esquivo** (CT-19, WP-23B). Ataque aprendible de zombie: retrocede ante el golpe cargado del jugador y pega mientras el arma se recarga.
 - **D46. Éxito con tres medidas** (CT-27, WP-30A y WP-30B). Daño, rapidez y supervivencia del grupo; contra jugadores muy buenos pesa más la supervivencia.
+- **D48. Punto de reunión al reagruparse** (CT-29, WP-32A y WP-32B). Al reagruparse, el grupo elige un punto lejos del jugador y cada mob, fuera de peligro, camina hasta ahí sin entrar en su alcance ni cruzarle por delante.
 - **D47. Retirada aprendida** (CT-28, WP-30C). El umbral de retirada se aprende por jugador.
 - **D45. Tensar el arco** (CT-26, WP-24G). El esqueleto se planta, gira y tensa el arco 20 ticks antes de soltar; en la andanada espera tenso.
 - **D44. Esquivo calculado** (CT-25, WP-23D). El zombie esquivo decide con tiempos calculados (la carga que le falta al arma del jugador, y su velocidad real) y, frente a un escudo con el arma cargada, se pone al costado de la mira.

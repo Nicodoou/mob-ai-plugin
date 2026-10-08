@@ -31,6 +31,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-26](#ct-26--tensar-el-arco) Tensar el arco | 8 oct 2026 | Nico | WP-24G |
 | [CT-27](#ct-27--éxito-con-tres-medidas) Éxito con tres medidas | 8 oct 2026 | Nico | WP-30A, WP-30B |
 | [CT-28](#ct-28--retirada-aprendida) Retirada aprendida | 8 oct 2026 | Nico | WP-30C |
+| [CT-29](#ct-29--punto-de-reunión-al-reagruparse) Punto de reunión al reagruparse | 8 oct 2026 | Nico (diseño), Opus (detalle) | WP-32A y WP-32B |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -458,3 +459,33 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 **Riesgos.**
 - Aprende más lento que una estrategia, porque es un valor continuo con ruido.
 - Hay que calibrar el paso y el ruido con la simulación.
+
+## CT-29 — Punto de reunión al reagruparse
+
+**Qué cambia.** Hasta ahora el reagrupamiento (CT-07) era «cada uno se retira y se cura»: el grupo no se volvía a juntar y salía a pelear desparramado. Ahora:
+
+- **El punto (WP-32A, cerebro).** Al entrar en `REGROUPING`, el grupo elige un punto de reunión:
+  - el centro de sus mobs, corrido en horizontal `retreat.rally-distance-blocks` (12) lejos del jugador del que se retira (el objetivo comprometido);
+  - si no hay jugador en la foto, o está justo sobre el centro, el punto es el centro;
+  - con 12 bloques, el punto queda a 12 o más del jugador, que es la distancia a la que un mob se cura (`heal-safe-distance-blocks`): ahí se curan;
+  - el punto queda fijo mientras dure el reagrupamiento; si la ventana vence con el grupo todavía en retirada (CT-13), se recalcula con la situación nueva;
+  - viaja en la orden de cada mob (`RoleAssignment.rallyPoint`) y se guarda con el ciclo del plan (`PlanLifecycle`, `LifecycleCapture`), para reproducir incidentes.
+- **El camino (WP-32B, goals).** Cada mob, una vez fuera de peligro (el jugador no lo ve y está a la distancia de retirada), camina al punto:
+  - nunca entra en el alcance del jugador más el margen de flanqueo, como el flanqueador;
+  - si el mob y el punto están fuera de la vista del jugador, rodea por la espalda en vez de cruzarle por delante;
+  - en el punto se queda quieto y se cura;
+  - si el jugador lo ve en el camino, vuelve a la retirada de siempre (CT-15) y retoma el camino cuando está fuera de peligro.
+- **El fin no cambia:** el reagrupamiento termina como hoy (mayoría curada o ventana vencida), y el grupo vuelve a planificar junto.
+
+**Por qué.** Nico: que el grupo se recupere y vuelva a atacar junto, no de a uno.
+
+**Alternativas descartadas.**
+- Recalcular el punto en cada decisión: el centro se mueve con los mobs que caminan hacia él, y el punto se alejaría sin fin.
+- Un rol nuevo (`RALLY`): obliga a otro goal y a tocar todo lo que recorre los roles. Es la misma retirada con un destino, así que va como un dato de la orden.
+
+**Impacto.** `RetreatSettings` y `config.yml` (`retreat.rally-distance-blocks` y `retreat.rally-arrival-blocks`), `RoleAssignment`, `PlanLifecycle` y `LifecycleCapture`, `Brain` y `BrainParts`, `RetreatGoal` y `Waypoints`. Los incidentes grabados antes del WP-32A no se pueden abrir (les falta el punto).
+
+**Riesgos.**
+- El punto es geométrico: puede caer dentro de un cerro o en el aire. El pathfinder de Paper va al bloque alcanzable más cercano; si no hay camino, el mob se queda donde está. Se verifica en el juego.
+- `PlanLifecycle` llega a 20 métodos públicos, el umbral de alerta. El próximo cambio del reagrupamiento tiene que sacar ese estado a una clase propia.
+
