@@ -12,7 +12,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 - Antes de cada push, rebase. `estado.md` lo edita la sesión que cambia el estado del WP.
 
 1. **Local (8 oct):** revisados y mergeados WP-25 (#55), WP-31 (#57), WP-32A (#58), WP-32B (#59), WP-33A (#60), WP-33B (#61) y WP-33C (#62). En #61 y #62 se resolvieron conflictos de `arquitectura.md` (filas nuevas en la misma tabla) con rebase.
-2. **Nube, ahora:** WP-33F en curso (aprobado por Nico). Después, WP-33G, WP-33H y la puerta E6.
+2. **Nube, ahora:** WP-33F en curso (aprobado por Nico). WP-33G especificado, se lanza cuando se mergee el #65. Después, WP-33H, WP-33I y la puerta E6.
 3. **Pendiente de Nico en el juego:** B-04 H2 (#56: ¿siguen los tiros a aliados?), el WP-25, la andanada (nunca salió `VOLLEY`) y la lanza.
 4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`, y que un mensaje faltante no deshabilite el plugin.
 5. **Preferencias:** después de cada compactación o al cambiar de sesión, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
@@ -83,8 +83,9 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-33D | Rasgos del jugador y configuración `learning` | E6 | mergeado | Sonnet | [#63](https://github.com/Nicodoou/mob-ai-plugin/pull/63) | CT-30. Revisado en la nube: fiel al WP, CI verde, 8 pruebas, 10 casos y 5 roturas con JDK 21; desvíos aceptados (función partida por la regla de 3 parámetros; sin clamp en `TraitSums`, correcto: con redondeo correcto suma ≤ peso implica cociente ≤ 1). Al mergear: sumar la sección `learning` al `config.yml` del server de prueba | Revisión local y merge el 8 oct; `learning` sumado al `config.yml` de prueba.
 | WP-33E | Planificador de recetas (dominio) | E6 | mergeado | Opus | [#64](https://github.com/Nicodoou/mob-ai-plugin/pull/64) | CT-30. Revisado en la nube: fiel al WP, CI verde, 13 pruebas y 5 roturas con JDK 21, `FlankStrategy` sin cambios; desvío aceptado (casos de validación con 0,6 pasados a 0,5). Incluye el arma a distancia en las dos manos. Al mergear: `max-retreat-health-fraction: 0.5` en el `config.yml` del server de prueba | Revisión local y merge el 8 oct; `max-retreat-health-fraction: 0.5` en el `config.yml` de prueba.
 | WP-33F | Recetas en el cerebro (reserva por fases) | E6 | en revisión | Opus | [#65](https://github.com/Nicodoou/mob-ai-plugin/pull/65) | CT-30. Revisado en la nube: fiel al WP, CI verde, 10 pruebas y 5 roturas con JDK 21, 728 pruebas del dominio y la aplicación en verde; desvíos aceptados (funciones partidas, aserción propia del umbral relajada). Primer WP visible con `planner: "RECIPES"`. Hueco conocido hasta el WP-33G: incidentes de recetas no reproducibles |
-| WP-33G | Memoria en disco, migración, rasgos y base | E6 | pendiente | Sonnet | — | CT-30 |
-| WP-33H | Modo entrenamiento | E6 | pendiente | Sonnet | — | CT-30 |
+| WP-33G | Recetas en disco (esquema 3, copia de seguridad al migrar) | E6 | especificado | Sonnet | — | CT-30. Depende del WP-33F mergeado |
+| WP-33H | Incidentes con rasgos | E6 | pendiente | Sonnet | — | CT-30 |
+| WP-33I | Modo entrenamiento | E6 | pendiente | Sonnet | — | CT-30 |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
 
 ## Puertas de etapa
