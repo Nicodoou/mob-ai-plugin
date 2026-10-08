@@ -84,7 +84,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-31 | `/mobai reinforce` | E6 | mergeado | Sonnet | [#57](https://github.com/Nicodoou/mob-ai-plugin/pull/57) | Especificado y lanzado desde la nube; revisión local y merge, con `messages.yml` de prueba actualizado |
 | WP-32A | Punto de reunión: el cerebro | E6 | mergeado | Opus | [#58](https://github.com/Nicodoou/mob-ai-plugin/pull/58) | CT-29. Especificado y lanzado desde la nube; revisión local y merge, con `config.yml` de prueba actualizado |
 | WP-32B | Punto de reunión: los goals | E6 | en revisión | Sonnet | [#59](https://github.com/Nicodoou/mob-ai-plugin/pull/59) | CT-29. Revisado en la nube: código igual al WP, CI verde, 12 pruebas y 5 roturas con JDK 21. Riesgo a mirar en el juego: un punto de reunión a menos de `retreat-distance-blocks` (16) del jugador puede hacer que el mob llegue, no esté «lejos» y se vuelva a alejar (ida y vuelta) |
-| WP-33A | Modelo bayesiano lineal | E6 | pendiente | Opus | — | CT-30 |
+| WP-33A | Modelo bayesiano lineal | E6 | especificado | Opus | — | CT-30 |
 | WP-33B | Recetas continuas y búsqueda | E6 | pendiente | Opus | — | CT-30 |
 | WP-33C | Simulación y calibración (puerta) | E6 | pendiente | Opus | — | CT-30 |
 | WP-33D | Planificador por recetas en el cerebro | E6 | pendiente | Opus | — | CT-30 |
