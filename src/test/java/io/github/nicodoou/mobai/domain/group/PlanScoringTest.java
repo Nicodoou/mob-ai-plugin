@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
@@ -155,7 +156,7 @@ class PlanScoringTest {
 
     double success = scoring.successOf(scores);
 
-    assertThat(success).isCloseTo(0.65, within(1e-9));
+    assertThat(success).isCloseTo(0.6375, within(1e-9));
   }
 
   @Test
@@ -166,6 +167,43 @@ class PlanScoringTest {
 
     double success = dangerous.successOf(scores);
 
-    assertThat(success).isCloseTo(0.45, within(1e-9));
+    assertThat(success).isCloseTo(0.4125, within(1e-9));
+  }
+
+  @Test
+  void aPlanThatNeverHurtsTheTargetScoresNothing() {
+    MobAiSettings settings = TestSettings.defaults();
+    PlanScoring dangerous = new PlanScoring(settings.plan(), settings.success(), 1);
+    PlanScores scores = new PlanScores(0, 0, 1);
+
+    double success = dangerous.successOf(scores);
+
+    assertThat(success).isCloseTo(0, within(1e-9));
+  }
+
+  @Test
+  void losingTheGroupCostsMoreAgainstADangerousPlayer() {
+    MobAiSettings settings = TestSettings.defaults();
+    PlanScoring calm = new PlanScoring(settings.plan(), settings.success(), 0);
+    PlanScoring dangerous = new PlanScoring(settings.plan(), settings.success(), 1);
+    PlanScores scores = new PlanScores(1, 1, 0);
+
+    double calmSuccess = calm.successOf(scores);
+    double dangerousSuccess = dangerous.successOf(scores);
+
+    assertThat(calmSuccess).isCloseTo(0.8, within(1e-9));
+    assertThat(dangerousSuccess).isCloseTo(0.4, within(1e-9));
+  }
+
+  @Test
+  void onlySurvivalCountsWithoutAttackWeights() {
+    MobAiSettings settings = TestSettings.defaults();
+    SuccessSettings survivalOnly = new SuccessSettings(0, 0, 1, 600, 1, 2, 8, 10);
+    PlanScoring onlySurvival = new PlanScoring(settings.plan(), survivalOnly, 0);
+    PlanScores scores = new PlanScores(0, 0, 0.5);
+
+    double success = onlySurvival.successOf(scores);
+
+    assertThat(success).isCloseTo(0.5, within(1e-9));
   }
 }

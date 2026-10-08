@@ -154,7 +154,7 @@ class GroupLifecycleTest {
                 FLANK_STRATEGY,
                 ALICE,
                 PlanEndReason.TIMED_OUT,
-                0.4 * 0.5 + 0.4 * 0.25 + 0.2 * 1,
+                (0.4 * 0.5 + 0.4 * 0.25) / 0.8,
                 new PlanScores(0.5, 0.25, 1),
                 0,
                 0,

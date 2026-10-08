@@ -438,6 +438,8 @@ En `HOLD_FIRE` (andanada), el esqueleto ya ubicado se queda tenso y suelta en el
 - Un mob que desaparece (chunk descargado) cuenta como perdido.
 - La simulación del WP-11 sortea el éxito de su propio modelo: no valida esta fórmula.
 
+**Enmienda (8 oct 2026, D-01, WP-30D).** La supervivencia multiplica al ataque en vez de sumarse: con la suma, un plan que no peleaba sacaba el mejor puntaje contra un jugador muy bueno (corrida 5, plan 3: 1,4 de daño, éxito 0,64).
+
 ## CT-28 — Retirada aprendida
 
 **Qué cambia.** El umbral de retirada individual (`plan.retreat-health-fraction`, 30 %) deja de ser fijo y pasa a aprenderse por jugador.
