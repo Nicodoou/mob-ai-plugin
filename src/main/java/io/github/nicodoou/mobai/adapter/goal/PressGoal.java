@@ -3,19 +3,24 @@ package io.github.nicodoou.mobai.adapter.goal;
 import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
+import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.group.Role;
+import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
 /**
- * PRESS: walk to the target and strike it head-on, or wait for an opening if told to be patient.
+ * PRESS: walk to the target and strike it head-on, wait for an opening if patient, or dodge its
+ * charged hits if evasive.
  */
 public final class PressGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
@@ -30,6 +35,8 @@ public final class PressGoal implements Goal<Mob> {
   private final GoalContext context;
   private final MeleeRhythm rhythm;
   private final PatientWait patience = new PatientWait();
+  private final EvasiveWait evasion = new EvasiveWait();
+  private EvasiveMove lastEvasiveMove = EvasiveMove.HOLD;
 
   public PressGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "PressGoal.mob");
@@ -82,8 +89,91 @@ public final class PressGoal implements Goal<Mob> {
 
   private void pressOn(RoleAssignment order, Player target) {
     mob.lookAt(target);
+    if (isEvasive(order)) {
+      evade(target);
+      return;
+    }
     followIfDue(target);
     strikeIfReady(order, target);
+  }
+
+  private boolean isEvasive(RoleAssignment order) {
+    return kind == MobKind.ZOMBIE
+        && order.suggestedAttack().equals(Optional.of(Attack.ZOMBIE_EVASIVE_STRIKE));
+  }
+
+  private void evade(Player target) {
+    long now = context.tools().timing().clock().currentTick();
+    EvasiveMove move = evasion.next(threatOf(target), now, attack().patientStrikeMaxWaitTicks());
+    switch (move) {
+      case STRIKE_EVASIVE -> engage(target, Attack.ZOMBIE_EVASIVE_STRIKE);
+      case CHARGE -> engage(target, Attack.ZOMBIE_FRONT_STRIKE);
+      case BACK_OFF -> backOff(target);
+      case HOLD -> mob.getPathfinder().stopPathfinding();
+    }
+    lastEvasiveMove = move;
+  }
+
+  private void engage(Player target, Attack attack) {
+    chaseOn(target);
+    if (!rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
+      return;
+    }
+    context.tools().weapons().melee().strike(mob, target, attack);
+    rhythm.markStrike();
+    evasion.struck();
+  }
+
+  // Coming out of a dodge, the opening is short: it charges in at once instead of waiting to
+  // repath.
+  private void chaseOn(Player target) {
+    if (lastEvasiveMove == EvasiveMove.BACK_OFF || lastEvasiveMove == EvasiveMove.HOLD) {
+      mob.getPathfinder().moveTo(target, WALK_SPEED);
+      rhythm.markRepath();
+      return;
+    }
+    followIfDue(target);
+  }
+
+  private PlayerThreat threatOf(Player target) {
+    Vec3 mobPosition = PoseReader.positionOf(mob.getLocation());
+    boolean watching = !waypoints().isOutOfSight(PoseReader.poseOf(target), mobPosition);
+    boolean charged = target.getAttackCooldown() >= attack().evasiveChargeThreshold();
+    if (!watching || !charged) {
+      return PlayerThreat.SAFE;
+    }
+    Vec3 away = mobPosition.minus(PoseReader.positionOf(target.getLocation()));
+    if (away.horizontal().length() <= attack().evasiveDistanceBlocks()) {
+      return PlayerThreat.IN_DANGER;
+    }
+    return PlayerThreat.AT_THE_EDGE;
+  }
+
+  private void backOff(Player target) {
+    if (lastEvasiveMove == EvasiveMove.BACK_OFF && !rhythm.shouldRepath()) {
+      return;
+    }
+    Optional<Vec3> point =
+        waypoints()
+            .evadePoint(
+                PoseReader.positionOf(mob.getLocation()),
+                PoseReader.positionOf(target.getLocation()));
+    if (point.isEmpty()) {
+      mob.getPathfinder().stopPathfinding();
+      return;
+    }
+    Vec3 spot = point.get();
+    mob.getPathfinder()
+        .moveTo(new Location(mob.getWorld(), spot.x(), spot.y(), spot.z()), WALK_SPEED);
+    rhythm.markRepath();
+  }
+
+  private AttackSettings attack() {
+    return context.tools().timing().attack().get();
+  }
+
+  private Waypoints waypoints() {
+    return context.tools().waypoints();
   }
 
   private void followIfDue(Player target) {

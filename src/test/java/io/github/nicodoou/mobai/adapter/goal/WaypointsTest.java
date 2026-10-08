@@ -72,6 +72,23 @@ class WaypointsTest {
   }
 
   @Test
+  void evadePointStepsOutOfReach() {
+    Vec3 point = waypoints.evadePoint(new Vec3(0, 64, 2), new Vec3(0, 64, 0)).orElseThrow();
+
+    assertThat(point.x()).isCloseTo(0, within(TOLERANCE));
+    assertThat(point.y()).isCloseTo(64, within(TOLERANCE));
+    assertThat(point.z()).isCloseTo(3.5, within(TOLERANCE));
+  }
+
+  @Test
+  void zombieAlreadyOutOfReachDoesNotMove() {
+    Vec3 danger = new Vec3(0, 64, 0);
+
+    assertThat(waypoints.evadePoint(new Vec3(0, 64, 3.5), danger)).isEmpty();
+    assertThat(waypoints.evadePoint(new Vec3(0, 64, 5), danger)).isEmpty();
+  }
+
+  @Test
   void shooterSlotSitsMidwayInTheBowRange() {
     Map<MobId, Vec3> shooters = Map.of(mob(1), new Vec3(0, 64, 5));
 

@@ -42,13 +42,16 @@ class AttackSuggesterTest {
   }
 
   @Test
-  void zombieChoosesAmongItsThreeAttacks() {
+  void zombieChoosesAmongItsFourAttacks() {
     suggester.suggest(mobOf(MobKind.ZOMBIE), ALICE, context);
 
     assertThat(policy.lastCandidates)
         .extracting(SelectionCandidate::option)
         .containsExactly(
-            Attack.ZOMBIE_FRONT_STRIKE, Attack.ZOMBIE_FLANK_STRIKE, Attack.ZOMBIE_PATIENT_STRIKE);
+            Attack.ZOMBIE_FRONT_STRIKE,
+            Attack.ZOMBIE_FLANK_STRIKE,
+            Attack.ZOMBIE_PATIENT_STRIKE,
+            Attack.ZOMBIE_EVASIVE_STRIKE);
     assertThat(policy.lastCandidates).extracting(SelectionCandidate::baseScore).containsOnly(1.0);
   }
 

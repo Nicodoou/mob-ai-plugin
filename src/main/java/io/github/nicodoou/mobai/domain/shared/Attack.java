@@ -7,6 +7,7 @@ public enum Attack {
   ZOMBIE_FRONT_STRIKE("zombie.front_strike", MobKind.ZOMBIE),
   ZOMBIE_FLANK_STRIKE("zombie.flank_strike", MobKind.ZOMBIE),
   ZOMBIE_PATIENT_STRIKE("zombie.patient_strike", MobKind.ZOMBIE),
+  ZOMBIE_EVASIVE_STRIKE("zombie.evasive_strike", MobKind.ZOMBIE),
   SKELETON_DIRECT_SHOT("skeleton.direct_shot", MobKind.SKELETON),
   SKELETON_LEAD_SHOT("skeleton.lead_shot", MobKind.SKELETON),
   SKELETON_OPPORTUNISTIC_SHOT("skeleton.opportunistic_shot", MobKind.SKELETON),

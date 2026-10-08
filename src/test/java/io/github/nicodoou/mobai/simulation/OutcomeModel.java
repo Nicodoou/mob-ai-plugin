@@ -87,6 +87,9 @@ final class OutcomeModel {
         new OddsKey(who, MobKind.ZOMBIE, Role.PRESS, Attack.ZOMBIE_PATIENT_STRIKE),
         new OutcomeOdds(0.20, 0, 0, 0.80));
     put(
+        new OddsKey(who, MobKind.ZOMBIE, Role.PRESS, Attack.ZOMBIE_EVASIVE_STRIKE),
+        new OutcomeOdds(0.05, 0.60, 0.15, 0.20));
+    put(
         new OddsKey(who, MobKind.ZOMBIE, Role.FLANK, Attack.ZOMBIE_FLANK_STRIKE),
         new OutcomeOdds(0.70, 0, 0.30, 0));
     put(
@@ -117,6 +120,9 @@ final class OutcomeModel {
     put(
         new OddsKey(who, MobKind.ZOMBIE, Role.PRESS, Attack.ZOMBIE_PATIENT_STRIKE),
         new OutcomeOdds(0.55, 0, 0.45, 0));
+    put(
+        new OddsKey(who, MobKind.ZOMBIE, Role.PRESS, Attack.ZOMBIE_EVASIVE_STRIKE),
+        new OutcomeOdds(0.65, 0, 0.35, 0));
     put(
         new OddsKey(who, MobKind.ZOMBIE, Role.FLANK, Attack.ZOMBIE_FLANK_STRIKE),
         new OutcomeOdds(0.65, 0, 0.35, 0));

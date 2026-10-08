@@ -50,6 +50,16 @@ public final class Waypoints {
     return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
   }
 
+  // Empty once the zombie is already out of the player's reach.
+  public Optional<Vec3> evadePoint(Vec3 mobPosition, Vec3 dangerPosition) {
+    double missing =
+        settings.get().evasiveDistanceBlocks() - horizontalDistance(mobPosition, dangerPosition);
+    if (missing <= 0) {
+      return Optional.empty();
+    }
+    return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
+  }
+
   public Vec3 shooterSlot(Vec3 center, MobId self, Map<MobId, Vec3> shooters) {
     AttackSettings attack = settings.get();
     double radius = (attack.shootMinDistanceBlocks() + attack.shootMaxDistanceBlocks()) / 2;

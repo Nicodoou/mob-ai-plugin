@@ -56,6 +56,9 @@ attack:
   # Distancia que mantiene el flanqueador mientras el jugador lo ve (el alcance del jugador es 3).
   flank-distance-blocks: 4.0
   retreat-distance-blocks: 16.0
+  # Golpe esquivo: carga del arma del jugador (0 a 1) desde la que el zombie se aparta, y hasta dónde.
+  evasive-charge-threshold: 0.8
+  evasive-distance-blocks: 3.5
 
 spider:
   # Lentitud I por 3 segundos.

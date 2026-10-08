@@ -10,14 +10,15 @@ class AttackTest {
   @Test
   void idsMatchTheCatalog() {
     Attack[] attacks = Attack.values();
-    assertThat(attacks).hasSize(7);
+    assertThat(attacks).hasSize(8);
     assertThat(attacks[0].id()).isEqualTo("zombie.front_strike");
     assertThat(attacks[1].id()).isEqualTo("zombie.flank_strike");
     assertThat(attacks[2].id()).isEqualTo("zombie.patient_strike");
-    assertThat(attacks[3].id()).isEqualTo("skeleton.direct_shot");
-    assertThat(attacks[4].id()).isEqualTo("skeleton.lead_shot");
-    assertThat(attacks[5].id()).isEqualTo("skeleton.opportunistic_shot");
-    assertThat(attacks[6].id()).isEqualTo("spider.bite");
+    assertThat(attacks[3].id()).isEqualTo("zombie.evasive_strike");
+    assertThat(attacks[4].id()).isEqualTo("skeleton.direct_shot");
+    assertThat(attacks[5].id()).isEqualTo("skeleton.lead_shot");
+    assertThat(attacks[6].id()).isEqualTo("skeleton.opportunistic_shot");
+    assertThat(attacks[7].id()).isEqualTo("spider.bite");
   }
 
   @Test
@@ -37,7 +38,10 @@ class AttackTest {
     List<Attack> zombieAttacks = Attack.forKind(MobKind.ZOMBIE);
     assertThat(zombieAttacks)
         .containsExactly(
-            Attack.ZOMBIE_FRONT_STRIKE, Attack.ZOMBIE_FLANK_STRIKE, Attack.ZOMBIE_PATIENT_STRIKE);
+            Attack.ZOMBIE_FRONT_STRIKE,
+            Attack.ZOMBIE_FLANK_STRIKE,
+            Attack.ZOMBIE_PATIENT_STRIKE,
+            Attack.ZOMBIE_EVASIVE_STRIKE);
 
     List<Attack> skeletonAttacks = Attack.forKind(MobKind.SKELETON);
     assertThat(skeletonAttacks)
