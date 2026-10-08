@@ -7,7 +7,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, mergeado #42; falta verificar 24C y 24D en el juego) → WP-23B (golpe esquivo, CT-19, en curso) → WP-24E (andanada, CT-23) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
+2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, mergeado #42; falta verificar 24C y 24D en el juego) → WP-23B (golpe esquivo, CT-19, mergeado #43; falta verificar en el juego) → WP-24E (andanada, CT-23) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
 3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
 4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
@@ -52,7 +52,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-22C | Retirada a cubierto | E6 | mergeado | Sonnet | [#34](https://github.com/Nicodoou/mob-ai-plugin/pull/34) | Después del WP-22B. CT-15 (pedido de Nico). Verificación en el server por Opus, incluido el costo con varios mobs en retirada |
 | WP-23 | Golpe paciente | E6 | mergeado | Sonnet | [#36](https://github.com/Nicodoou/mob-ai-plugin/pull/36) | CT-17 (apertura y abandono). Verificación en el juego por Nico |
 | WP-22E | Flanqueadores proporcionales | E6 | mergeado | Sonnet | [#37](https://github.com/Nicodoou/mob-ai-plugin/pull/37) | CT-18, pedido de Nico. Antes del WP-24 |
-| WP-23B | Golpe esquivo | E6 | en curso | Sonnet | — | CT-19, opción 2 de Nico. Después del WP-24 |
+| WP-23B | Golpe esquivo | E6 | mergeado | Sonnet | [#43](https://github.com/Nicodoou/mob-ai-plugin/pull/43) | CT-19, opción 2 de Nico. Después del WP-24 |
 | WP-24A | Rastreo de flechas | E6 | mergeado | Sonnet | [#38](https://github.com/Nicodoou/mob-ai-plugin/pull/38) | CT-20 |
 | WP-24B | Esqueletos que disparan | E6 | mergeado | Sonnet | [#39](https://github.com/Nicodoou/mob-ai-plugin/pull/39) | CT-20. Después del 24A. Verificar que un grupo de solo esqueletos ya no cierre planes con éxito 0 (puerta E5) |
 | WP-24C | Esqueletos en formación | E6 | mergeado | Sonnet | [#41](https://github.com/Nicodoou/mob-ai-plugin/pull/41) | CT-21 |
