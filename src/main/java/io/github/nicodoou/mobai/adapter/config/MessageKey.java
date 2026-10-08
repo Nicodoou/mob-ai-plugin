@@ -16,7 +16,11 @@ public enum MessageKey {
   PLAYER_NOT_FOUND("player-not-found"),
   UNKNOWN_LEVEL("unknown-level"),
   DEBUG_SET("debug-set"),
-  DEBUG_SET_ALL("debug-set-all");
+  DEBUG_SET_ALL("debug-set-all"),
+  MEMORY_EMPTY("memory-empty"),
+  MEMORY_GROUP("memory-group"),
+  MEMORY_STRATEGY("memory-strategy"),
+  MEMORY_ATTACK("memory-attack");
 
   private final String path;
 

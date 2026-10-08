@@ -2,7 +2,7 @@
 # Lo que va entre <...> sin formato (por ejemplo <reason>) lo completa el plugin.
 
 no-permission: "<red>No tenés permiso para usar este comando."
-unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|status|reset|reload|debug>"
+unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|status|memory|reset|reload|debug>"
 reload-done: "<green>Configuración recargada."
 reload-failed: "<red>No se recargó la configuración: <gray><reason>"
 player-only: "<red>Este comando lo tiene que usar un jugador."
@@ -17,3 +17,7 @@ player-not-found: "<red>No hay un jugador conectado llamado <gray><player></gray
 unknown-level: "<red>Nivel desconocido: <gray><level></gray>. Usá uno de: <gray><valid>"
 debug-set: "<green>Grupo <white><group></white>: traza en <white><level></white>."
 debug-set-all: "<green>Todos los grupos: traza en <white><level></white>."
+memory-empty: "<gray>Ningún grupo activo recuerda a <white><player></white>."
+memory-group: "<gold>Grupo <white><group></white> · peligro <white><danger></white> <gray>(perdió <lost> de vida, le hizo <dealt> de daño)"
+memory-strategy: "<gray>  estrategia <white><strategy></white>: <white><rate>%</white> · <support> planes"
+memory-attack: "<gray>  ataque <white><attack></white>: <white><rate>%</white> · <support> intentos"
