@@ -64,6 +64,10 @@ public final class PlanScoring {
   }
 
   private static double aliveShare(Plan closing) {
+    // No plan opens without mobs today; a plan with none lost nobody.
+    if (closing.startingMembers() == 0) {
+      return 1;
+    }
     long alive =
         closing.startingRoles().keySet().stream().filter(closing.roles()::containsKey).count();
     return (double) alive / closing.startingMembers();

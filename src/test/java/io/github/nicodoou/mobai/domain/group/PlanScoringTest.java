@@ -118,6 +118,26 @@ class PlanScoringTest {
   }
 
   @Test
+  void healingAboveTheStartDoesNotRaiseSurvivalAboveOne() {
+    Plan plan = newPlan().withHealthSeen(health(10, 20)).withHealthSeen(health(18, 20));
+
+    PlanScores scores = scoring.scoresOf(plan, PlanEndReason.TIMED_OUT, 1_600);
+
+    assertThat(scores.survival()).isCloseTo(1, within(1e-9));
+  }
+
+  @Test
+  void aPlanWithoutMobsLosesNobody() {
+    Plan plan =
+        Plan.start(
+            PLAN_ID, new PlanStart(FLANK_STRATEGY, ALICE, Map.of(), TARGET_MAX_HEALTH, START_TICK));
+
+    PlanScores scores = scoring.scoresOf(plan, PlanEndReason.TIMED_OUT, 1_600);
+
+    assertThat(scores.survival()).isCloseTo(1, within(1e-9));
+  }
+
+  @Test
   void newcomersDoNotCount() {
     Map<MobId, Double> seen = health(20, 20);
     seen.put(MOB_3, 20.0);
