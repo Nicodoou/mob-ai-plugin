@@ -24,6 +24,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.GroupStrategy;
+import io.github.nicodoou.mobai.domain.strategy.VolleyStrategy;
 import io.github.nicodoou.mobai.domain.target.TargetQuery;
 import io.github.nicodoou.mobai.domain.target.TargetSelection;
 import java.util.List;
@@ -38,10 +39,12 @@ public final class Brain {
 
   private final Supplier<MobAiSettings> settings;
   private final BrainParts parts;
+  private final VolleyCycle volleyCycle;
 
   public Brain(Supplier<MobAiSettings> settings, BrainParts parts) {
     this.settings = Objects.requireNonNull(settings, "Brain.settings");
     this.parts = Objects.requireNonNull(parts, "Brain.parts");
+    this.volleyCycle = new VolleyCycle(() -> settings.get().volley());
   }
 
   public BrainResult decide(Group group, GroupSnapshot snapshot) {
@@ -333,14 +336,36 @@ public final class Brain {
 
   private RoleAssignment orderFor(Turn turn, MobSnapshot mob) {
     Plan plan = currentPlan(turn);
-    Role role = plan.roleOf(mob.id()).orElseThrow();
-    if (role == Role.RETREAT) {
+    Role planned = plan.roleOf(mob.id()).orElseThrow();
+    if (planned == Role.RETREAT) {
       return retreatOrder(turn, mob, Optional.of(plan.target()));
+    }
+    Role role = phasedRole(turn, planned);
+    if (role == Role.FALL_BACK || role == Role.HOLD_FIRE) {
+      return new RoleAssignment(
+          mob.id(), role, Optional.of(plan.target()), Optional.empty(), false);
     }
     if (mob.kind() == MobKind.SPIDER) {
       return spiderOrder(turn, mob, role);
     }
     return fighterOrder(turn, mob, role);
+  }
+
+  // CT-23: in a volley plan the phase decides what each planned role does right now; the plan
+  // itself keeps PRESS and SHOOT, so retreats and group-retreat checks are unaffected.
+  private Role phasedRole(Turn turn, Role planned) {
+    Plan plan = currentPlan(turn);
+    if (!plan.strategy().equals(VolleyStrategy.ID)) {
+      return planned;
+    }
+    VolleyPhase phase = volleyCycle.phaseAt(plan.ageTicks(turn.snapshot().tick()));
+    if (planned == Role.PRESS) {
+      return phase == VolleyPhase.PRESSING ? Role.PRESS : Role.FALL_BACK;
+    }
+    if (planned == Role.SHOOT) {
+      return phase == VolleyPhase.FIRING ? Role.VOLLEY : Role.HOLD_FIRE;
+    }
+    return planned;
   }
 
   private RoleAssignment fighterOrder(Turn turn, MobSnapshot mob, Role role) {

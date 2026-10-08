@@ -13,6 +13,7 @@ Tres estrategias alcanzan para que el grupo tenga decisiones distintas que apren
 | Ataque directo (`DIRECT_ASSAULT`) | Todos van al objetivo por el camino más corto | Ninguno; es la estrategia por defecto | Cuerpo a cuerpo: `PRESS`; esqueletos: `SHOOT` |
 | Flanqueo (`FLANK`) | Una parte presiona de frente y el resto rodea hacia los costados y la espalda | Al menos 3 mobs cuerpo a cuerpo (zombies o arañas) | Mitad `PRESS`, mitad `FLANK`: flanquea la mitad de cada tipo, y si sobra uno es un zombie (CT-18); esqueletos: `SHOOT` |
 | Contener y disparar (`PIN_AND_SHOOT`) | Los zombies frenan al objetivo a media distancia y los esqueletos disparan mientras está ocupado | Al menos 2 zombies y 2 esqueletos | Zombies: `PRESS` con distancia corta; esqueletos: `SHOOT`; arañas: `FLANK` |
+| Andanada (`VOLLEY`) | Los cuerpo a cuerpo presionan; cada tanto se abren fuera del alcance del jugador y los esqueletos disparan todos juntos con la línea limpia; después vuelven a presionar (CT-23) | Al menos 2 esqueletos y 2 cuerpo a cuerpo | Cuerpo a cuerpo: `PRESS`; esqueletos: `SHOOT`. Las fases cambian las órdenes: `FALL_BACK`, `HOLD_FIRE` y `VOLLEY` |
 
 ### Roles
 
@@ -22,6 +23,9 @@ Tres estrategias alcanzan para que el grupo tenga decisiones distintas que apren
 | `FLANK` | Se mueve hacia un punto al costado o detrás del objetivo antes de atacar |
 | `SHOOT` | Mantiene distancia de tiro (8 a 15 bloques) y dispara |
 | `RETREAT` | Se aleja del objetivo, se queda al margen y se cura; se asigna a cualquier mob con 30% de vida o menos, sobre cualquier estrategia, y vuelve a su rol con 60% o más |
+| `FALL_BACK` | Se aleja hasta quedar fuera del alcance del jugador, sin pegar (andanada) |
+| `HOLD_FIRE` | El esqueleto se ubica pero no dispara (andanada) |
+| `VOLLEY` | El esqueleto dispara ya, junto con los demás (andanada) |
 
 El rol de cortar la retirada queda para después del MVP.
 

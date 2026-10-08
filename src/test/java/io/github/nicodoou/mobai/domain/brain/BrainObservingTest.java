@@ -28,6 +28,7 @@ import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.DirectAssaultStrategy;
 import io.github.nicodoou.mobai.domain.strategy.FlankStrategy;
 import io.github.nicodoou.mobai.domain.strategy.PinAndShootStrategy;
+import io.github.nicodoou.mobai.domain.strategy.VolleyStrategy;
 import io.github.nicodoou.mobai.domain.target.TargetScore;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
@@ -113,7 +114,7 @@ class BrainObservingTest {
             Role.SHOOT,
             Role.PRESS,
             Role.FLANK);
-    assertThat(result.trace().strategyChecks()).hasSize(3);
+    assertThat(result.trace().strategyChecks()).hasSize(4);
     assertThat(result.trace().strategySelection().orElseThrow().chosen())
         .isEqualTo(FlankStrategy.ID);
     assertThat(result.trace().plan()).contains(new PlanId(GROUP_ID, 1));
@@ -140,7 +141,8 @@ class BrainObservingTest {
         .containsExactly(
             tuple(DirectAssaultStrategy.ID, true),
             tuple(FlankStrategy.ID, false),
-            tuple(PinAndShootStrategy.ID, false));
+            tuple(PinAndShootStrategy.ID, false),
+            tuple(VolleyStrategy.ID, false));
     assertThat(result.trace().strategySelection().orElseThrow().scores()).hasSize(1);
     assertThat(result.decision().strategy()).contains(DirectAssaultStrategy.ID);
   }

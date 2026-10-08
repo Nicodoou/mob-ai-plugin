@@ -102,6 +102,15 @@ final class OutcomeModel {
         new OddsKey(who, MobKind.SKELETON, Role.SHOOT, Attack.SKELETON_OPPORTUNISTIC_SHOT),
         new OutcomeOdds(0.40, 0, 0.20, 0.40));
     put(
+        new OddsKey(who, MobKind.SKELETON, Role.VOLLEY, Attack.SKELETON_DIRECT_SHOT),
+        new OutcomeOdds(0.25, 0.50, 0.25, 0));
+    put(
+        new OddsKey(who, MobKind.SKELETON, Role.VOLLEY, Attack.SKELETON_LEAD_SHOT),
+        new OutcomeOdds(0.30, 0.45, 0.25, 0));
+    put(
+        new OddsKey(who, MobKind.SKELETON, Role.VOLLEY, Attack.SKELETON_OPPORTUNISTIC_SHOT),
+        new OutcomeOdds(0.30, 0.45, 0.25, 0));
+    put(
         new OddsKey(who, MobKind.SPIDER, Role.PRESS, Attack.SPIDER_BITE),
         new OutcomeOdds(0, 0.70, 0.30, 0));
     put(
@@ -135,6 +144,15 @@ final class OutcomeModel {
     put(
         new OddsKey(who, MobKind.SKELETON, Role.SHOOT, Attack.SKELETON_OPPORTUNISTIC_SHOT),
         new OutcomeOdds(0.45, 0, 0.25, 0.30));
+    put(
+        new OddsKey(who, MobKind.SKELETON, Role.VOLLEY, Attack.SKELETON_DIRECT_SHOT),
+        new OutcomeOdds(0.45, 0, 0.55, 0));
+    put(
+        new OddsKey(who, MobKind.SKELETON, Role.VOLLEY, Attack.SKELETON_LEAD_SHOT),
+        new OutcomeOdds(0.65, 0, 0.35, 0));
+    put(
+        new OddsKey(who, MobKind.SKELETON, Role.VOLLEY, Attack.SKELETON_OPPORTUNISTIC_SHOT),
+        new OutcomeOdds(0.65, 0, 0.35, 0));
     for (Role role : SPIDER_ROLES) {
       put(
           new OddsKey(who, MobKind.SPIDER, role, Attack.SPIDER_BITE),
