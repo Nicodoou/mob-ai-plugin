@@ -24,12 +24,7 @@ public record TraitSums(double shield, double ranged, double armor, double weigh
   }
 
   PlayerTraits traits() {
-    return new PlayerTraits(average(shield), average(ranged), average(armor));
-  }
-
-  // Rounding can push an average of values in [0, 1] a hair above 1.
-  private double average(double sum) {
-    return Math.min(1.0, sum / weight);
+    return new PlayerTraits(shield / weight, ranged / weight, armor / weight);
   }
 
   private static boolean isZeroOrPositive(double value) {
