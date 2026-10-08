@@ -32,6 +32,7 @@ Además:
 6. **Los de reserva van con `PRESS` en el mapa de roles** y su lista aparte (`reserve`). El cerebro (WP-33F) les da `FALL_BACK` hasta la demora, por fases como la andanada; así un mob que se retira y vuelve recupera `PRESS` sin un rol nuevo.
 7. **Lo que se aprende se guarda al planificar:** `RecipePlay` lleva los 60 rasgos ya calculados. Si un `/mobai reload` cambia los límites a mitad de plan, el aprendizaje igual usa lo que se jugó.
 8. **Exploración:** `learning.exploration-scale`. El modo entrenamiento (WP-33H) usará la otra escala.
+9. **Corrección del WP-33D, pedida por Nico:** el arma a distancia se mira en **las dos manos**. En Minecraft el arco y la ballesta también se usan desde la mano secundaria (espada en la principal y ballesta cargada en la otra), y hoy ese jugador cuenta como «sin arma a distancia».
 
 ## Contexto a leer
 
@@ -68,6 +69,9 @@ Además:
 | Crear | `src/test/java/io/github/nicodoou/mobai/domain/strategy/RecipePlannerTest.java` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/domain/memory/GroupMemoryTest.java` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/domain/brain/RetreatRuleTest.java` |
+| Modificar | `src/main/java/io/github/nicodoou/mobai/adapter/translate/VersionTranslator.java` (solo `holdsRangedWeapon`) |
+| Modificar | `src/main/java/io/github/nicodoou/mobai/domain/snapshot/PlayerSnapshot.java` (solo el javadoc de `holdingRanged`) |
+| Modificar | `docs/actualizar-paper.md` (fila de `VersionTranslator`) |
 | Modificar | `docs/arquitectura.md` |
 
 Antes de empezar, buscá con grep `0.6` en `TestSettings`, `ConfigLoaderTest` y `SettingsValidationTest`: cambiá a 0,5 solo el `maxRetreatHealthFraction` de `LearningSettings`, nunca el `recoveryHealthFraction` de `RetreatSettings`. Si un caso de `SettingsValidationTest` usa 0,6 como umbral máximo válido, ajustalo y avisalo.
@@ -181,6 +185,26 @@ Validación nueva, en un método privado, después de la que ya existe: si `lear
 
 `max-retreat-health-fraction: 0.5`, y su comentario pasa a: `# Cuándo entra la reserva de zombies (ticks) y umbral máximo de retirada que se prueba (por debajo de recovery-health-fraction).`
 
+### Arma a distancia en las dos manos (`VersionTranslator`, `PlayerSnapshot`, `docs/actualizar-paper.md`)
+
+`holdsRangedWeapon` pasa a:
+
+```java
+public boolean holdsRangedWeapon(Player player) {
+  PlayerInventory inventory = player.getInventory();
+  return isRangedWeapon(inventory.getItemInMainHand().getType())
+      || isRangedWeapon(inventory.getItemInOffHand().getType());
+}
+
+private static boolean isRangedWeapon(Material held) {
+  return held == Material.BOW || held == Material.CROSSBOW;
+}
+```
+
+- El javadoc de `PlayerSnapshot.holdingRanged` pasa a `either hand holds a bow or a crossbow`.
+- En `docs/actualizar-paper.md`, en la fila de `VersionTranslator`, `PlayerInventory.getItemInMainHand` (`holdsRangedWeapon`) pasa a `PlayerInventory.getItemInMainHand` y `getItemInOffHand` (`holdsRangedWeapon`).
+- Usa Paper: lo verifica el CI. En el juego se ve con el WP-33F (log de debug).
+
 ### `docs/arquitectura.md`
 
 Fila nueva al final de la tabla «Nombres en el código»:
@@ -242,14 +266,15 @@ Total: **13 pruebas** y **1 caso**.
 ## Procedimiento
 
 1. Rama `wp-33e-planificador-de-recetas` desde `origin/main` actualizado (con el WP-33D).
-2. Umbral máximo 0,5: `MobAiSettings`, `config.yml`, `config-de-prueba.yml`, `TestSettings`, `ConfigLoaderTest` y el caso nuevo de `SettingsValidationTest`. Commit: `fix: the learned retreat threshold stays below recovery`.
-3. `RecipeModelRecord`, `GroupMemory` y su prueba; `RetreatRule.shouldRetreatAt` y su prueba. Commit: `feat: recipe models in the group memory`.
-4. `SidewaysOrder` y `FlankStrategy`. Commit: `refactor: share the sideways order of flankers`.
-5. `RecipePlay`, `RecipeRequest`, `RecipeOutcome`, `RecipePlanner` y su prueba. Commit: `feat: recipe planner (CT-30)`.
-6. `docs/arquitectura.md`. Commit: `docs: names for the recipe planner`.
-7. Pruebas que muerden, de a una y sin commit.
-8. `./gradlew spotlessApply` y `./gradlew build jacocoTestReport jacocoTestCoverageVerification` en verde.
-9. Push, PR `WP-33E: recipe planner`, CI en verde e informe con la prueba exacta que falló en cada rotura.
+2. Arma a distancia en las dos manos (`VersionTranslator`, javadoc de `PlayerSnapshot` y `docs/actualizar-paper.md`). Commit: `fix: a ranged weapon in either hand counts`.
+3. Umbral máximo 0,5: `MobAiSettings`, `config.yml`, `config-de-prueba.yml`, `TestSettings`, `ConfigLoaderTest` y el caso nuevo de `SettingsValidationTest`. Commit: `fix: the learned retreat threshold stays below recovery`.
+4. `RecipeModelRecord`, `GroupMemory` y su prueba; `RetreatRule.shouldRetreatAt` y su prueba. Commit: `feat: recipe models in the group memory`.
+5. `SidewaysOrder` y `FlankStrategy`. Commit: `refactor: share the sideways order of flankers`.
+6. `RecipePlay`, `RecipeRequest`, `RecipeOutcome`, `RecipePlanner` y su prueba. Commit: `feat: recipe planner (CT-30)`.
+7. `docs/arquitectura.md`. Commit: `docs: names for the recipe planner`.
+8. Pruebas que muerden, de a una y sin commit.
+9. `./gradlew spotlessApply` y `./gradlew build jacocoTestReport jacocoTestCoverageVerification` en verde.
+10. Push, PR `WP-33E: recipe planner`, CI en verde e informe con la prueba exacta que falló en cada rotura.
 
 ## Entorno sin compilación
 

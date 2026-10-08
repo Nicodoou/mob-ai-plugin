@@ -12,7 +12,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 - Antes de cada push, rebase. `estado.md` lo edita la sesión que cambia el estado del WP.
 
 1. **Local (8 oct):** revisados y mergeados WP-25 (#55), WP-31 (#57), WP-32A (#58), WP-32B (#59), WP-33A (#60), WP-33B (#61) y WP-33C (#62). En #61 y #62 se resolvieron conflictos de `arquitectura.md` (filas nuevas en la misma tabla) con rebase.
-2. **Nube, ahora:** WP-33E (especificado, planificador de recetas): presentárselo a Nico antes de lanzarlo (sección 3 de `orquestacion.md`). Después, WP-33F a 33H y la puerta E6. **Local:** revisar y mergear el #63 (WP-33D).
+2. **Nube, ahora:** WP-33E en curso (aprobado por Nico). Después, WP-33F a 33H y la puerta E6.
 3. **Pendiente de Nico en el juego:** B-04 H2 (#56: ¿siguen los tiros a aliados?), el WP-25, la andanada (nunca salió `VOLLEY`) y la lanza.
 4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`, y que un mensaje faltante no deshabilite el plugin.
 5. **Preferencias:** después de cada compactación o al cambiar de sesión, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
@@ -81,7 +81,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-33B | Recetas, rasgos y búsqueda | E6 | mergeado | Opus | [#61](https://github.com/Nicodoou/mob-ai-plugin/pull/61) | CT-30. Revisado en la nube: fiel al WP, CI verde, 19 pruebas y 5 roturas con JDK 21; desvío aceptado (validación partida en dos). El CI no corre Jacoco: la cobertura queda para la revisión local | Revisión local y merge el 8 oct.
 | WP-33C | Simulación y calibración (puerta) | E6 | mergeado | Opus | [#62](https://github.com/Nicodoou/mob-ai-plugin/pull/62) | CT-30. **Puerta PASS** (`docs/plan/calibracion-recetas.md`): con base y rasgos ruidosos, distancia al óptimo en los primeros 20 planes 0,040 / 0,052 / 0,031 (hoy: 0,110 / 0,074 / 0,134). Revisado en la nube: fiel al WP, CI verde, 13 pruebas y 4 roturas con JDK 21. Mergear después de #60 y #61 (su rama los incluye) | Revisión local y merge el 8 oct.
 | WP-33D | Rasgos del jugador y configuración `learning` | E6 | mergeado | Sonnet | [#63](https://github.com/Nicodoou/mob-ai-plugin/pull/63) | CT-30. Revisado en la nube: fiel al WP, CI verde, 8 pruebas, 10 casos y 5 roturas con JDK 21; desvíos aceptados (función partida por la regla de 3 parámetros; sin clamp en `TraitSums`, correcto: con redondeo correcto suma ≤ peso implica cociente ≤ 1). Al mergear: sumar la sección `learning` al `config.yml` del server de prueba | Revisión local y merge el 8 oct; `learning` sumado al `config.yml` de prueba.
-| WP-33E | Planificador de recetas (dominio) | E6 | especificado | Opus | — | CT-30 |
+| WP-33E | Planificador de recetas (dominio) | E6 | en curso | Opus | — | CT-30. Incluye la corrección de Nico: arma a distancia en las dos manos. Al mergear: `max-retreat-health-fraction: 0.5` en el `config.yml` del server de prueba |
 | WP-33F | Recetas en el cerebro (reserva por fases) | E6 | pendiente | Opus | — | CT-30 |
 | WP-33G | Memoria en disco, migración, rasgos y base | E6 | pendiente | Sonnet | — | CT-30 |
 | WP-33H | Modo entrenamiento | E6 | pendiente | Sonnet | — | CT-30 |
