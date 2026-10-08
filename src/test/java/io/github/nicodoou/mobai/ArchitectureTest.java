@@ -1,11 +1,16 @@
 package io.github.nicodoou.mobai;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.codeUnits;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaCodeUnit;
+import com.tngtech.archunit.core.domain.JavaConstructor;
+import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchCondition;
@@ -36,6 +41,7 @@ class ArchitectureTest {
           + "|java\\.security\\.SecureRandom|java\\.util\\.random\\..*";
   private static final String FILE_AND_CONSOLE_IO = "java\\.io\\.(File.*|PrintStream|PrintWriter)";
   private static final int MAX_PUBLIC_METHODS = 20;
+  private static final int MAX_PARAMETERS = 3;
 
   private static final JavaClasses MAIN_CLASSES =
       new ClassFileImporter()
@@ -202,6 +208,64 @@ class ArchitectureTest {
         .because("a class with a large public surface is doing too much")
         .allowEmptyShould(true)
         .check(MAIN_CLASSES);
+  }
+
+  @Test
+  void codeUnitsHaveAtMostThreeParameters() {
+    codeUnits()
+        .that(areWrittenBySource())
+        .should(haveAtMostParameters(MAX_PARAMETERS))
+        .because("more parameters are grouped in an object, such as a snapshot")
+        .allowEmptyShould(true)
+        .check(MAIN_CLASSES);
+  }
+
+  // A record's canonical constructor is that grouping object. Lambdas and anonymous class
+  // constructors are compiler-generated: their parameters were already counted where they are
+  // written.
+  private static DescribedPredicate<JavaCodeUnit> areWrittenBySource() {
+    return DescribedPredicate.describe(
+        "are written in the source and are not record canonical constructors",
+        codeUnit ->
+            !codeUnit.getModifiers().contains(JavaModifier.SYNTHETIC)
+                && !isAnonymousClassConstructor(codeUnit)
+                && !isRecordCanonicalConstructor(codeUnit));
+  }
+
+  private static boolean isAnonymousClassConstructor(JavaCodeUnit codeUnit) {
+    return codeUnit instanceof JavaConstructor && codeUnit.getOwner().isAnonymousClass();
+  }
+
+  private static boolean isRecordCanonicalConstructor(JavaCodeUnit codeUnit) {
+    Class<?> owner = codeUnit.getOwner().reflect();
+    if (!(codeUnit instanceof JavaConstructor constructor) || !owner.isRecord()) {
+      return false;
+    }
+    Class<?>[] componentTypes =
+        Arrays.stream(owner.getRecordComponents())
+            .map(RecordComponent::getType)
+            .toArray(Class<?>[]::new);
+    return Arrays.equals(componentTypes, constructor.reflect().getParameterTypes());
+  }
+
+  private static ArchCondition<JavaCodeUnit> haveAtMostParameters(int maximum) {
+    return new ArchCondition<>("have at most " + maximum + " parameters") {
+      @Override
+      public void check(JavaCodeUnit codeUnit, ConditionEvents events) {
+        int count = codeUnit.getParameters().size();
+        if (count > maximum) {
+          events.add(
+              SimpleConditionEvent.violated(
+                  codeUnit,
+                  codeUnit.getFullName()
+                      + " has "
+                      + count
+                      + " parameters (maximum "
+                      + maximum
+                      + ")"));
+        }
+      }
+    };
   }
 
   private static ArchCondition<JavaClass> haveAtMostPublicMethods(int maximum) {
