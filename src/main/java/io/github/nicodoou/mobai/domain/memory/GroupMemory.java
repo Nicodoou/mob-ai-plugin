@@ -15,24 +15,27 @@ public final class GroupMemory {
   private final Supplier<MemorySettings> settings;
   private final Map<PlayerId, Map<Attack, AttackRecord>> attackRecords = new HashMap<>();
   private final Map<PlayerId, Map<StrategyId, AttackRecord>> strategyRecords = new HashMap<>();
+  private final Map<PlayerId, DangerRecord> dangerRecords = new HashMap<>();
 
   public GroupMemory(Supplier<MemorySettings> settings) {
     this.settings = Objects.requireNonNull(settings, "GroupMemory.settings");
   }
 
-  public static GroupMemory restore(
-      Supplier<MemorySettings> settings,
-      Map<PlayerId, Map<Attack, AttackRecord>> attackRecords,
-      Map<PlayerId, Map<StrategyId, AttackRecord>> strategyRecords) {
+  public static GroupMemory restore(Supplier<MemorySettings> settings, MemoryRecords records) {
     GroupMemory memory = new GroupMemory(settings);
-    attackRecords.forEach(
-        (player, records) -> {
-          Map<Attack, AttackRecord> copy = new EnumMap<>(Attack.class);
-          copy.putAll(records);
-          memory.attackRecords.put(player, copy);
-        });
-    strategyRecords.forEach(
-        (player, records) -> memory.strategyRecords.put(player, new HashMap<>(records)));
+    records
+        .attackRecords()
+        .forEach(
+            (player, attacks) -> {
+              Map<Attack, AttackRecord> copy = new EnumMap<>(Attack.class);
+              copy.putAll(attacks);
+              memory.attackRecords.put(player, copy);
+            });
+    records
+        .strategyRecords()
+        .forEach(
+            (player, strategies) -> memory.strategyRecords.put(player, new HashMap<>(strategies)));
+    memory.dangerRecords.putAll(records.dangerRecords());
     return memory;
   }
 
@@ -54,6 +57,17 @@ public final class GroupMemory {
         observation.tick());
   }
 
+  public void recordDanger(DangerObservation observation) {
+    DangerRecord before = dangerRecord(observation.player(), observation.tick());
+    dangerRecords.put(
+        observation.player(), before.withPlan(observation.healthLost(), observation.damageDealt()));
+  }
+
+  public DangerRecord dangerRecord(PlayerId player, long tick) {
+    DangerRecord stored = dangerRecords.getOrDefault(player, DangerRecord.empty(tick));
+    return stored.decayedTo(tick, halfLifeTicks());
+  }
+
   public SuccessEstimate attackEstimate(PlayerId player, Attack attack, long tick) {
     AttackRecord record = storedOrEmpty(attackRecords.get(player), attack, tick);
     return priorFromSettings().estimate(record.decayedTo(tick, halfLifeTicks()));
@@ -71,11 +85,13 @@ public final class GroupMemory {
   public void clearPlayer(PlayerId player) {
     attackRecords.remove(player);
     strategyRecords.remove(player);
+    dangerRecords.remove(player);
   }
 
   public void clear() {
     attackRecords.clear();
     strategyRecords.clear();
+    dangerRecords.clear();
   }
 
   public Map<PlayerId, Map<Attack, AttackRecord>> attackRecords() {
@@ -84,6 +100,10 @@ public final class GroupMemory {
 
   public Map<PlayerId, Map<StrategyId, AttackRecord>> strategyRecords() {
     return immutableCopy(strategyRecords);
+  }
+
+  public Map<PlayerId, DangerRecord> dangerRecords() {
+    return Map.copyOf(dangerRecords);
   }
 
   private AttackRecord combinedKindRecord(PlayerId player, MobKind kind, long tick) {

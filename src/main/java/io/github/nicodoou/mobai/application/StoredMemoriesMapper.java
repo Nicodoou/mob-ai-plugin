@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.memory.AttackRecord;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
+import io.github.nicodoou.mobai.domain.memory.MemoryRecords;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
 import io.github.nicodoou.mobai.domain.port.StoredStrategyRecord;
@@ -67,7 +68,8 @@ public final class StoredMemoriesMapper {
   private static GroupKnowledge restoredKnowledge(StoredGroup stored, SettingsHolder settings) {
     return new GroupKnowledge(
         GroupMemory.restore(
-            settings.section(MobAiSettings::memory), attackMaps(stored), strategyMaps(stored)),
+            settings.section(MobAiSettings::memory),
+            new MemoryRecords(attackMaps(stored), strategyMaps(stored), Map.of())),
         new ThreatLedger(settings.section(MobAiSettings::target)));
   }
 
