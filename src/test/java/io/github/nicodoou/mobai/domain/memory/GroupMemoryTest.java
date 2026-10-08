@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
@@ -222,6 +223,29 @@ class GroupMemoryTest {
     memory.clearPlayer(PLAYER_1);
 
     assertThat(memory.dangerRecord(PLAYER_1, 1_000)).isEqualTo(DangerRecord.empty(1_000));
+  }
+
+  @Test
+  void recipeModelsAreStoredAndCleared() {
+    RecipeModelRecord first =
+        new RecipeModelRecord(LinearPosterior.prior(new double[] {0.5}, 1.0), 100);
+    RecipeModelRecord second =
+        new RecipeModelRecord(LinearPosterior.prior(new double[] {0.2}, 1.0), 200);
+    memory.storeRecipeModel(PLAYER_1, first);
+    memory.storeRecipeModel(PLAYER_2, second);
+
+    assertThat(memory.recipeModel(PLAYER_1)).contains(first);
+    assertThat(memory.recipeModels())
+        .containsExactlyInAnyOrderEntriesOf(Map.of(PLAYER_1, first, PLAYER_2, second));
+
+    memory.clearPlayer(PLAYER_1);
+
+    assertThat(memory.recipeModel(PLAYER_1)).isEmpty();
+    assertThat(memory.recipeModel(PLAYER_2)).contains(second);
+
+    memory.clear();
+
+    assertThat(memory.recipeModels()).isEmpty();
   }
 
   @Test

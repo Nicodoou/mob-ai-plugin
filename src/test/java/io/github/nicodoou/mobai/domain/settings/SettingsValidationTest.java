@@ -149,25 +149,25 @@ class SettingsValidationTest {
             (Runnable) () -> new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.modelNoiseVariance must be a positive number, got 0.0",
-            (Runnable) () -> learning(0.0, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 6000)),
+            (Runnable) () -> learning(0.0, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.priorVariance must be a positive number, got 0.0",
-            (Runnable) () -> learning(0.01, 0.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 6000)),
+            (Runnable) () -> learning(0.01, 0.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.priorSuccess must be between 0.0 and 1.0, got 1.5",
-            (Runnable) () -> learning(0.01, 1.0, 1.5, 1.0, 2.0, 20, 400, 0.6, 6000)),
+            (Runnable) () -> learning(0.01, 1.0, 1.5, 1.0, 2.0, 20, 400, 0.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.explorationScale must be a positive number, got 0.0",
-            (Runnable) () -> learning(0.01, 1.0, 0.5, 0.0, 2.0, 20, 400, 0.6, 6000)),
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 0.0, 2.0, 20, 400, 0.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.trainingExplorationScale must be a positive number, got 0.0",
-            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 0.0, 20, 400, 0.6, 6000)),
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 0.0, 20, 400, 0.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.minReserveDelayTicks must be at least 1, got 0",
-            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 0, 400, 0.6, 6000)),
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 0, 400, 0.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.maxReserveDelayTicks must exceed LearningSettings.minReserveDelayTicks, got 20 <= 20",
-            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 20, 0.6, 6000)),
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 20, 0.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.maxRetreatHealthFraction must be strictly between 0 and 1, got 1.0",
             (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 1.0, 6000)),
@@ -176,7 +176,28 @@ class SettingsValidationTest {
             (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 1.5, 6000)),
         org.junit.jupiter.params.provider.Arguments.of(
             "LearningSettings.traitsHalfLifeTicks must be at least 1, got 0",
-            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 0)));
+            (Runnable) () -> learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.maxRetreatHealthFraction must be below RetreatSettings.recoveryHealthFraction, got 0.6 >= 0.6",
+            (Runnable) () -> withLearning(learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 6000))));
+  }
+
+  private static MobAiSettings withLearning(LearningSettings learning) {
+    MobAiSettings defaults = TestSettings.defaults();
+    return new MobAiSettings(
+        defaults.group(),
+        defaults.memory(),
+        defaults.selection(),
+        defaults.target(),
+        defaults.plan(),
+        defaults.attack(),
+        defaults.spider(),
+        defaults.persistence(),
+        defaults.debug(),
+        defaults.retreat(),
+        defaults.volley(),
+        defaults.success(),
+        learning);
   }
 
   private static LearningSettings learning(
