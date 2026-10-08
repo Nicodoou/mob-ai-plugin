@@ -10,9 +10,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -70,23 +68,14 @@ public final class FlankStrategy implements GroupStrategy {
   }
 
   private List<MobId> mostSideways(List<MobSnapshot> mobs, Optional<PlayerPose> pose, int count) {
-    return sideFirst(mobs, pose).stream().limit(count).map(MobSnapshot::id).toList();
+    return SidewaysOrder.of(geometry, mobs, pose).stream()
+        .limit(count)
+        .map(MobSnapshot::id)
+        .toList();
   }
 
   private static List<MobSnapshot> mobsOfKind(GroupSnapshot snapshot, MobKind kind) {
     return snapshot.mobs().stream().filter(mob -> mob.kind() == kind).toList();
-  }
-
-  private List<MobSnapshot> sideFirst(List<MobSnapshot> mobs, Optional<PlayerPose> pose) {
-    if (pose.isEmpty()) {
-      return mobs;
-    }
-    List<MobSnapshot> sorted = new ArrayList<>(mobs);
-    sorted.sort(
-        Comparator.comparingDouble(
-                (MobSnapshot mob) -> geometry.angleFromFacingDegrees(pose.get(), mob.position()))
-            .reversed());
-    return sorted;
   }
 
   private static Role roleFor(MobSnapshot mob, Set<MobId> flankers) {
