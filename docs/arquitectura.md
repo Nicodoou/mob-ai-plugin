@@ -305,7 +305,7 @@ La retirada no saca a un mob de la pelea: lo aparta para que se recupere y vuelv
 
 - **Individual.** Un mob con 30 % de vida o menos pasa a `RETREAT`: se aleja del objetivo y se queda al margen. Con 60 % o más vuelve al rol que tenía al empezar el plan (o al rol básico si se sumó después). El margen entre los dos umbrales evita que cambie de rol en cada decisión.
 - **Curación.** Mientras está en `RETREAT` y ningún jugador está a menos de 12 bloques, el plugin le cura 1 punto cada 50 ticks, el ritmo de Regeneración I, sin partículas ni ícono y sin límite de duración. No se usa el efecto de poción: zombies y esqueletos son no-muertos y Minecraft los hace inmunes a Regeneración y Veneno.
-- **Del grupo.** Si más de la mitad de los mobs con los que empezó el plan murieron o están en `RETREAT`, el plan cierra con `GROUP_RETREATED` y el grupo pasa a **reagrupar**: todos se retiran y se curan. Sale cuando más de la mitad de los mobs presentes tiene 60 % o más, o cuando vence la ventana de reagrupamiento; después vuelve a observar.
+- **Del grupo.** Si más de la mitad de los mobs con los que empezó el plan murieron o están en `RETREAT`, el plan cierra con `GROUP_RETREATED` y el grupo pasa a **reagrupar**: todos se retiran y se curan. Sale cuando más de la mitad de los mobs presentes tiene 60 % o más, o cuando vence la ventana de reagrupamiento; después vuelve a observar. Al empezar a reagrupar, el grupo elige un punto de reunión: su centro, 12 bloques más lejos del jugador. Cada mob, fuera de peligro, camina hasta ahí sin entrar en el alcance del jugador ni cruzarle por delante, y se cura con los demás (CT-29).
 - **Ventana de reagrupamiento adaptativa y global.** Empieza en 600 ticks y la ajusta la experiencia de todos los grupos: si un grupo muere entero mientras se reagrupa, baja 50 ticks; si termina de reagruparse vivo, sube 50. Se mantiene entre 200 y 1.200 ticks y se guarda con las memorias.
 
 ### Observer: avisar sin acoplar
@@ -421,6 +421,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Estados del grupo | `GroupState`: `OBSERVING`, `PLANNING`, `EXECUTING`, `EVALUATING`, `REGROUPING` | Dominio |
 | Miembros y líder de un grupo, ciclo del plan, eventos pendientes | `GroupRoster`, `PlanLifecycle`, `PendingEvents` | Dominio |
 | Ventana de reagrupamiento, regla de reagrupamiento, configuración de retirada | `RegroupWindow`, `RegroupRule`, `RetreatSettings` | Dominio |
+| Punto de reunión, reagrupamiento en curso | `RallyPointRule`, `Regrouping`, `PlanLifecycle.rallyAt`, `RoleAssignment.rallyPoint` | Dominio |
 | Roles | `Role`: `PRESS`, `FLANK`, `SHOOT`, `RETREAT` (MVP); `CUT_OFF`, `SUPPORT` (posteriores) | Dominio |
 | Resultado de ataque | `AttackOutcome` (interfaz `sealed`): `Hit`, `Partial`, `Miss`, `Neutral` | Dominio |
 | Motivo de cierre de un plan | `PlanEndReason`: `TARGET_DIED`, `TARGET_LOST`, `TIMED_OUT`, `GROUP_RETREATED` | Dominio |
