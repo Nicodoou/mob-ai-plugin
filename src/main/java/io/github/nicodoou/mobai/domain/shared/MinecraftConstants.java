@@ -44,5 +44,13 @@ public final class MinecraftConstants {
   public static final int WITHER_BASE_INTERVAL_TICKS = 40;
   public static final double SLOWNESS_SPEED_REDUCTION_PER_LEVEL = 0.15;
 
+  // LivingEntity.aiStep scales a mob's forward input before it moves.
+  public static final double MOB_MOVE_INPUT_SCALE = 0.98;
+  // On ordinary ground a walking entity keeps this share of its speed each tick (friction 0.6 ×
+  // 0.91).
+  public static final double GROUND_DRAG_PER_TICK = 0.546;
+  // A zombie's base movement speed; every mob has the attribute, so it only guards a missing one.
+  public static final double DEFAULT_MOB_MOVEMENT_SPEED = 0.23;
+
   private MinecraftConstants() {}
 }

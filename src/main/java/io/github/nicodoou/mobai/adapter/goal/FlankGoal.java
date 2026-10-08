@@ -99,7 +99,7 @@ public final class FlankGoal implements Goal<Mob> {
   }
 
   private double reachOf(Player target) {
-    return context.tools().weapons().playerReach().blocksOf(target);
+    return context.tools().weapons().bodies().playerReach().blocksOf(target);
   }
 
   // Every flanker of this target loaded in its world, this mob included.

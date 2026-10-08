@@ -37,6 +37,18 @@ class WaypointsTest {
   }
 
   @Test
+  void sideStepPointClearsTheMobsWidthPlusTheMargin() {
+    PlayerPose standing = new PlayerPose(new Vec3(0, 64, 0), new Vec3(0, 0, 1));
+
+    Vec3 point = waypoints.sideStepPoint(standing, new Vec3(1, 64, 1), 0.3);
+
+    double expectedDegrees = Math.toDegrees(Math.atan(0.3 / 1.5)) + 15.0;
+    assertThat(point.minus(standing.position()).horizontal().length()).isCloseTo(1.5, within(1e-6));
+    assertThat(new CombatGeometry().angleFromFacingDegrees(standing, point))
+        .isCloseTo(expectedDegrees, within(1e-6));
+  }
+
+  @Test
   void onlyOutOfSightCountsAsFlank() {
     assertThat(waypoints.isOutOfSight(pose, new Vec3(0, 0, -2))).isTrue();
     assertThat(waypoints.isOutOfSight(pose, new Vec3(2, 0, 0))).isFalse();

@@ -141,6 +141,11 @@ public final class VersionTranslator {
         .orElse(MinecraftConstants.PLAYER_REACH_BLOCKS);
   }
 
+  public double movementSpeed(LivingEntity entity) {
+    return attributeValue(entity, Attribute.MOVEMENT_SPEED)
+        .orElse(MinecraftConstants.DEFAULT_MOB_MOVEMENT_SPEED);
+  }
+
   private Optional<EffectKind> effectKindOf(PotionEffectType type) {
     for (EffectKind kind : EffectKind.values()) {
       if (potionEffectOf(kind).equals(type)) {

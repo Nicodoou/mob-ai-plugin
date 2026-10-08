@@ -96,7 +96,7 @@ public final class FallBackGoal implements Goal<Mob> {
   }
 
   private double distanceToKeepFrom(Player target) {
-    return context.tools().weapons().playerReach().blocksOf(target)
+    return context.tools().weapons().bodies().playerReach().blocksOf(target)
         + context.tools().timing().volley().get().fallBackMarginBlocks();
   }
 

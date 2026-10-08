@@ -71,6 +71,15 @@ public final class CombatGeometry {
     return pose.position().plus(direction.times(distanceBlocks));
   }
 
+  /** A point beside the player's aim, turned towards the side the mob is already on. */
+  public Vec3 sideStepPoint(PlayerPose pose, Vec3 mobPosition, SideStep step) {
+    requirePositiveDistance(step.distanceBlocks());
+    Vec3 offset = mobPosition.minus(pose.position()).horizontal();
+    int side = sideOf(pose.facing(), offset);
+    Vec3 direction = rotateAroundVertical(pose.facing(), side * step.angleDegrees());
+    return pose.position().plus(direction.times(step.distanceBlocks()));
+  }
+
   public Vec3 retreatPoint(Vec3 mobPosition, Vec3 dangerPosition, double distanceBlocks) {
     requirePositiveDistance(distanceBlocks);
     Vec3 away = awayDirection(mobPosition, dangerPosition);

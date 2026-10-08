@@ -8,6 +8,7 @@ import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
+import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.EnumSet;
@@ -35,7 +36,6 @@ public final class PressGoal implements Goal<Mob> {
   private final GoalContext context;
   private final MeleeRhythm rhythm;
   private final PatientWait patience = new PatientWait();
-  private final EvasiveWait evasion = new EvasiveWait();
   private EvasiveMove lastEvasiveMove = EvasiveMove.HOLD;
 
   public PressGoal(Mob mob, MobKind kind, GoalContext context) {
@@ -103,50 +103,87 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private void evade(Player target) {
-    long now = context.tools().timing().clock().currentTick();
-    EvasiveMove move = evasion.next(threatOf(target), now, attack().patientStrikeMaxWaitTicks());
+    EvasiveMove move = EvasiveRules.next(readingOf(target), attack().evasiveSafetyTicks());
     switch (move) {
-      case STRIKE_EVASIVE -> engage(target, Attack.ZOMBIE_EVASIVE_STRIKE);
-      case CHARGE -> engage(target, Attack.ZOMBIE_FRONT_STRIKE);
+      case STRIKE_EVASIVE -> engage(target);
+      case SIDE_STEP -> sideStep(target);
       case BACK_OFF -> backOff(target);
       case HOLD -> mob.getPathfinder().stopPathfinding();
     }
     lastEvasiveMove = move;
   }
 
-  private void engage(Player target, Attack attack) {
+  private EvasiveReading readingOf(Player target) {
+    Vec3 mobPosition = PoseReader.positionOf(mob.getLocation());
+    boolean watched = !waypoints().isOutOfSight(PoseReader.poseOf(target), mobPosition);
+    double distance =
+        mobPosition.minus(PoseReader.positionOf(target.getLocation())).horizontal().length();
+    double danger = reachOf(target) + attack().evasiveMarginBlocks();
+    return new EvasiveReading(
+        watched,
+        isShieldedAndCharged(target),
+        chargeTicksLeft(target),
+        ticksNeeded(distance, danger),
+        distance <= danger);
+  }
+
+  private static boolean isShieldedAndCharged(Player player) {
+    return player.isBlocking() && player.getAttackCooldown() >= FULL_ATTACK_COOLDOWN;
+  }
+
+  private static double chargeTicksLeft(Player player) {
+    return Math.max(
+        0, (FULL_ATTACK_COOLDOWN - player.getAttackCooldown()) * player.getCooldownPeriod());
+  }
+
+  private long ticksNeeded(double distance, double danger) {
+    double speed = context.tools().weapons().bodies().mobSpeed().of(mob) * WALK_SPEED;
+    if (distance <= danger) {
+      return EscapeTiming.ticksToCover(danger - distance, speed);
+    }
+    return EscapeTiming.ticksToCover(distance - MinecraftConstants.MELEE_REACH_BLOCKS, speed)
+        + EscapeTiming.ticksToCover(danger - MinecraftConstants.MELEE_REACH_BLOCKS, speed);
+  }
+
+  private void engage(Player target) {
     chaseOn(target);
+    strikeEvasiveIfInReach(target);
+  }
+
+  private void strikeEvasiveIfInReach(Player target) {
     if (!rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
       return;
     }
-    context.tools().weapons().melee().strike(mob, target, attack);
+    context.tools().weapons().melee().strike(mob, target, Attack.ZOMBIE_EVASIVE_STRIKE);
     rhythm.markStrike();
-    evasion.struck();
+  }
+
+  private void sideStep(Player target) {
+    if (lastEvasiveMove != EvasiveMove.SIDE_STEP || rhythm.shouldRepath()) {
+      Vec3 spot =
+          waypoints()
+              .sideStepPoint(
+                  PoseReader.poseOf(target),
+                  PoseReader.positionOf(mob.getLocation()),
+                  mob.getWidth() / 2);
+      mob.getPathfinder()
+          .moveTo(new Location(mob.getWorld(), spot.x(), spot.y(), spot.z()), WALK_SPEED);
+      rhythm.markRepath();
+    }
+    strikeEvasiveIfInReach(target);
   }
 
   // Coming out of a dodge, the opening is short: it charges in at once instead of waiting to
   // repath.
   private void chaseOn(Player target) {
-    if (lastEvasiveMove == EvasiveMove.BACK_OFF || lastEvasiveMove == EvasiveMove.HOLD) {
+    if (lastEvasiveMove == EvasiveMove.BACK_OFF
+        || lastEvasiveMove == EvasiveMove.HOLD
+        || lastEvasiveMove == EvasiveMove.SIDE_STEP) {
       mob.getPathfinder().moveTo(target, WALK_SPEED);
       rhythm.markRepath();
       return;
     }
     followIfDue(target);
-  }
-
-  private PlayerThreat threatOf(Player target) {
-    Vec3 mobPosition = PoseReader.positionOf(mob.getLocation());
-    boolean watching = !waypoints().isOutOfSight(PoseReader.poseOf(target), mobPosition);
-    boolean charged = target.getAttackCooldown() >= attack().evasiveChargeThreshold();
-    if (!watching || !charged) {
-      return PlayerThreat.SAFE;
-    }
-    Vec3 away = mobPosition.minus(PoseReader.positionOf(target.getLocation()));
-    if (away.horizontal().length() <= reachOf(target) + attack().evasiveMarginBlocks()) {
-      return PlayerThreat.IN_DANGER;
-    }
-    return PlayerThreat.AT_THE_EDGE;
   }
 
   private void backOff(Player target) {
@@ -170,7 +207,7 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private double reachOf(Player target) {
-    return context.tools().weapons().playerReach().blocksOf(target);
+    return context.tools().weapons().bodies().playerReach().blocksOf(target);
   }
 
   private AttackSettings attack() {
