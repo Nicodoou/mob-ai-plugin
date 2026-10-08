@@ -32,7 +32,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-27](#ct-27--éxito-con-tres-medidas) Éxito con tres medidas | 8 oct 2026 | Nico | WP-30A, WP-30B |
 | [CT-28](#ct-28--retirada-aprendida) Retirada aprendida | 8 oct 2026 | Nico | WP-30C |
 | [CT-29](#ct-29--punto-de-reunión-al-reagruparse) Punto de reunión al reagruparse | 8 oct 2026 | Nico (diseño), Opus (detalle) | WP-32A y WP-32B |
-| [CT-30](#ct-30--planes-por-receta-modelo-bayesiano-y-modo-entrenamiento) Planes por receta, modelo bayesiano y modo entrenamiento | 8 oct 2026 | Nico (idea), Opus (diseño) | **Propuesto**, sin aprobar. WP-33A a WP-33G |
+| [CT-30](#ct-30--planes-por-receta-modelo-bayesiano-y-modo-entrenamiento) Planes por receta, modelo bayesiano y modo entrenamiento | 8 oct 2026 | Nico (idea y decisiones), Opus (diseño) | Aprobado con cambios (8 oct). WP-33A a WP-33G |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -492,7 +492,25 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 
 ## CT-30 — Planes por receta, modelo bayesiano y modo entrenamiento
 
-**Estado:** propuesto el 8 oct 2026; falta la aprobación de Nico (ver «Decisiones para Nico»).
+**Estado:** aprobado por Nico el 8 oct 2026, con cambios (sección «Decisiones de Nico», que manda sobre lo que la contradiga más abajo).
+
+**Objetivo, en palabras de Nico:** encontrar la combinación de ataques y miembros del grupo que mata a un jugador puntual con el menor daño propio. El éxito del plan (CT-27: daño, rapidez y supervivencia) ya mide eso.
+
+### Decisiones de Nico (8 oct)
+
+1. **Todo continuo y aprendido:** las fracciones por rol, el umbral de retirada individual (0 a 60 % de vida) y la demora de la reserva (20 a 400 ticks, en escala logarítmica) no son grillas fijas. El cerebro experimenta y busca el óptimo.
+2. **Búsqueda del óptimo binaria/logarítmica:** en cada plan, con los pesos sorteados, el cerebro evalúa una grilla gruesa de recetas y después refina alrededor de la mejor, achicando el paso a la mitad un número fijo de veces (`learning.search-refinements`). La demora se busca en escala logarítmica.
+3. **Modelo cuadrático en las perillas (consecuencia de 1 y 2):** un modelo lineal puro siempre pone el óptimo en un extremo (0 % o 100 %). Para encontrar un punto intermedio, cada perilla continua entra con su valor y su cuadrado, más las interacciones elegidas. Sigue siendo una regresión bayesiana lineal **en los pesos**, con Thompson. Son unos 16 rasgos.
+4. **Se aprende de lo jugado:** los rasgos se calculan con la fracción **realizada** (cantidades enteras sobre el total del tipo), no con la pedida. Con 4 zombies, pedir 40 % o 50 % de flanqueadores da 2 en los dos casos.
+5. **La base aprende solo en modo entrenamiento.**
+6. **El umbral de retirada entra en la receta:** CT-28 queda absorbido y el WP-30C se cancela.
+7. **Copia de lo que hay, por si el sistema nuevo funciona peor:**
+   - rama `respaldo/estrategias-fijas` en GitHub (commit `dd3e2e1`, 8 oct), con el sistema de 4 estrategias completo;
+   - durante la transición conviven los dos sistemas: `learning.planner: strategies | recipes` en `config.yml` elige cuál decide (por defecto `strategies` hasta validar), así se comparan en el juego sin recompilar;
+   - la migración del esquema **no borra** los registros por estrategia; el plugin copia la carpeta de memorias a `memories-backup-v<versión>/` antes de migrar.
+   - El sistema viejo se quita recién cuando Nico lo decida, después de compararlos.
+
+### Diseño original (con los cambios de arriba)
 
 **Qué cambia.**
 
@@ -555,12 +573,12 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 
 | WP | Qué | Modelo |
 | --- | --- | --- |
-| WP-33A | `LinearThompsonModel`: media, matriz, sorteo con Cholesky, actualización de rango 1 y olvido. Matemática pura con pruebas de referencia | Opus |
-| WP-33B | Simulación: recompensa sintética por receta; verificar que el modelo encuentra la mejor receta y calibrar ruido, punto de partida, exploración y peso de la base. **Puerta: sin buenos números acá, no se sigue** | Opus |
-| WP-33C | `PlanRecipe`, `RecipeSpace` (recetas viables y cantidades enteras), `RecipeFeatures` y el rol `RESERVE` en el dominio | Sonnet |
-| WP-33D | `RecipeStrategy` y `Brain`: elegir la receta, asignar roles, aprender al cerrar el plan, traza y log de debug | Opus |
-| WP-33E | Memoria por jugador, migración del esquema y `base.json` | Sonnet |
-| WP-33F | Goal de la reserva (`FallBackGoal` con demora y entrada a presionar) | Sonnet |
+| WP-33A | `BayesianLinearModel`: media, precisión, sorteo con Cholesky, actualización de rango 1 y olvido hacia el punto de partida. Matemática pura con pruebas de referencia | Opus |
+| WP-33B | Recetas continuas: `PlanRecipe`, rasgos cuadráticos (`RecipeFeatures`), fracciones realizadas y la búsqueda gruesa-a-fina (`RecipeSearch`) | Opus |
+| WP-33C | Simulación: recompensa sintética con un óptimo interior conocido; medir en cuántos planes lo encuentra y calibrar ruido, punto de partida, exploración, refinamientos y peso de la base. **Puerta: sin buenos números acá, no se sigue** | Opus |
+| WP-33D | `RecipePlanner` y `Brain`: elegir, asignar roles, aprender al cerrar, traza y log de debug; conmutador `learning.planner` con las estrategias viejas | Opus |
+| WP-33E | Memoria por jugador, esquema nuevo sin borrar lo viejo, copia de seguridad al migrar y `base.json` | Sonnet |
+| WP-33F | Rol `RESERVE` y su goal (`FallBackGoal` con demora y entrada a presionar) | Sonnet |
 | WP-33G | `/mobai train`, exploración del modo, actualización de la base, `training-data.jsonl` y `/mobai memory` | Sonnet |
 
 **Riesgos.**
@@ -569,9 +587,4 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 - **Dificultad:** una base competente puede hacer a los mobs demasiado duros para un jugador común. `base-weight-plans` y la exploración funcionan también como perillas de dificultad, y se calibran en la puerta G1.
 - **Tamaño:** es el cambio más grande desde el cerebro. Toca la memoria, el formato en disco y la simulación.
 
-**Decisiones para Nico.**
-1. ¿El umbral de retirada entra en la receta y se cancela el WP-30C? (propuesta: sí)
-2. ¿La reserva es «espera fuera del alcance y entra después de la demora»? (propuesta: sí; otra opción es que entre cuando cae un zombie que presiona)
-3. ¿La base aprende solo en modo entrenamiento? (propuesta: sí, para que un jugador normal no la cambie sin querer)
-4. ¿Fracciones de a 25 %? (propuesta: sí; de a 20 % serían 21 combinaciones de zombies en vez de 15)
-
+**Decisiones para Nico:** respondidas el 8 oct (ver arriba).

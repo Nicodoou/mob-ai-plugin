@@ -78,12 +78,19 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30D | La supervivencia multiplica | E6 | mergeado | Sonnet | [#54](https://github.com/Nicodoou/mob-ai-plugin/pull/54) | D-01 del test fuerte, aprobado por Nico |
-| WP-30C | Retirada aprendida | E6 | pendiente | Opus | — | CT-28 |
+| WP-30C | Retirada aprendida | E6 | cancelado | — | — | Absorbido por CT-30: el umbral de retirada es una perilla de la receta |
 | WP-25 | Arañas: mordida con lentitud | E6 | mergeado | Sonnet | [#55](https://github.com/Nicodoou/mob-ai-plugin/pull/55) | Especificado y lanzado desde la nube; revisión local y merge por Opus local |
 | WP-26 | Consulta de memoria | E6 | mergeado | Sonnet | [#52](https://github.com/Nicodoou/mob-ai-plugin/pull/52) | `/mobai memory` con el peligro; las métricas ya las cubre el log de debug |
 | WP-31 | `/mobai reinforce` | E6 | mergeado | Sonnet | [#57](https://github.com/Nicodoou/mob-ai-plugin/pull/57) | Especificado y lanzado desde la nube; revisión local y merge, con `messages.yml` de prueba actualizado |
 | WP-32A | Punto de reunión: el cerebro | E6 | mergeado | Opus | [#58](https://github.com/Nicodoou/mob-ai-plugin/pull/58) | CT-29. Especificado y lanzado desde la nube; revisión local y merge, con `config.yml` de prueba actualizado |
 | WP-32B | Punto de reunión: los goals | E6 | en revisión | Sonnet | [#59](https://github.com/Nicodoou/mob-ai-plugin/pull/59) | CT-29. Revisado en la nube: código igual al WP, CI verde, 12 pruebas y 5 roturas con JDK 21. Riesgo a mirar en el juego: un punto de reunión a menos de `retreat-distance-blocks` (16) del jugador puede hacer que el mob llegue, no esté «lejos» y se vuelva a alejar (ida y vuelta) |
+| WP-33A | Modelo bayesiano lineal | E6 | pendiente | Opus | — | CT-30 |
+| WP-33B | Recetas continuas y búsqueda | E6 | pendiente | Opus | — | CT-30 |
+| WP-33C | Simulación y calibración (puerta) | E6 | pendiente | Opus | — | CT-30 |
+| WP-33D | Planificador por recetas en el cerebro | E6 | pendiente | Opus | — | CT-30 |
+| WP-33E | Memoria, migración y base | E6 | pendiente | Sonnet | — | CT-30 |
+| WP-33F | Rol de reserva | E6 | pendiente | Sonnet | — | CT-30 |
+| WP-33G | Modo entrenamiento | E6 | pendiente | Sonnet | — | CT-30 |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
 
 ## Puertas de etapa
