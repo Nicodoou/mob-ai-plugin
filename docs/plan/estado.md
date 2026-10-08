@@ -7,9 +7,10 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 ## Próximo paso
 
 1. **Puerta E5 pasada** (7 oct 2026): evidencia en `docs/plan/puerta-e5-registro.md`. Un bug corregido (B-01, #31) y el CT-13 para el WP-22.
-2. **Etapa E6, orden acordado con Nico:** WP-24C (mergeado #41, falta verificar en el juego) → WP-24D (altura, CT-22, mergeado #42; falta verificar 24C y 24D en el juego) → WP-23B (golpe esquivo, CT-19, mergeado #43; falta verificar en el juego) → WP-23C (alcance según el arma, CT-24, mergeado #44) → WP-24E y WP-24F (andanada, CT-23, 24E #45 y 24F #46 mergeados. **Falta la prueba en el juego de 24C, 24D, 23B, 23C y la andanada**) → WP-25 y WP-26 → puerta E6. Mergeados hasta acá en E6: WP-22A a 22E, WP-23, WP-24A y 24B, y los arreglos B-02 y B-03.
-3. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
-4. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
+2. **Etapa E6, ahora:** esperar el resultado de Nico en el juego de WP-24C (formación de esqueletos), WP-24D (altura), WP-23B (golpe esquivo), WP-23C (alcance según el arma) y WP-24E/F (andanada); guion en mi último mensaje y en la sección «Verificación en el server» de cada WP. Lo que no coincida va por `docs/resolucion-de-bugs.md` y se anota en `docs/plan/verificacion-e6.md` (corrida 4 en adelante). El `config.yml` del server de prueba ya tiene todas las claves nuevas.
+3. **Después:** especificar WP-25 (lentitud de la araña) y WP-26 (`/mobai memory` y métricas), y la puerta E6. Mergeados en E6: WP-22A a 22E, WP-23, 23B, 23C, WP-24A a 24F (#32 a #46) y los arreglos B-02 y B-03. Reglas nuevas del manual (sección 4) salidas de estos WPs: enums, simulación, validación de claves, nombres de pruebas, valores por defecto, reloj en los goals.
+4. Pendientes de limpieza (ver «Decisiones abiertas»): ciclos de paquetes y `hasRetreated` con miembros que se suman a mitad de plan. El orden del plan se mantiene.
+5. Nico prefiere seguir en la misma sesión compactando el contexto: después de cada compactación, releer `orquestacion.md` y este tablero antes de seguir. No bajar la calidad de especificaciones, revisiones ni devoluciones para ahorrar contexto (pedido de Nico).
 
 ## WPs
 
