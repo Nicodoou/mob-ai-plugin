@@ -12,11 +12,12 @@ class StrategyCatalogTest {
   private final StrategyCatalog catalog = new StrategyCatalog(new CombatGeometry());
 
   @Test
-  void listsTheThreeStrategiesInFixedOrder() {
+  void listsTheFourStrategiesInFixedOrder() {
     var ids = catalog.all().stream().map(GroupStrategy::id).toList();
 
     assertThat(ids)
-        .containsExactly(DirectAssaultStrategy.ID, FlankStrategy.ID, PinAndShootStrategy.ID);
+        .containsExactly(
+            DirectAssaultStrategy.ID, FlankStrategy.ID, PinAndShootStrategy.ID, VolleyStrategy.ID);
   }
 
   @Test
@@ -27,7 +28,8 @@ class StrategyCatalogTest {
     var viable = catalog.viable(snapshot);
 
     assertThat(ids(viable))
-        .containsExactly(DirectAssaultStrategy.ID, FlankStrategy.ID, PinAndShootStrategy.ID);
+        .containsExactly(
+            DirectAssaultStrategy.ID, FlankStrategy.ID, PinAndShootStrategy.ID, VolleyStrategy.ID);
   }
 
   @Test

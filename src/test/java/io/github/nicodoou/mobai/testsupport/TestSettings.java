@@ -13,6 +13,7 @@ import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
+import io.github.nicodoou.mobai.domain.settings.VolleySettings;
 
 public final class TestSettings {
   private TestSettings() {}
@@ -28,6 +29,7 @@ public final class TestSettings {
         new SpiderSettings(60, 1),
         new PersistenceSettings(6_000),
         new DebugSettings(TraceLevel.OFF, 200),
-        new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50));
+        new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50),
+        new VolleySettings(60, 20, 30, 1.5));
   }
 }

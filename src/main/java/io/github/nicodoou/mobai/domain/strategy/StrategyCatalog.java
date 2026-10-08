@@ -14,7 +14,10 @@ public final class StrategyCatalog {
     Objects.requireNonNull(geometry, "StrategyCatalog.geometry");
     this.strategies =
         List.of(
-            new DirectAssaultStrategy(), new FlankStrategy(geometry), new PinAndShootStrategy());
+            new DirectAssaultStrategy(),
+            new FlankStrategy(geometry),
+            new PinAndShootStrategy(),
+            new VolleyStrategy());
   }
 
   public List<GroupStrategy> all() {

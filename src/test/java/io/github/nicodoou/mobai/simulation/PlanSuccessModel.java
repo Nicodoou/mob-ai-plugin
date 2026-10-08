@@ -5,6 +5,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.strategy.DirectAssaultStrategy;
 import io.github.nicodoou.mobai.domain.strategy.FlankStrategy;
 import io.github.nicodoou.mobai.domain.strategy.PinAndShootStrategy;
+import io.github.nicodoou.mobai.domain.strategy.VolleyStrategy;
 import java.util.Map;
 import java.util.Objects;
 
@@ -23,7 +24,9 @@ final class PlanSuccessModel {
           new SuccessKey(PlayerArchetype.BLOCKER, PinAndShootStrategy.ID), 0.45,
           new SuccessKey(PlayerArchetype.OPEN, DirectAssaultStrategy.ID), 0.65,
           new SuccessKey(PlayerArchetype.OPEN, FlankStrategy.ID), 0.60,
-          new SuccessKey(PlayerArchetype.OPEN, PinAndShootStrategy.ID), 0.55);
+          new SuccessKey(PlayerArchetype.OPEN, PinAndShootStrategy.ID), 0.55,
+          new SuccessKey(PlayerArchetype.BLOCKER, VolleyStrategy.ID), 0.55,
+          new SuccessKey(PlayerArchetype.OPEN, VolleyStrategy.ID), 0.50);
 
   private final RandomSource world;
 

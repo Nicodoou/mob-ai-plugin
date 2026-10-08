@@ -178,7 +178,8 @@ class RecruitMobTest {
         base.spider(),
         base.persistence(),
         base.debug(),
-        base.retreat());
+        base.retreat(),
+        base.volley());
   }
 
   private static MobAiSettings withSelection(SelectionSettings selection) {
@@ -193,6 +194,7 @@ class RecruitMobTest {
         base.spider(),
         base.persistence(),
         base.debug(),
-        base.retreat());
+        base.retreat(),
+        base.volley());
   }
 }

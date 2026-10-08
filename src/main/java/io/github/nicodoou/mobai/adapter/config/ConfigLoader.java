@@ -13,6 +13,7 @@ import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
+import io.github.nicodoou.mobai.domain.settings.VolleySettings;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
@@ -33,7 +34,8 @@ public final class ConfigLoader {
           spider(root),
           persistence(root),
           debug(root),
-          retreat(root));
+          retreat(root),
+          volley(root));
     } catch (IllegalArgumentException exception) {
       throw new InvalidConfigException("config.yml: " + exception.getMessage(), exception);
     }
@@ -117,6 +119,14 @@ public final class ConfigLoader {
         wholeNumber(root, "retreat.regroup-min-ticks"),
         wholeNumber(root, "retreat.regroup-max-ticks"),
         wholeNumber(root, "retreat.regroup-step-ticks"));
+  }
+
+  private VolleySettings volley(ConfigurationSection root) {
+    return new VolleySettings(
+        wholeNumber(root, "volley.press-ticks"),
+        wholeNumber(root, "volley.fall-back-ticks"),
+        wholeNumber(root, "volley.fire-ticks"),
+        number(root, "volley.fall-back-margin-blocks"));
   }
 
   private double number(ConfigurationSection root, String path) {

@@ -116,7 +116,13 @@ class SettingsValidationTest {
             (Runnable) () -> new PersistenceSettings(0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "DebugSettings.flightRecorderEvents must be at least 1, got 0",
-            (Runnable) () -> new DebugSettings(TraceLevel.OFF, 0)));
+            (Runnable) () -> new DebugSettings(TraceLevel.OFF, 0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "VolleySettings.pressTicks must be at least 1, got 0",
+            (Runnable) () -> new VolleySettings(0, 20, 30, 1.5)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "VolleySettings.fallBackMarginBlocks must be zero or positive, got -1.0",
+            (Runnable) () -> new VolleySettings(60, 20, 30, -1.0)));
   }
 
   @Test
@@ -134,7 +140,8 @@ class SettingsValidationTest {
                     defaults.spider(),
                     defaults.persistence(),
                     defaults.debug(),
-                    defaults.retreat()))
+                    defaults.retreat(),
+                    defaults.volley()))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("MobAiSettings.memory");
   }
@@ -155,7 +162,8 @@ class SettingsValidationTest {
                     defaults.spider(),
                     defaults.persistence(),
                     defaults.debug(),
-                    new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50)))
+                    new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50),
+                    defaults.volley()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got 0.3 <= 0.3");
