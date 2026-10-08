@@ -115,13 +115,24 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private void engage(Player target, Attack attack) {
-    followIfDue(target);
+    chaseOn(target);
     if (!rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
       return;
     }
     context.tools().weapons().melee().strike(mob, target, attack);
     rhythm.markStrike();
     evasion.struck();
+  }
+
+  // Coming out of a dodge, the opening is short: it charges in at once instead of waiting to
+  // repath.
+  private void chaseOn(Player target) {
+    if (lastEvasiveMove == EvasiveMove.BACK_OFF || lastEvasiveMove == EvasiveMove.HOLD) {
+      mob.getPathfinder().moveTo(target, WALK_SPEED);
+      rhythm.markRepath();
+      return;
+    }
+    followIfDue(target);
   }
 
   private PlayerThreat threatOf(Player target) {
