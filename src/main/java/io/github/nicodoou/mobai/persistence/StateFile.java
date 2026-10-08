@@ -1,3 +1,6 @@
 package io.github.nicodoou.mobai.persistence;
 
-record StateFile(int schemaVersion, long serverTick, long regroupWindowTicks) {}
+import java.util.List;
+
+record StateFile(
+    int schemaVersion, long serverTick, long regroupWindowTicks, List<TraitEntry> traits) {}

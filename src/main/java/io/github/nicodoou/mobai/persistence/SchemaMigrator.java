@@ -5,12 +5,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 final class SchemaMigrator {
-  static final int CURRENT_VERSION = 2;
+  static final int CURRENT_VERSION = 3;
   private static final String VERSION_FIELD = "schemaVersion";
-  private static final int VERSION_ONE = 1;
   private static final int VERSION_TWO = 2;
+  private static final int VERSION_THREE = 3;
   private static final String MEMBERS_FIELD = "members";
   private static final String DANGER_RECORDS_FIELD = "dangerRecords";
+  private static final String RECIPE_MODELS_FIELD = "recipeModels";
+  private static final String TRAITS_FIELD = "traits";
+  private static final String SERVER_TICK_FIELD = "serverTick";
 
   JsonObject migrate(JsonObject file, String fileName) {
     int version = versionOf(file, fileName);
@@ -23,9 +26,12 @@ final class SchemaMigrator {
               + ", newer than the supported "
               + CURRENT_VERSION);
     }
-    // One step per version, oldest first.
-    if (version == VERSION_ONE) {
+    // One step per version, oldest first; a version 1 file goes through every step.
+    if (version < VERSION_TWO) {
       fromVersionOne(file);
+    }
+    if (version < VERSION_THREE) {
+      fromVersionTwo(file);
     }
     return file;
   }
@@ -36,6 +42,17 @@ final class SchemaMigrator {
       file.add(DANGER_RECORDS_FIELD, new JsonArray());
     }
     file.addProperty(VERSION_FIELD, VERSION_TWO);
+  }
+
+  // Group files get no recipe models and the state file no traits; nothing is dropped.
+  private static void fromVersionTwo(JsonObject file) {
+    if (file.has(MEMBERS_FIELD) && !file.has(RECIPE_MODELS_FIELD)) {
+      file.add(RECIPE_MODELS_FIELD, new JsonArray());
+    }
+    if (file.has(SERVER_TICK_FIELD) && !file.has(TRAITS_FIELD)) {
+      file.add(TRAITS_FIELD, new JsonArray());
+    }
+    file.addProperty(VERSION_FIELD, VERSION_THREE);
   }
 
   private static int versionOf(JsonObject file, String fileName) {

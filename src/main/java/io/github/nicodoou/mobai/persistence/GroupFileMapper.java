@@ -2,12 +2,16 @@ package io.github.nicodoou.mobai.persistence;
 
 import io.github.nicodoou.mobai.domain.group.Member;
 import io.github.nicodoou.mobai.domain.memory.AttackRecord;
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.DangerRecord;
+import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
 import io.github.nicodoou.mobai.domain.port.StoredDangerRecord;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
+import io.github.nicodoou.mobai.domain.port.StoredRecipeModel;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import io.github.nicodoou.mobai.domain.port.StoredStrategyRecord;
+import io.github.nicodoou.mobai.domain.port.StoredTraits;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
@@ -15,6 +19,7 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.strategy.TraitSums;
 import java.util.UUID;
 
 final class GroupFileMapper {
@@ -27,7 +32,8 @@ final class GroupFileMapper {
         group.members().stream().map(GroupFileMapper::toEntry).toList(),
         group.attackRecords().stream().map(GroupFileMapper::toEntry).toList(),
         group.strategyRecords().stream().map(GroupFileMapper::toEntry).toList(),
-        group.dangerRecords().stream().map(GroupFileMapper::toEntry).toList());
+        group.dangerRecords().stream().map(GroupFileMapper::toEntry).toList(),
+        group.recipeModels().stream().map(GroupFileMapper::toEntry).toList());
   }
 
   StoredGroup fromFile(GroupFile file) {
@@ -46,16 +52,27 @@ final class GroupFileMapper {
             .toList(),
         required(file.dangerRecords(), "GroupFile.dangerRecords").stream()
             .map(GroupFileMapper::toDangerRecord)
+            .toList(),
+        required(file.recipeModels(), "GroupFile.recipeModels").stream()
+            .map(GroupFileMapper::toRecipeModel)
             .toList());
   }
 
   StateFile toFile(StoredState state) {
     return new StateFile(
-        SchemaMigrator.CURRENT_VERSION, state.serverTick(), state.regroupWindowTicks());
+        SchemaMigrator.CURRENT_VERSION,
+        state.serverTick(),
+        state.regroupWindowTicks(),
+        state.traits().stream().map(GroupFileMapper::toEntry).toList());
   }
 
   StoredState fromFile(StateFile file) {
-    return new StoredState(file.serverTick(), file.regroupWindowTicks());
+    return new StoredState(
+        file.serverTick(),
+        file.regroupWindowTicks(),
+        required(file.traits(), "StateFile.traits").stream()
+            .map(GroupFileMapper::toTraits)
+            .toList());
   }
 
   private static MemberEntry toEntry(Member member) {
@@ -87,6 +104,51 @@ final class GroupFileMapper {
         record.healthLost(),
         record.damageDealt(),
         record.lastUpdateTick());
+  }
+
+  private static RecipeModelEntry toEntry(StoredRecipeModel stored) {
+    LinearPosterior model = stored.record().model();
+    return new RecipeModelEntry(
+        stored.player().value().toString(),
+        model.precision(),
+        model.information(),
+        model.observations(),
+        stored.record().lastTick());
+  }
+
+  private static TraitEntry toEntry(StoredTraits stored) {
+    TraitSums sums = stored.sums();
+    return new TraitEntry(
+        stored.player().value().toString(),
+        sums.shield(),
+        sums.ranged(),
+        sums.armor(),
+        sums.weight(),
+        sums.lastTick());
+  }
+
+  private static StoredRecipeModel toRecipeModel(RecipeModelEntry entry) {
+    required(entry, "GroupFile.recipeModels[]");
+    LinearPosterior model =
+        LinearPosterior.of(
+            required(entry.precision(), "RecipeModelEntry.precision"),
+            required(entry.information(), "RecipeModelEntry.information"),
+            entry.observations());
+    return new StoredRecipeModel(
+        toPlayer(entry.player(), "RecipeModelEntry.player"),
+        new RecipeModelRecord(model, entry.lastTick()));
+  }
+
+  private static StoredTraits toTraits(TraitEntry entry) {
+    required(entry, "StateFile.traits[]");
+    TraitSums sums =
+        new TraitSums(
+            entry.shield(), entry.ranged(), entry.armor(), entry.weight(), entry.lastTick());
+    return new StoredTraits(toPlayer(entry.player(), "TraitEntry.player"), sums);
+  }
+
+  private static PlayerId toPlayer(String text, String field) {
+    return new PlayerId(UUID.fromString(required(text, field)));
   }
 
   private static StoredDangerRecord toDangerRecord(DangerEntry entry) {

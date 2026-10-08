@@ -16,11 +16,11 @@ class SchemaMigratorTest {
 
   @Test
   void currentVersionPassesUnchanged() {
-    var file = json("{\"schemaVersion\": 2, \"x\": 2}");
+    var file = json("{\"schemaVersion\": 3, \"x\": 2}");
 
     var migrated = migrator.migrate(file, "a.json");
 
-    assertThat(migrated).isEqualTo(json("{\"schemaVersion\": 2, \"x\": 2}"));
+    assertThat(migrated).isEqualTo(json("{\"schemaVersion\": 3, \"x\": 2}"));
   }
 
   @Test
@@ -34,9 +34,10 @@ class SchemaMigratorTest {
     assertThat(migratedGroup)
         .isEqualTo(
             json(
-                "{\"schemaVersion\": 2, \"members\": [], \"strategyRecords\": [],"
-                    + " \"dangerRecords\": []}"));
-    assertThat(migratedState).isEqualTo(json("{\"schemaVersion\": 2, \"serverTick\": 5}"));
+                "{\"schemaVersion\": 3, \"members\": [], \"strategyRecords\": [],"
+                    + " \"dangerRecords\": [], \"recipeModels\": []}"));
+    assertThat(migratedState)
+        .isEqualTo(json("{\"schemaVersion\": 3, \"serverTick\": 5, \"traits\": []}"));
   }
 
   @Test
@@ -50,10 +51,47 @@ class SchemaMigratorTest {
 
   @Test
   void newerVersionIsRejected() {
-    var file = json("{\"schemaVersion\": 3}");
+    var file = json("{\"schemaVersion\": 4}");
 
     assertThatThrownBy(() -> migrator.migrate(file, "a.json"))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Memory file a.json has schema version 3, newer than the supported 2");
+        .hasMessage("Memory file a.json has schema version 4, newer than the supported 3");
+  }
+
+  @Test
+  void versionTwoGroupGetsEmptyRecipeModels() {
+    var groupFile =
+        json(
+            "{\"schemaVersion\": 2, \"members\": [], \"strategyRecords\": [],"
+                + " \"dangerRecords\": []}");
+
+    var migrated = migrator.migrate(groupFile, "g.json");
+
+    assertThat(migrated)
+        .isEqualTo(
+            json(
+                "{\"schemaVersion\": 3, \"members\": [], \"strategyRecords\": [],"
+                    + " \"dangerRecords\": [], \"recipeModels\": []}"));
+  }
+
+  @Test
+  void versionTwoStateGetsEmptyTraits() {
+    var stateFile = json("{\"schemaVersion\": 2, \"serverTick\": 5}");
+
+    var migrated = migrator.migrate(stateFile, "state.json");
+
+    assertThat(migrated)
+        .isEqualTo(json("{\"schemaVersion\": 3, \"serverTick\": 5, \"traits\": []}"));
+  }
+
+  @Test
+  void versionOneGoesThroughEveryStep() {
+    var groupFile = json("{\"schemaVersion\": 1, \"members\": [], \"strategyRecords\": []}");
+
+    var migrated = migrator.migrate(groupFile, "g.json");
+
+    assertThat(migrated.getAsJsonArray("dangerRecords")).isEmpty();
+    assertThat(migrated.getAsJsonArray("recipeModels")).isEmpty();
+    assertThat(migrated.get("schemaVersion").getAsInt()).isEqualTo(3);
   }
 }
