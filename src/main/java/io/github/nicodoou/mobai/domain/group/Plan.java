@@ -19,7 +19,9 @@ public record Plan(
     long startTick,
     long lastTargetSeenTick,
     double damageDealt,
-    Map<MobId, Role> startingRoles) {
+    Map<MobId, Role> startingRoles,
+    Map<MobId, Double> startingHealth,
+    Map<MobId, Double> lastSeenHealth) {
 
   public Plan {
     Objects.requireNonNull(id, "Plan.id");
@@ -29,6 +31,10 @@ public record Plan(
     roles = Collections.unmodifiableMap(new LinkedHashMap<>(roles));
     Objects.requireNonNull(startingRoles, "Plan.startingRoles");
     startingRoles = Collections.unmodifiableMap(new LinkedHashMap<>(startingRoles));
+    Objects.requireNonNull(startingHealth, "Plan.startingHealth");
+    startingHealth = Collections.unmodifiableMap(new LinkedHashMap<>(startingHealth));
+    Objects.requireNonNull(lastSeenHealth, "Plan.lastSeenHealth");
+    lastSeenHealth = Collections.unmodifiableMap(new LinkedHashMap<>(lastSeenHealth));
   }
 
   public static Plan start(PlanId id, PlanStart start) {
@@ -41,7 +47,9 @@ public record Plan(
         start.tick(),
         start.tick(),
         0,
-        start.roles());
+        start.roles(),
+        Map.of(),
+        Map.of());
   }
 
   public Plan withDamageDealt(double damage) {
@@ -74,6 +82,20 @@ public record Plan(
     Map<MobId, Role> newRoles = new LinkedHashMap<>(roles);
     newRoles.remove(mob);
     return copyWithRoles(newRoles);
+  }
+
+  /** Health seen this decision; only mobs the plan started with count (CT-27). */
+  public Plan withHealthSeen(Map<MobId, Double> health) {
+    Objects.requireNonNull(health, "Plan.health");
+    Map<MobId, Double> newStarting = new LinkedHashMap<>(startingHealth);
+    Map<MobId, Double> newLastSeen = new LinkedHashMap<>(lastSeenHealth);
+    for (MobId mob : startingRoles.keySet()) {
+      if (health.containsKey(mob)) {
+        newStarting.putIfAbsent(mob, health.get(mob));
+        newLastSeen.put(mob, health.get(mob));
+      }
+    }
+    return copyWithHealth(newStarting, newLastSeen);
   }
 
   public Optional<Role> roleOf(MobId mob) {
@@ -110,7 +132,9 @@ public record Plan(
         startTick,
         lastTargetSeenTick,
         damageDealt,
-        startingRoles);
+        startingRoles,
+        startingHealth,
+        lastSeenHealth);
   }
 
   private Plan copyWithDamage(double newDamage) {
@@ -123,7 +147,9 @@ public record Plan(
         startTick,
         lastTargetSeenTick,
         newDamage,
-        startingRoles);
+        startingRoles,
+        startingHealth,
+        lastSeenHealth);
   }
 
   private Plan copyWithLastSeen(long newTick) {
@@ -136,6 +162,23 @@ public record Plan(
         startTick,
         newTick,
         damageDealt,
-        startingRoles);
+        startingRoles,
+        startingHealth,
+        lastSeenHealth);
+  }
+
+  private Plan copyWithHealth(Map<MobId, Double> newStarting, Map<MobId, Double> newLastSeen) {
+    return new Plan(
+        id,
+        strategy,
+        target,
+        roles,
+        targetMaxHealth,
+        startTick,
+        lastTargetSeenTick,
+        damageDealt,
+        startingRoles,
+        newStarting,
+        newLastSeen);
   }
 }

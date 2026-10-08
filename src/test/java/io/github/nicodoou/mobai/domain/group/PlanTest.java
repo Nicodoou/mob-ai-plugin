@@ -71,6 +71,16 @@ class PlanTest {
   }
 
   @Test
+  void firstHealthSeenIsKeptAsStartingHealth() {
+    Plan plan = newPlan();
+
+    Plan seen = plan.withHealthSeen(Map.of(MOB_1, 20.0)).withHealthSeen(Map.of(MOB_1, 12.0));
+
+    assertThat(seen.startingHealth()).containsEntry(MOB_1, 20.0);
+    assertThat(seen.lastSeenHealth()).containsEntry(MOB_1, 12.0);
+  }
+
+  @Test
   void roleChangeKeepsTheOrderOfTheRoles() {
     Plan original = newPlan();
 

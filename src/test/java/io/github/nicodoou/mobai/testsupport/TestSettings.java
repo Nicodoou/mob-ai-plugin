@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.testsupport;
 
+import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.settings.DebugSettings;
@@ -33,5 +34,10 @@ public final class TestSettings {
         new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50),
         new VolleySettings(60, 20, 30, 1.5),
         new SuccessSettings(0.4, 0.4, 0.2, 600));
+  }
+
+  public static PlanScoring scoring() {
+    MobAiSettings settings = defaults();
+    return new PlanScoring(settings.plan(), settings.success());
   }
 }
