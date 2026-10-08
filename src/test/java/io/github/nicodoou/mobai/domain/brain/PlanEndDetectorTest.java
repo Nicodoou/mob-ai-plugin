@@ -20,6 +20,7 @@ import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -127,7 +128,8 @@ class PlanEndDetectorTest {
       roles.put(mob, Role.PRESS);
     }
     PlanId id = new PlanId(new GroupId(new UUID(0, 3)), 1);
-    return Plan.start(id, new PlanStart(new StrategyId("FLANK"), ALICE, roles, 20, 100));
+    return Plan.start(
+        id, new PlanStart(new StrategyId("FLANK"), ALICE, roles, 20, 100, Optional.empty()));
   }
 
   private static PlayerSnapshotBuilder alice() {

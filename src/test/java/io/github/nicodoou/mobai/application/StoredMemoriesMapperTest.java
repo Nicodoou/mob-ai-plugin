@@ -26,6 +26,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -109,7 +110,12 @@ class StoredMemoriesMapperTest {
 
   private PlanStart pressStart() {
     return new PlanStart(
-        new StrategyId("DIRECT_ASSAULT"), player, Map.of(mob(1), Role.PRESS), 20, 100);
+        new StrategyId("DIRECT_ASSAULT"),
+        player,
+        Map.of(mob(1), Role.PRESS),
+        20,
+        100,
+        Optional.empty());
   }
 
   private Group groupWithMemory(long n) {

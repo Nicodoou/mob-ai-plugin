@@ -179,7 +179,8 @@ public final class Brain {
                     target,
                     strategy.assignRoles(turn.snapshot(), target),
                     targetMaxHealth,
-                    turn.snapshot().tick()));
+                    turn.snapshot().tick(),
+                    Optional.empty()));
     turn.lifecycle().recordGroupHealth(healthOf(turn.snapshot()));
     turn.draft().plan(plan.id());
   }

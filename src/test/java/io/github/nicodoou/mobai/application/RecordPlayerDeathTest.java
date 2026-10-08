@@ -25,6 +25,7 @@ import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -109,7 +110,9 @@ class RecordPlayerDeathTest {
     group.lifecycle().beginPlanning();
     group
         .lifecycle()
-        .startPlan(new PlanStart(STRATEGY, player, Map.of(mob(mobNumber), Role.PRESS), 20.0, 100));
+        .startPlan(
+            new PlanStart(
+                STRATEGY, player, Map.of(mob(mobNumber), Role.PRESS), 20.0, 100, Optional.empty()));
     return group;
   }
 

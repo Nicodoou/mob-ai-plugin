@@ -235,6 +235,7 @@ public final class PlanLifecycle {
         scoring.healthLostOf(plan),
         plan.damageDealt(),
         plan.startTick(),
-        tick);
+        tick,
+        plan.recipe());
   }
 }

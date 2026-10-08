@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -143,7 +144,8 @@ class TraceHubTest {
             0,
             20.0,
             TICK,
-            TICK));
+            TICK,
+            Optional.empty()));
   }
 
   private static Classification classification() {

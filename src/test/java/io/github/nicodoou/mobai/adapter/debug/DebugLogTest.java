@@ -47,7 +47,8 @@ class DebugLogTest {
             0,
             20.0,
             100,
-            TICK);
+            TICK,
+            Optional.empty());
 
     String line = DebugLog.planLine(new TraceEvent.PlanEvent(groupId(1), TICK, plan));
 

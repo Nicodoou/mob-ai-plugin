@@ -69,7 +69,8 @@ class ClosePlanTest {
             12.0,
             3.0,
             100,
-            700));
+            700,
+            Optional.empty()));
   }
 
   private static GroupId groupId(long n) {

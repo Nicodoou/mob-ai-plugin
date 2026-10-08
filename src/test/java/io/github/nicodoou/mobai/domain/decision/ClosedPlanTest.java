@@ -7,6 +7,7 @@ import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,8 @@ class ClosedPlanTest {
                     0,
                     5,
                     100,
-                    700))
+                    700,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("ClosedPlan.success must be between 0.0 and 1.0, got 1.5");
   }
@@ -50,7 +52,8 @@ class ClosedPlanTest {
                     0,
                     5,
                     100,
-                    99))
+                    99,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("ClosedPlan.endTick must not be before startTick, got 99 < 100");
   }

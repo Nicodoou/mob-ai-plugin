@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,7 +22,8 @@ public record Plan(
     double damageDealt,
     Map<MobId, Role> startingRoles,
     Map<MobId, Double> startingHealth,
-    Map<MobId, Double> lastSeenHealth) {
+    Map<MobId, Double> lastSeenHealth,
+    Optional<RecipePlay> recipe) {
 
   public Plan {
     Objects.requireNonNull(id, "Plan.id");
@@ -35,6 +37,7 @@ public record Plan(
     startingHealth = Collections.unmodifiableMap(new LinkedHashMap<>(startingHealth));
     Objects.requireNonNull(lastSeenHealth, "Plan.lastSeenHealth");
     lastSeenHealth = Collections.unmodifiableMap(new LinkedHashMap<>(lastSeenHealth));
+    Objects.requireNonNull(recipe, "Plan.recipe");
   }
 
   public static Plan start(PlanId id, PlanStart start) {
@@ -49,7 +52,8 @@ public record Plan(
         0,
         start.roles(),
         Map.of(),
-        Map.of());
+        Map.of(),
+        start.recipe());
   }
 
   public Plan withDamageDealt(double damage) {
@@ -130,7 +134,8 @@ public record Plan(
         damageDealt,
         startingRoles,
         startingHealth,
-        lastSeenHealth);
+        lastSeenHealth,
+        recipe);
   }
 
   private Plan copyWithDamage(double newDamage) {
@@ -145,7 +150,8 @@ public record Plan(
         newDamage,
         startingRoles,
         startingHealth,
-        lastSeenHealth);
+        lastSeenHealth,
+        recipe);
   }
 
   private Plan copyWithLastSeen(long newTick) {
@@ -160,7 +166,8 @@ public record Plan(
         damageDealt,
         startingRoles,
         startingHealth,
-        lastSeenHealth);
+        lastSeenHealth,
+        recipe);
   }
 
   private Plan copyWithHealth(Map<MobId, Double> newStarting, Map<MobId, Double> newLastSeen) {
@@ -175,6 +182,7 @@ public record Plan(
         damageDealt,
         startingRoles,
         newStarting,
-        newLastSeen);
+        newLastSeen,
+        recipe);
   }
 }

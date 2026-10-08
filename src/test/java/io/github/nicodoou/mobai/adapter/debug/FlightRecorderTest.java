@@ -12,6 +12,7 @@ import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +68,8 @@ class FlightRecorderTest {
             0,
             2.0,
             0,
-            tick);
+            tick,
+            Optional.empty());
     return new TraceEvent.PlanEvent(group, tick, plan);
   }
 }

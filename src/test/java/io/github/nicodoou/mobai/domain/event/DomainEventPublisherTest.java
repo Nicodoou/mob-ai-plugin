@@ -37,7 +37,8 @@ class DomainEventPublisherTest {
               0,
               5,
               100,
-              700));
+              700,
+              Optional.empty()));
 
   @Test
   void deliversOnlyToSubscribersOfTheEventType() {
