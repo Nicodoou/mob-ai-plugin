@@ -1,10 +1,12 @@
 package io.github.nicodoou.mobai.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.memory.AttackObservation;
+import io.github.nicodoou.mobai.domain.memory.DangerObservation;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.memory.StrategyObservation;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
@@ -25,7 +27,8 @@ class DescribePlayerMemoryTest {
 
   private final PlayerId player = new PlayerId(new UUID(2, 1));
   private final ActiveGroups activeGroups = new ActiveGroups();
-  private final DescribePlayerMemory describePlayerMemory = new DescribePlayerMemory(activeGroups);
+  private final DescribePlayerMemory describePlayerMemory =
+      new DescribePlayerMemory(activeGroups, () -> TestSettings.defaults().success());
 
   @Test
   void viewShowsOnlyTheRecordedAttacksAndStrategies() {
@@ -53,6 +56,30 @@ class DescribePlayerMemoryTest {
   void groupsWithoutRecordsOfThePlayerAreLeftOut() {
     addGroupWithMemory(1);
     activeGroups.add(newGroup(2));
+
+    List<PlayerMemoryView> views = describePlayerMemory.execute(player, TICK);
+
+    assertThat(views).extracting(PlayerMemoryView::group).containsExactly(groupId(1));
+  }
+
+  @Test
+  void viewCarriesTheDanger() {
+    Group group = newGroup(1);
+    activeGroups.add(group);
+    group.memory().recordDanger(new DangerObservation(player, 80, 10, TICK));
+
+    PlayerMemoryView view = describePlayerMemory.execute(player, TICK).getFirst();
+
+    assertThat(view.danger()).isCloseTo(0.5, within(1e-9));
+    assertThat(view.dangerRecord().healthLost()).isCloseTo(80, within(1e-9));
+    assertThat(view.dangerRecord().damageDealt()).isCloseTo(10, within(1e-9));
+  }
+
+  @Test
+  void groupRememberedOnlyByItsDangerIsListed() {
+    Group group = newGroup(1);
+    activeGroups.add(group);
+    group.memory().recordDanger(new DangerObservation(player, 80, 10, TICK));
 
     List<PlayerMemoryView> views = describePlayerMemory.execute(player, TICK);
 

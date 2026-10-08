@@ -1,8 +1,11 @@
 package io.github.nicodoou.mobai.application;
 
+import io.github.nicodoou.mobai.domain.group.DangerLevel;
 import io.github.nicodoou.mobai.domain.group.Group;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.memory.SuccessEstimate;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
@@ -11,14 +14,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public final class DescribePlayerMemory {
   private static final Comparator<StrategyId> BY_STRATEGY = Comparator.comparing(StrategyId::value);
 
   private final ActiveGroups activeGroups;
+  private final Supplier<SuccessSettings> success;
 
-  public DescribePlayerMemory(ActiveGroups activeGroups) {
+  public DescribePlayerMemory(ActiveGroups activeGroups, Supplier<SuccessSettings> success) {
     this.activeGroups = Objects.requireNonNull(activeGroups, "DescribePlayerMemory.activeGroups");
+    this.success = Objects.requireNonNull(success, "DescribePlayerMemory.success");
   }
 
   public List<PlayerMemoryView> execute(PlayerId player, long tick) {
@@ -30,16 +36,20 @@ public final class DescribePlayerMemory {
 
   private static boolean remembers(Group group, PlayerId player) {
     return group.memory().attackRecords().containsKey(player)
-        || group.memory().strategyRecords().containsKey(player);
+        || group.memory().strategyRecords().containsKey(player)
+        || group.memory().dangerRecords().containsKey(player);
   }
 
-  private static PlayerMemoryView view(Group group, PlayerId player, long tick) {
+  private PlayerMemoryView view(Group group, PlayerId player, long tick) {
     GroupMemory memory = group.memory();
+    DangerRecord record = memory.dangerRecord(player, tick);
     return new PlayerMemoryView(
         group.id(),
         player,
         attackEstimates(memory, player, tick),
-        strategyEstimates(memory, player, tick));
+        strategyEstimates(memory, player, tick),
+        record,
+        DangerLevel.of(record, success.get()));
   }
 
   private static Map<Attack, SuccessEstimate> attackEstimates(

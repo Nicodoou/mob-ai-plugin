@@ -2,6 +2,7 @@ package io.github.nicodoou.mobai.bootstrap;
 
 import io.github.nicodoou.mobai.adapter.command.DebugCommand;
 import io.github.nicodoou.mobai.adapter.command.GroupSpawner;
+import io.github.nicodoou.mobai.adapter.command.MemoryCommand;
 import io.github.nicodoou.mobai.adapter.command.MobAiCommand;
 import io.github.nicodoou.mobai.adapter.command.ReloadCommand;
 import io.github.nicodoou.mobai.adapter.command.ResetCommand;
@@ -117,6 +118,9 @@ public record AdapterServices(
     subcommands.put(
         "spawngroup", new SpawnGroupCommand(command.spawner(), core.settings(), messages));
     subcommands.put("status", new StatusCommand(core.describeGroup(), messages));
+    subcommands.put(
+        "memory",
+        new MemoryCommand(core.describePlayerMemory(), core.clock()::currentTick, messages));
     subcommands.put("reset", new ResetCommand(core.resetMemories(), messages));
     subcommands.put("reload", new ReloadCommand(plugin, core.settings(), messages));
     subcommands.put("debug", new DebugCommand(command.levels(), core.describeGroup(), messages));
