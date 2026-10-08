@@ -85,13 +85,26 @@ class ShotAimTest {
     Vec3 fastMovement = new Vec3(0, 0, 0.5);
     Vec3 leadPoint = geometry.predictedAimPoint(eye, center, fastMovement);
     Vec3 allyInTheLeadLane = eye.plus(leadPoint.minus(eye).times(0.8));
-    List<Vec3> allies = List.of(allyInTheLeadLane);
+    List<MovingAlly> allies = List.of(new MovingAlly(allyInTheLeadLane, Vec3.ZERO));
 
     ShotRequest lead = new ShotRequest(Attack.SKELETON_LEAD_SHOT, eye, center, fastMovement);
     ShotRequest direct = new ShotRequest(Attack.SKELETON_DIRECT_SHOT, eye, center, fastMovement);
 
     assertThat(aim.isLaneClear(lead, allies)).isFalse();
     assertThat(aim.isLaneClear(direct, allies)).isTrue();
+  }
+
+  // B-04, H2: an arrow takes several ticks to get there; an ally walking into the lane meanwhile
+  // takes it.
+  @Test
+  void laneIsCheckedWhereAlliesWillBeWhenTheArrowPasses() {
+    Vec3 farTarget = new Vec3(20, 64.9, 0);
+    ShotRequest direct = new ShotRequest(Attack.SKELETON_DIRECT_SHOT, eye, farTarget, Vec3.ZERO);
+    MovingAlly walkingIn = new MovingAlly(new Vec3(10, 64.9, 1.2), new Vec3(0, 0, -0.12));
+    MovingAlly walkingAway = new MovingAlly(new Vec3(10, 64.9, 1.2), new Vec3(0, 0, 0.12));
+
+    assertThat(aim.isLaneClear(direct, List.of(walkingIn))).isFalse();
+    assertThat(aim.isLaneClear(direct, List.of(walkingAway))).isTrue();
   }
 
   private ShotRequest request(Attack attack) {

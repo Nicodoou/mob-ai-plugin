@@ -173,6 +173,20 @@ public final class CombatGeometry {
     return (low + high) / 2;
   }
 
+  /** Ticks an arrow launched with this velocity takes to cover a horizontal distance. */
+  public int arrowTicksToCover(Vec3 velocity, double horizontalDistance) {
+    double horizontalSpeed = velocity.horizontal().length();
+    double travelled = 0;
+    for (int tick = 0; tick < MAX_FLIGHT_TICKS; tick++) {
+      if (travelled >= horizontalDistance) {
+        return tick;
+      }
+      travelled += horizontalSpeed;
+      horizontalSpeed *= MinecraftConstants.ARROW_DRAG_PER_TICK;
+    }
+    return MAX_FLIGHT_TICKS;
+  }
+
   // Minecraft's arrow: it moves, then keeps 99 % of its speed and falls 0.05 blocks per tick.
   private static double heightAtDistance(double pitchRadians, double horizontalDistance) {
     double horizontalSpeed =

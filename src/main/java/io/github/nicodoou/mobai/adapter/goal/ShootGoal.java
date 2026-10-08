@@ -26,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 /** SHOOT: hold its place in the ring round the target, and loose the shot the brain chose. */
 public final class ShootGoal implements Goal<Mob> {
@@ -208,18 +209,34 @@ public final class ShootGoal implements Goal<Mob> {
     return ids;
   }
 
-  // Every other mob ordered against this target: any of them can take the arrow.
   private List<Vec3> allyCenters(Player target) {
-    List<Vec3> centers = new ArrayList<>();
+    return allies(target).stream().map(PoseReader::bodyCenterOf).toList();
+  }
+
+  // Where each ally is and where it is walking: the arrow reaches it a few ticks later (B-04).
+  private List<MovingAlly> movingAllies(Player target) {
+    return allies(target).stream()
+        .map(ally -> new MovingAlly(PoseReader.bodyCenterOf(ally), movementOf(ally)))
+        .toList();
+  }
+
+  private static Vec3 movementOf(Mob ally) {
+    Vector velocity = ally.getVelocity();
+    return new Vec3(velocity.getX(), velocity.getY(), velocity.getZ());
+  }
+
+  // Every other mob ordered against this target: any of them can take the arrow.
+  private List<Mob> allies(Player target) {
+    List<Mob> allies = new ArrayList<>();
     for (MobId id : context.roles().mobsTargeting(new PlayerId(target.getUniqueId()))) {
       if (!id.equals(self())
           && Bukkit.getEntity(id.value()) instanceof Mob ally
           && ally.isValid()
           && ally.getWorld().equals(target.getWorld())) {
-        centers.add(PoseReader.bodyCenterOf(ally));
+        allies.add(ally);
       }
     }
-    return centers;
+    return allies;
   }
 
   private boolean canAim(Player target) {
@@ -284,7 +301,7 @@ public final class ShootGoal implements Goal<Mob> {
 
   // Checked towards where this very shot is aimed: a lead shot flies down another lane (B-04).
   private boolean isLaneClear(Player target, Attack attack) {
-    return bow().isLaneClear(bow().requestFor(mob, target, attack), allyCenters(target));
+    return bow().isLaneClear(bow().requestFor(mob, target, attack), movingAllies(target));
   }
 
   private static Attack chosenAttack(RoleAssignment order) {

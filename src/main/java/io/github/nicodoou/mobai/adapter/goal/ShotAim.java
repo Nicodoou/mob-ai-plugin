@@ -18,8 +18,19 @@ public final class ShotAim {
   }
 
   /** Whether no ally stands in the lane towards the point this shot is aimed at (B-04). */
-  public boolean isLaneClear(ShotRequest request, List<Vec3> allies) {
-    return geometry.isLineOfFireClear(request.eye(), aimPoint(request), allies);
+  public boolean isLaneClear(ShotRequest request, List<MovingAlly> allies) {
+    Vec3 velocity = velocity(request);
+    List<Vec3> whenPassing =
+        allies.stream().map(ally -> whereWhenArrowPasses(ally, request.eye(), velocity)).toList();
+    return geometry.isLineOfFireClear(request.eye(), aimPoint(request), whenPassing);
+  }
+
+  // B-04: by the time the arrow gets level with the ally, the ally has walked on; only its walking
+  // counts, not its falling, which the ground stops.
+  private Vec3 whereWhenArrowPasses(MovingAlly ally, Vec3 eye, Vec3 velocity) {
+    double distance = ally.center().minus(eye).horizontal().length();
+    int ticks = geometry.arrowTicksToCover(velocity, distance);
+    return ally.center().plus(ally.movementPerTick().horizontal().times(ticks));
   }
 
   // Minecraft's projectile convention (the one its own shots use): yaw 0 flies towards +Z and
