@@ -27,6 +27,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-22](#ct-22--esqueletos-en-altura) Esqueletos en altura | 7 oct 2026 | Nico | WP-24D (por especificar) |
 | [CT-23](#ct-23--andanada) Andanada | 7 oct 2026 | Nico | WP-24E (por especificar, antes de la puerta E6) |
 | [CT-24](#ct-24--alcance-del-jugador-según-su-arma) Alcance del jugador según su arma | 8 oct 2026 | Nico | WP-23C |
+| [CT-25](#ct-25--esquivo-calculado) Esquivo calculado | 8 oct 2026 | Nico | WP-23D |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -362,3 +363,28 @@ La retirada sale del WP-22B y pasa a un WP-22C propio (`CoverFinder`, `RetreatGo
 **Impacto.** `VersionTranslator.playerReach` (Paper detrás del traductor), `PlayerReach` en `Weapons`, `PlayerTarget`, `Waypoints.flankStep` y `evadePoint`, `FlankGoal`, `PressGoal`, configuración. El dominio no conoce el alcance del jugador.
 
 **Riesgos.** La API de componentes de ítems es reciente en Paper. Los `config.yml` existentes tienen las claves viejas y el plugin no arranca hasta cambiarlas (el del server de prueba lo actualiza Opus).
+
+## CT-25 — Esquivo calculado
+
+**Qué cambia.** El zombie esquivo deja de usar un umbral fijo de carga (0,8) y de cargar de frente después de 3 s de espera. Ahora calcula dos tiempos:
+
+- **lo que le falta al arma del jugador para estar al 100 %**, con `getCooldownPeriod`;
+- **lo que tarda él en salir del alcance, o en entrar, pegar y salir**, con su velocidad real: el atributo de velocidad, que ya incluye pociones y buffs, y la física del suelo de Minecraft.
+
+**Reglas:**
+- Pega si le da el tiempo.
+- Si no le da: retrocede cuando está dentro del alcance, o espera en el borde cuando está afuera.
+- Si el jugador lo mira cubierto con el escudo y el arma al 100 %, el golpe es inevitable: se pone a un costado de la mira (el ancho del mob más un margen) y le pega al escudo para desgastarlo.
+- `evasive-charge-threshold` se reemplaza por `evasive-safety-ticks` (4) y `evasive-aim-margin-degrees` (15).
+
+**Por qué.** B-05 y Nico:
+- con el escudo arriba, la carga por espera agotada hacía entrar y salir al zombie sin parar;
+- la retirada tiene que estar terminada al 100 %;
+- un valor fijo no sirve para un mob con Speed ni para buffs futuros.
+
+**Impacto.** `PressGoal`, `EvasiveRules` (reemplaza a `EvasiveWait`), `EscapeTiming`, `Waypoints.sideStepPoint`, `CombatGeometry.sideStepPoint`, `VersionTranslator.movementSpeed`, `Bodies` en `Weapons` y la configuración.
+
+**Riesgos.**
+- La física del suelo está deducida del código de Minecraft, no medida. Se confirma en el juego: el zombie tiene que salir antes del 100 %.
+- Con espada, el zombie casi nunca entra contra un jugador atento: es lo esperado y la memoria lo aprende.
+- `getCooldownPeriod` es API de Paper.
