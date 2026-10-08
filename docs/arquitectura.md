@@ -422,6 +422,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Miembros y líder de un grupo, ciclo del plan, eventos pendientes | `GroupRoster`, `PlanLifecycle`, `PendingEvents` | Dominio |
 | Ventana de reagrupamiento, regla de reagrupamiento, configuración de retirada | `RegroupWindow`, `RegroupRule`, `RetreatSettings` | Dominio |
 | Punto de reunión, reagrupamiento en curso | `RallyPointRule`, `Regrouping`, `PlanLifecycle.rallyAt`, `RoleAssignment.rallyPoint` | Dominio |
+| Camino al punto de reunión, tramo, rodeo | `RallyRoute`, `RallyLeg`, `RallyDetour`, `RetreatMove.RALLY` | Adaptador y dominio |
 | Roles | `Role`: `PRESS`, `FLANK`, `SHOOT`, `RETREAT` (MVP); `CUT_OFF`, `SUPPORT` (posteriores) | Dominio |
 | Resultado de ataque | `AttackOutcome` (interfaz `sealed`): `Hit`, `Partial`, `Miss`, `Neutral` | Dominio |
 | Motivo de cierre de un plan | `PlanEndReason`: `TARGET_DIED`, `TARGET_LOST`, `TIMED_OUT`, `GROUP_RETREATED` | Dominio |
