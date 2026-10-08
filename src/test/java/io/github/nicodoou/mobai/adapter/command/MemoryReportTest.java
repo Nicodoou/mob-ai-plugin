@@ -62,6 +62,19 @@ class MemoryReportTest {
   }
 
   @Test
+  void equalRatesGoByName() {
+    Map<StrategyId, SuccessEstimate> strategies = new LinkedHashMap<>();
+    strategies.put(new StrategyId("VOLLEY"), new SuccessEstimate(5, 5, 4));
+    strategies.put(new StrategyId("FLANK"), new SuccessEstimate(5, 5, 4));
+
+    List<MessageLine> lines =
+        MemoryReport.linesFor(PLAYER_NAME, List.of(view(Map.of(), strategies)));
+
+    assertThat(lines.stream().skip(1).map(line -> line.values().get("strategy")))
+        .containsExactly("FLANK", "VOLLEY");
+  }
+
+  @Test
   void attacksComeAfterStrategiesBestFirst() {
     Map<Attack, SuccessEstimate> attacks = new LinkedHashMap<>();
     attacks.put(Attack.ZOMBIE_FRONT_STRIKE, new SuccessEstimate(3, 7, 2.25));
