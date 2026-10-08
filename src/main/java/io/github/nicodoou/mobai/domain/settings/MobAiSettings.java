@@ -12,7 +12,8 @@ public record MobAiSettings(
     SpiderSettings spider,
     PersistenceSettings persistence,
     DebugSettings debug,
-    RetreatSettings retreat) {
+    RetreatSettings retreat,
+    VolleySettings volley) {
   public MobAiSettings {
     Objects.requireNonNull(group, "MobAiSettings.group");
     Objects.requireNonNull(memory, "MobAiSettings.memory");
@@ -24,6 +25,7 @@ public record MobAiSettings(
     Objects.requireNonNull(persistence, "MobAiSettings.persistence");
     Objects.requireNonNull(debug, "MobAiSettings.debug");
     Objects.requireNonNull(retreat, "MobAiSettings.retreat");
+    Objects.requireNonNull(volley, "MobAiSettings.volley");
     requireRecoveryAboveRetreat(plan, retreat);
   }
 

@@ -147,7 +147,8 @@ final class LearningSimulation {
           base.spider(),
           base.persistence(),
           base.debug(),
-          base.retreat());
+          base.retreat(),
+          base.volley());
     }
 
     private Group newGroup() {

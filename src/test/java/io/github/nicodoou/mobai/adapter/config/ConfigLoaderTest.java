@@ -17,6 +17,7 @@ import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
+import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.io.IOException;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -131,6 +132,7 @@ class ConfigLoaderTest {
         new SpiderSettings(60, 1),
         new PersistenceSettings(6_000),
         new DebugSettings(TraceLevel.OFF, 200),
-        new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50));
+        new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50),
+        TestSettings.defaults().volley());
   }
 }

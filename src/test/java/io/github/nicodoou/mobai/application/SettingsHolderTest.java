@@ -50,6 +50,7 @@ class SettingsHolderTest {
         base.spider(),
         base.persistence(),
         base.debug(),
-        base.retreat());
+        base.retreat(),
+        base.volley());
   }
 }

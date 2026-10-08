@@ -66,7 +66,8 @@ class RecordOutcomeTest {
             defaults.spider(),
             defaults.persistence(),
             defaults.debug(),
-            defaults.retreat()));
+            defaults.retreat(),
+            defaults.volley()));
 
     Optional<RecordChange> change =
         recordOutcome.execute(resolution(mob(1), player, new AttackOutcome.Partial(), 0.0));

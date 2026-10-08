@@ -84,3 +84,12 @@ retreat:
   regroup-min-ticks: 200
   regroup-max-ticks: 1200
   regroup-step-ticks: 50
+
+volley:
+  # Andanada (CT-23): los cuerpo a cuerpo presionan, se abren, y los esqueletos disparan juntos.
+  # Múltiplos de 10: el grupo decide cada 10 ticks.
+  press-ticks: 60
+  fall-back-ticks: 20
+  fire-ticks: 30
+  # Cuánto más allá del alcance del jugador se abren los cuerpo a cuerpo.
+  fall-back-margin-blocks: 1.5
