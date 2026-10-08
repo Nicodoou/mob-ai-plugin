@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
+import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -347,5 +348,13 @@ class CombatGeometryTest {
     assertThat(actual.x()).isCloseTo(x, within(1e-9));
     assertThat(actual.y()).isCloseTo(y, within(1e-9));
     assertThat(actual.z()).isCloseTo(z, within(1e-9));
+  }
+
+  @Test
+  void arrowTakesFourteenTicksToCoverTwentyBlocks() {
+    Vec3 flatShot = new Vec3(MinecraftConstants.ARROW_SPEED_BLOCKS_PER_TICK, 0, 0);
+
+    assertThat(geometry.arrowTicksToCover(flatShot, 20)).isEqualTo(14);
+    assertThat(geometry.arrowTicksToCover(flatShot, 0)).isZero();
   }
 }

@@ -39,7 +39,7 @@ public final class BowShooter {
         parts.movement().movementPerTick(new PlayerId(target.getUniqueId())));
   }
 
-  public boolean isLaneClear(ShotRequest request, List<Vec3> allies) {
+  public boolean isLaneClear(ShotRequest request, List<MovingAlly> allies) {
     return parts.aim().isLaneClear(request, allies);
   }
 
