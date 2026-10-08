@@ -19,6 +19,7 @@ import io.github.nicodoou.mobai.adapter.debug.TraceHub;
 import io.github.nicodoou.mobai.adapter.debug.TraceLevels;
 import io.github.nicodoou.mobai.adapter.debug.TraceWriter;
 import io.github.nicodoou.mobai.adapter.debug.WitnessParts;
+import io.github.nicodoou.mobai.adapter.goal.Bodies;
 import io.github.nicodoou.mobai.adapter.goal.BowShooter;
 import io.github.nicodoou.mobai.adapter.goal.GoalContext;
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
@@ -178,7 +179,10 @@ public record AdapterServices(
             new ShotParts(new ShotAim(geometry), parts.movement(), parts.translator()));
     GoalTools tools =
         new GoalTools(
-            new Weapons(attacker, bow, parts.translator()::playerReach),
+            new Weapons(
+                attacker,
+                bow,
+                new Bodies(parts.translator()::playerReach, parts.translator()::movementSpeed)),
             new GoalTiming(
                 core.clock(),
                 core.settings().section(MobAiSettings::attack),

@@ -7,7 +7,9 @@ import io.github.nicodoou.mobai.domain.geometry.FlankStep;
 import io.github.nicodoou.mobai.domain.geometry.PlayerPose;
 import io.github.nicodoou.mobai.domain.geometry.ShooterFormation;
 import io.github.nicodoou.mobai.domain.geometry.ShooterQuery;
+import io.github.nicodoou.mobai.domain.geometry.SideStep;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
+import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.List;
@@ -18,6 +20,9 @@ import java.util.function.Supplier;
 
 /** Where a goal walks to, computed without Paper. */
 public final class Waypoints {
+  // Half a block inside the zombie's reach, so a short step of the player does not take it out.
+  private static final double SIDE_STEP_SLACK_BLOCKS = 0.5;
+
   private final CombatGeometry geometry;
   private final FlankManeuver maneuver;
   private final Supplier<AttackSettings> settings;
@@ -34,6 +39,15 @@ public final class Waypoints {
   public FlankStep flankStep(PlayerTarget target, MobId self, Map<MobId, Vec3> flankers) {
     double keepOut = target.reachBlocks() + settings.get().flankMarginBlocks();
     return maneuver.next(new FlankQuery(target.pose(), self, flankers, keepOut));
+  }
+
+  /** Beside the player's aim: its hitbox clear of the crosshair, plus a margin. */
+  public Vec3 sideStepPoint(PlayerPose pose, Vec3 mobPosition, double mobHalfWidthBlocks) {
+    double distance = MinecraftConstants.MELEE_REACH_BLOCKS - SIDE_STEP_SLACK_BLOCKS;
+    double angle =
+        Math.toDegrees(Math.atan(mobHalfWidthBlocks / distance))
+            + settings.get().evasiveAimMarginDegrees();
+    return geometry.sideStepPoint(pose, mobPosition, new SideStep(distance, angle));
   }
 
   public boolean isOutOfSight(PlayerPose pose, Vec3 mobPosition) {
