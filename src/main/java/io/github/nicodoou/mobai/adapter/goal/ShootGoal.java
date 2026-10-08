@@ -58,6 +58,8 @@ public final class ShootGoal implements Goal<Mob> {
   private long nextPerchSearchTick = Long.MIN_VALUE;
   // Whether the last positioning left it within reach of its place.
   private boolean inPlace;
+  // Its lane was blocked at release: it walks to a new spot before drawing again.
+  private boolean needsNewSpot;
 
   public ShootGoal(Mob mob, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "ShootGoal.mob");
@@ -127,6 +129,7 @@ public final class ShootGoal implements Goal<Mob> {
     if (!rhythm.shouldRepath()) {
       return;
     }
+    needsNewSpot = false;
     if (mob.hasLineOfSight(target)) {
       walkToFiringSpot(target);
     } else {
@@ -224,7 +227,10 @@ public final class ShootGoal implements Goal<Mob> {
   }
 
   private void startDrawIfReady(RoleAssignment order, Player target) {
-    if (!shots.canDraw() || !canAim(target) || (order.role() == Role.HOLD_FIRE && !inPlace)) {
+    if (needsNewSpot
+        || !shots.canDraw()
+        || !canAim(target)
+        || (order.role() == Role.HOLD_FIRE && !inPlace)) {
       opportunism.reset();
       return;
     }
@@ -255,6 +261,8 @@ public final class ShootGoal implements Goal<Mob> {
     if (isLaneClear(target, attack)) {
       bow().shoot(mob, target, attack);
       shots.markShot();
+    } else {
+      needsNewSpot = true;
     }
     lowerBow();
   }
