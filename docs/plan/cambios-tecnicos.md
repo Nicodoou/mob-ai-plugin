@@ -583,10 +583,12 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 | WP-33A | `BayesianLinearModel`: media, precisión, sorteo con Cholesky, actualización de rango 1 y olvido hacia el punto de partida. Matemática pura con pruebas de referencia | Opus |
 | WP-33B | Recetas continuas: `PlanRecipe`, rasgos cuadráticos (`RecipeFeatures`), fracciones realizadas y la búsqueda gruesa-a-fina (`RecipeSearch`) | Opus |
 | WP-33C | Simulación: recompensa sintética con un óptimo interior conocido; medir en cuántos planes lo encuentra y calibrar ruido, punto de partida, exploración, refinamientos y peso de la base. **Puerta: sin buenos números acá, no se sigue** | Opus |
-| WP-33D | `RecipePlanner` y `Brain`: elegir, asignar roles, aprender al cerrar, traza y log de debug; conmutador `learning.planner` con las estrategias viejas | Opus |
-| WP-33E | Memoria por jugador, esquema nuevo sin borrar lo viejo, copia de seguridad al migrar y `base.json` | Sonnet |
-| WP-33F | Rol `RESERVE` y su goal (`FallBackGoal` con demora y entrada a presionar) | Sonnet |
+| WP-33D | Rasgos del jugador (`TraitLedger`, arma a distancia en la foto) y configuración `learning` con el conmutador `planner` | Sonnet |
+| WP-33E | Las recetas en el cerebro: elegir con el modelo y los rasgos, asignar roles, reserva por fases (`FALL_BACK` hasta la demora y después `PRESS`, como la andanada), umbral de retirada por plan, aprender al cerrar, traza y log de debug | Opus |
+| WP-33F | Memoria por jugador en disco, esquema nuevo sin borrar lo viejo, copia de seguridad al migrar, rasgos y `base.json` | Sonnet |
 | WP-33G | `/mobai train`, exploración del modo, actualización de la base, `training-data.jsonl` y `/mobai memory` | Sonnet |
+
+**Reordenamiento del 8 oct (al especificar el WP-33D):** la reserva no necesita un goal propio. El cerebro la maneja por fases, como la andanada (CT-23): `FALL_BACK` mientras el plan es más joven que la demora y `PRESS` después, con los goals que ya existen. El viejo WP-33F (goal de reserva) desaparece y la serie queda en 33D a 33G.
 
 **Riesgos.**
 - **Interacciones:** el modelo lineal solo ve las interacciones que se le dan. Si en el juego aparece una combinación ganadora que el modelo no puede expresar, se suma ese rasgo; `training-data.jsonl` permite verificarlo sin jugar de nuevo.

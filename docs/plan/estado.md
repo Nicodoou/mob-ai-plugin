@@ -87,9 +87,9 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-33A | Modelo bayesiano lineal | E6 | en revisión | Opus | [#60](https://github.com/Nicodoou/mob-ai-plugin/pull/60) | CT-30. Revisado en la nube: código claro y fiel al WP, CI verde, 16 pruebas y 5 roturas con JDK 21; desvíos aceptados (3 mensajes de error que el WP no definía) |
 | WP-33B | Recetas, rasgos y búsqueda | E6 | en revisión | Opus | [#61](https://github.com/Nicodoou/mob-ai-plugin/pull/61) | CT-30. Revisado en la nube: fiel al WP, CI verde, 19 pruebas y 5 roturas con JDK 21; desvío aceptado (validación partida en dos). El CI no corre Jacoco: la cobertura queda para la revisión local |
 | WP-33C | Simulación y calibración (puerta) | E6 | en revisión | Opus | [#62](https://github.com/Nicodoou/mob-ai-plugin/pull/62) | CT-30. **Puerta PASS** (`docs/plan/calibracion-recetas.md`): con base y rasgos ruidosos, distancia al óptimo en los primeros 20 planes 0,040 / 0,052 / 0,031 (hoy: 0,110 / 0,074 / 0,134). Revisado en la nube: fiel al WP, CI verde, 13 pruebas y 4 roturas con JDK 21. Mergear después de #60 y #61 (su rama los incluye) |
-| WP-33D | Planificador por recetas en el cerebro | E6 | pendiente | Opus | — | CT-30 |
-| WP-33E | Memoria, migración y base | E6 | pendiente | Sonnet | — | CT-30 |
-| WP-33F | Rol de reserva | E6 | pendiente | Sonnet | — | CT-30 |
+| WP-33D | Rasgos del jugador y configuración `learning` | E6 | especificado | Sonnet | — | CT-30 |
+| WP-33E | Recetas en el cerebro (reserva por fases) | E6 | pendiente | Opus | — | CT-30 |
+| WP-33F | Memoria en disco, migración, rasgos y base | E6 | pendiente | Sonnet | — | CT-30 |
 | WP-33G | Modo entrenamiento | E6 | pendiente | Sonnet | — | CT-30 |
 | WP-27 | Validación del MVP | E7 | pendiente | Nico + Opus | — | |
 
