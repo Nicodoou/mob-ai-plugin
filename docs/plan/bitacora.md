@@ -400,3 +400,29 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - con el carril tapado, la espera del tiro oportuno sigue corriendo;
   - `HighGroundFinder` todavía mide la altura con la línea al centro, que alcanza para elegir puesto.
 - **Riesgo:** aliados que se mueven durante el vuelo (H2).
+
+## WP-23D — Esquivo calculado (PR #48, Sonnet)
+
+**Qué hizo.** CT-25, arregla el B-05. El zombie esquivo decide con dos tiempos calculados:
+- **lo que le falta al arma del jugador**, con `Player.getCooldownPeriod`;
+- **lo que tarda él**, con `EscapeTiming`: física del suelo de Minecraft y su atributo de velocidad.
+
+`EvasiveRules` es puro y aplica la regla de Nico: pega si le sobra tiempo, retrocede si llega justo y pega igual si ya no llega. Frente a escudo arriba con el arma cargada, se pone al costado de la mira (`sideStepPoint`). Se fueron `EvasiveWait`, `PlayerThreat`, la carga por espera agotada y `evasive-charge-threshold`.
+
+**Revisión.**
+- Código conforme; las 14 pruebas y las 5 roturas del WP mordieron.
+- Mis dos roturas también mordieron:
+  - invertir el orden mirada/escudo → `unwatchedZombieStrikes`;
+  - girar el costado al revés → `sideStepPointIsBesideTheAimOnTheMobsSide`.
+- Build, cobertura y CI en verde.
+- **Desvío aceptado:** `getCooldownPeriod` está en `Player`, no en `HumanEntity`; el código y `actualizar-paper.md` lo usan bien.
+- **Desvío menor:** los dos primeros commits no compilan solos. Da igual, porque el merge es squash.
+- El `config.yml` del server de prueba quedó actualizado.
+
+**Opinión del código.**
+- **Lo bueno:** la decisión es una función pura de 15 líneas con su tabla de casos, y la física está aislada y medida contra números calculados a mano.
+- **Lo flojo:**
+  - `ticksNeeded` afuera (entrar + salir) no tiene prueba: vive en `PressGoal`, que usa Paper;
+  - `Bodies` adentro de `Weapons` es un nombre forzado: la velocidad del mob no es un arma;
+  - el punto al costado se recalcula cada 10 ticks, y un jugador que gira rápido lo alcanza antes.
+- **Riesgo:** la física del suelo está deducida del código de Minecraft, no medida. Se confirma en el juego.
