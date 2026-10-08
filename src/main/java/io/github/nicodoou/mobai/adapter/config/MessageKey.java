@@ -20,7 +20,10 @@ public enum MessageKey {
   MEMORY_EMPTY("memory-empty"),
   MEMORY_GROUP("memory-group"),
   MEMORY_STRATEGY("memory-strategy"),
-  MEMORY_ATTACK("memory-attack");
+  MEMORY_ATTACK("memory-attack"),
+  REINFORCE_USAGE("reinforce-usage"),
+  GROUP_FULL("group-full"),
+  GROUP_REINFORCED("group-reinforced");
 
   private final String path;
 

@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.adapter.command.DebugCommand;
 import io.github.nicodoou.mobai.adapter.command.GroupSpawner;
 import io.github.nicodoou.mobai.adapter.command.MemoryCommand;
 import io.github.nicodoou.mobai.adapter.command.MobAiCommand;
+import io.github.nicodoou.mobai.adapter.command.ReinforceCommand;
 import io.github.nicodoou.mobai.adapter.command.ReloadCommand;
 import io.github.nicodoou.mobai.adapter.command.ResetCommand;
 import io.github.nicodoou.mobai.adapter.command.SpawnGroupCommand;
@@ -120,6 +121,12 @@ public record AdapterServices(
     Map<String, Subcommand> subcommands = new LinkedHashMap<>();
     subcommands.put(
         "spawngroup", new SpawnGroupCommand(command.spawner(), core.settings(), messages));
+    subcommands.put(
+        "reinforce",
+        new ReinforceCommand(
+            new ReinforceCommand.ReinforceParts(
+                command.spawner(), core.describeGroup(), core.settings()),
+            messages));
     subcommands.put("status", new StatusCommand(core.describeGroup(), messages));
     subcommands.put(
         "memory",
