@@ -736,3 +736,28 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** el planificador es puro y aprende con los rasgos ya calculados al planificar, inmunes a un `/reload` a mitad de plan.
 - **Lo flojo:** el modelo de recetas todavía no se guarda en disco (WP-33G), así que un reinicio lo pierde.
 - **Riesgo:** nada cambia en el juego hasta el WP-33F.
+
+## WP-33F — Recetas en el cerebro (PR #65, Opus; especificado en la nube)
+
+**Qué hizo.**
+- **Elección del plan:** el cerebro lee `learning.planner` en cada plan.
+  - Con `RECIPES`, planifica con `RecipePlanner` y los rasgos (`TraitLedger`, observado en cada decisión).
+  - Abre el plan `RECIPE` con su `RecipePlay`.
+- **Reserva por fases:** `FALL_BACK` hasta la demora y después `PRESS`.
+- **La andanada** también se activa por la perilla de la receta.
+- **Umbral de retirada individual:** el de la receta.
+- **Aprendizaje separado:** `ClosePlan` le enseña solo al modelo de recetas en los planes de receta, y solo a la memoria por estrategia en los otros. El peligro, siempre.
+
+**Revisión local.** Rebase sobre main; build y CI en verde. Mis roturas mordieron:
+- la reserva fuera de su demora → 1 en `BrainRecipesTest`;
+- un plan de receta que también registra la estrategia → 1 en `ClosePlanTest`.
+
+**Opinión del código.**
+- **Lo bueno:**
+  - los dos sistemas conviven sin pisarse, así que se pueden comparar con el conmutador;
+  - la reserva reusa las fases de la andanada, sin goal nuevo.
+- **Lo flojo:**
+  - suma un ciclo de paquetes (`group` ↔ `strategy`);
+  - los incidentes de planes de receta no se reproducen igual hasta el WP-33G;
+  - el modelo de recetas sigue sin guardarse en disco hasta el 33G.
+- **Riesgo:** es el primer WP del CT-30 que cambia el juego, pero solo con `planner: RECIPES`.
