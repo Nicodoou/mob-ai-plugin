@@ -6,20 +6,23 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-1. **Test fuerte de Nico, ahora:**
-   - **Qué se prueba:** pelear al 100 % contra **un mismo grupo**, mirando `/mobai memory` cada tanto. El peligro debería subir y el orden de las estrategias debería cambiar.
-   - **Preparación:** reiniciar el server (no `/reload`), `/mobai debug all full` y un solo `spawngroup` de noche.
-   - **Configuración:** `half-life-ticks` está en 36000 (30 min) solo para el test; después vuelve a 12000. Copia en `docs/plan/config-de-prueba.yml`.
-   - **Qué se analiza:** Nico pasa el `mobai-debug.log` y se lee cada línea `PLAN` (`scores=` y `danger=`).
-   - **Verificación de paso**, pendiente de antes:
-     - el esquivo calculado (WP-23D);
-     - el tensado del arco y los tiros a aliados (WP-24G, B-04);
-     - la andanada (nunca salió `VOLLEY`);
-     - la lanza (WP-23C).
-   - Lo que no coincida va por `docs/resolucion-de-bugs.md` y se anota en `docs/plan/verificacion-e6.md` (corrida 5 en adelante).
-2. **Después:** WP-30C (retirada aprendida, CT-28, Opus), WP-25 (arañas) y la puerta E6.
-3. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`.
-4. **Preferencias:** después de cada compactación o al pasar a la nube, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
+**Reparto entre sesiones (Nico, 8 oct 2026):**
+- **La sesión de la nube** especifica y lanza los WPs.
+- **La sesión local** hace el build completo, la revisión local de cada PR (roturas incluidas), el merge, el server de prueba y los logs de Nico.
+- Antes de cada push, rebase. `estado.md` lo edita la sesión que cambia el estado del WP.
+
+1. **Local, ahora:** revisión local y merge del WP-25 (#55).
+2. **Nube, ahora:** especificar y lanzar, en este orden (los dos aprobados por Nico el 8 oct):
+   - **WP-31: `/mobai reinforce <grupo>`.** Comando de prueba que suma el set de prueba (el mismo que `spawngroup`: 4 zombies, 3 esqueletos y las arañas) a un grupo existente y **conserva su memoria**. Respeta `group.max-size`; los que no entran no se crean. Sirve para que Nico siga peleando contra un grupo que ya lo conoce cuando le quedan 1 o 2 vivos. Mirá `GroupSpawner` (ya usa `recruitMob.execute(request)` para sumar a un grupo) y `SpawnGroupCommand`. Sonnet.
+   - **WP-32 con CT-29: punto de reunión al reagruparse.** Hoy el reagrupamiento (CT-07) es "cada uno se retira y se cura", y el grupo no se vuelve a juntar. Diseño aprobado:
+     - al entrar en `REGROUPING`, el grupo elige un punto de reunión: el centro del grupo, corrido lejos del jugador a una distancia configurable;
+     - cada mob, ya fuera de peligro o curado, camina hacia ese punto evitando la vista y el alcance del jugador (reusá `FlankManeuver` y `Waypoints`);
+     - el reagrupamiento termina como hoy, y vuelven a atacar juntos.
+     - Opus para el cerebro, y Sonnet si queda solo en los goals.
+   - **Después:** WP-30C (retirada aprendida, CT-28) y la puerta E6.
+3. **Pendiente de Nico en el juego:** B-04 H2 (#56: ¿siguen los tiros a aliados?), el WP-25, la andanada (nunca salió `VOLLEY`) y la lanza.
+4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`, y que un mensaje faltante no deshabilite el plugin.
+5. **Preferencias:** después de cada compactación o al cambiar de sesión, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
 
 ## WPs
 
