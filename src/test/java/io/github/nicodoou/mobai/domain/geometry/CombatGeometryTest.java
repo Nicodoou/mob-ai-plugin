@@ -117,6 +117,26 @@ class CombatGeometryTest {
   }
 
   @Test
+  void sideStepPointIsBesideTheAimOnTheMobsSide() {
+    PlayerPose standing = new PlayerPose(new Vec3(0, 64, 0), new Vec3(0, 0, 1));
+    SideStep step = new SideStep(1.5, 26.3);
+
+    Vec3 right = geometry.sideStepPoint(standing, new Vec3(1, 64, 1), step);
+    Vec3 left = geometry.sideStepPoint(standing, new Vec3(-1, 64, 1), step);
+
+    assertThat(right.horizontal().length()).isCloseTo(1.5, within(1e-6));
+    assertThat(geometry.angleFromFacingDegrees(standing, right)).isCloseTo(26.3, within(1e-6));
+    assertThat(right.x()).isPositive();
+    assertThat(left.x()).isNegative();
+  }
+
+  @Test
+  void sideStepPointRejectsANonPositiveDistance() {
+    assertThatThrownBy(() -> geometry.sideStepPoint(pose, new Vec3(1, 0, 1), new SideStep(0, 26.3)))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
   void retreatPointMovesAwayFromTheDanger() {
     assertVec(geometry.retreatPoint(new Vec3(3, 64, 4), new Vec3(0, 60, 0), 16), 12.6, 64, 16.8);
   }
