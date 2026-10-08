@@ -14,11 +14,9 @@ public record SelectionSettings(
     SettingsChecks.requirePositive("SelectionSettings.memoryMultiplierMin", memoryMultiplierMin);
     SettingsChecks.requirePositive("SelectionSettings.memoryMultiplierMax", memoryMultiplierMax);
     SettingsChecks.requireNotAbove(
-        "SelectionSettings.memoryMultiplierMin",
-        memoryMultiplierMin,
-        "SelectionSettings.memoryMultiplierMax",
-        memoryMultiplierMax);
-    SettingsChecks.requireBetween("SelectionSettings.epsilon", epsilon, 0, 1);
+        new NamedSetting("SelectionSettings.memoryMultiplierMin", memoryMultiplierMin),
+        new NamedSetting("SelectionSettings.memoryMultiplierMax", memoryMultiplierMax));
+    SettingsChecks.requireBetween(new NamedSetting("SelectionSettings.epsilon", epsilon), 0, 1);
     SettingsChecks.requireAtLeast(
         "SelectionSettings.exploreFirstAttempts", exploreFirstAttempts, 0);
   }
