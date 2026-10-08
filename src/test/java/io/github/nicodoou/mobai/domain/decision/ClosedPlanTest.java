@@ -26,6 +26,8 @@ class ClosedPlanTest {
                     PlanEndReason.TIMED_OUT,
                     1.5,
                     new PlanScores(1, 1, 1),
+                    0,
+                    0,
                     5,
                     100,
                     700))
@@ -44,6 +46,8 @@ class ClosedPlanTest {
                     PlanEndReason.TIMED_OUT,
                     0.5,
                     new PlanScores(1, 1, 1),
+                    0,
+                    0,
                     5,
                     100,
                     99))

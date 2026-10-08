@@ -34,7 +34,7 @@ public final class DebugLog {
     return String.format(
         Locale.ROOT,
         "PLAN tick=%d group=%s plan=%d strategy=%s target=%s reason=%s success=%.2f"
-            + " scores=%.2f/%.2f/%.2f damage=%.1f",
+            + " scores=%.2f/%.2f/%.2f danger=%.2f damage=%.1f",
         event.tick(),
         event.group().shortId(),
         plan.id().sequence(),
@@ -45,6 +45,7 @@ public final class DebugLog {
         plan.scores().damage(),
         plan.scores().speed(),
         plan.scores().survival(),
+        plan.danger(),
         plan.damageDealt());
   }
 

@@ -16,10 +16,16 @@ public final class PlanScoring {
 
   private final PlanSettings plan;
   private final SuccessSettings success;
+  private final double danger;
 
-  public PlanScoring(PlanSettings plan, SuccessSettings success) {
+  public PlanScoring(PlanSettings plan, SuccessSettings success, double danger) {
     this.plan = Objects.requireNonNull(plan, "PlanScoring.plan");
     this.success = Objects.requireNonNull(success, "PlanScoring.success");
+    if (!(danger >= 0 && danger <= 1)) {
+      throw new IllegalArgumentException(
+          "PlanScoring.danger must be between 0.0 and 1.0, got " + danger);
+    }
+    this.danger = danger;
   }
 
   public PlanScores scoresOf(Plan plan, PlanEndReason reason, long endTick) {
@@ -30,11 +36,26 @@ public final class PlanScoring {
   }
 
   public double successOf(PlanScores scores) {
+    SuccessWeights weights = SuccessWeights.forDanger(success, danger);
     double weighted =
-        success.damageWeight() * scores.damage()
-            + success.speedWeight() * scores.speed()
-            + success.survivalWeight() * scores.survival();
+        weights.damage() * scores.damage()
+            + weights.speed() * scores.speed()
+            + weights.survival() * scores.survival();
     return Math.min(1, weighted);
+  }
+
+  public double danger() {
+    return danger;
+  }
+
+  // Healing during the plan offsets the loss, but never below zero.
+  public double healthLostOf(Plan closing) {
+    Objects.requireNonNull(closing, "PlanScoring.plan");
+    double lost = 0;
+    for (Map.Entry<MobId, Double> start : closing.startingHealth().entrySet()) {
+      lost += start.getValue() - healthAtClose(closing, start.getKey());
+    }
+    return Math.max(0, lost);
   }
 
   private double damageScore(Plan closing, PlanEndReason reason) {
@@ -58,7 +79,7 @@ public final class PlanScoring {
     return Math.min(1, closing.damageDealt() / closing.targetMaxHealth());
   }
 
-  private static double survivalScore(Plan closing) {
+  private double survivalScore(Plan closing) {
     return SURVIVAL_PART_WEIGHT * aliveShare(closing)
         + SURVIVAL_PART_WEIGHT * healthKeptShare(closing);
   }
@@ -73,25 +94,16 @@ public final class PlanScoring {
     return (double) alive / closing.startingMembers();
   }
 
-  private static double healthKeptShare(Plan closing) {
+  private double healthKeptShare(Plan closing) {
     double initial = startingGroupHealth(closing);
     if (initial <= 0) {
       return 1;
     }
-    return 1 - Math.min(1, netHealthLost(closing) / initial);
+    return 1 - Math.min(1, healthLostOf(closing) / initial);
   }
 
   private static double startingGroupHealth(Plan closing) {
     return closing.startingHealth().values().stream().mapToDouble(Double::doubleValue).sum();
-  }
-
-  // Healing during the plan offsets the loss, but never below zero.
-  private static double netHealthLost(Plan closing) {
-    double lost = 0;
-    for (Map.Entry<MobId, Double> start : closing.startingHealth().entrySet()) {
-      lost += start.getValue() - healthAtClose(closing, start.getKey());
-    }
-    return Math.max(0, lost);
   }
 
   // A mob that left the group (died or vanished) lost all its health.

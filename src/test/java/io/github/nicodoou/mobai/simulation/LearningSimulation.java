@@ -150,7 +150,7 @@ final class LearningSimulation {
           base.debug(),
           base.retreat(),
           base.volley(),
-          new SuccessSettings(0.4, 0.4, 0.2, 600));
+          new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0));
     }
 
     private Group newGroup() {

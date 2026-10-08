@@ -1,11 +1,14 @@
 package io.github.nicodoou.mobai.application;
 
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
+import io.github.nicodoou.mobai.domain.group.DangerLevel;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.PlanScoring;
+import io.github.nicodoou.mobai.domain.memory.DangerRecord;
+import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +28,7 @@ public final class RecordPlayerDeath {
   public List<ClosedPlan> execute(PlayerId player, long tick) {
     return activeGroups.groups().stream()
         .filter(group -> isExecutingAgainst(group, player))
-        .map(group -> closeTargetDied(group, tick))
+        .map(group -> closeTargetDied(group, player, tick))
         .toList();
   }
 
@@ -34,15 +37,16 @@ public final class RecordPlayerDeath {
         && group.lifecycle().plan().map(Plan::target).filter(player::equals).isPresent();
   }
 
-  private ClosedPlan closeTargetDied(Group group, long tick) {
+  private ClosedPlan closeTargetDied(Group group, PlayerId player, long tick) {
     ClosedPlan closed =
-        group
-            .lifecycle()
-            .closePlan(
-                PlanEndReason.TARGET_DIED,
-                tick,
-                new PlanScoring(settings.current().plan(), settings.current().success()));
+        group.lifecycle().closePlan(PlanEndReason.TARGET_DIED, tick, scoring(group, player, tick));
     groupEvents.publishPending(group);
     return closed;
+  }
+
+  private PlanScoring scoring(Group group, PlayerId player, long tick) {
+    DangerRecord record = group.memory().dangerRecord(player, tick);
+    SuccessSettings success = settings.current().success();
+    return new PlanScoring(settings.current().plan(), success, DangerLevel.of(record, success));
   }
 }

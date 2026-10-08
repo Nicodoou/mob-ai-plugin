@@ -33,6 +33,8 @@ class DomainEventPublisherTest {
               PlanEndReason.TIMED_OUT,
               0.5,
               new PlanScores(1, 1, 1),
+              0,
+              0,
               5,
               100,
               700));

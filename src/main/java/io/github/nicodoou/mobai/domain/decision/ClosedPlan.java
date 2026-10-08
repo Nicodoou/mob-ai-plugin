@@ -13,6 +13,8 @@ public record ClosedPlan(
     PlanEndReason reason,
     double success,
     PlanScores scores,
+    double danger,
+    double groupHealthLost,
     double damageDealt,
     long startTick,
     long endTick) {
@@ -26,6 +28,14 @@ public record ClosedPlan(
     if (!(success >= 0 && success <= 1)) {
       throw new IllegalArgumentException(
           "ClosedPlan.success must be between 0.0 and 1.0, got " + success);
+    }
+    if (!(danger >= 0 && danger <= 1)) {
+      throw new IllegalArgumentException(
+          "ClosedPlan.danger must be between 0.0 and 1.0, got " + danger);
+    }
+    if (!(groupHealthLost >= 0) || !Double.isFinite(groupHealthLost)) {
+      throw new IllegalArgumentException(
+          "ClosedPlan.groupHealthLost must be zero or positive, got " + groupHealthLost);
     }
     if (endTick < startTick) {
       throw new IllegalArgumentException(

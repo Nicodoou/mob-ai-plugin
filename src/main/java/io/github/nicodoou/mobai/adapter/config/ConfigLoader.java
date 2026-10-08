@@ -137,7 +137,11 @@ public final class ConfigLoader {
         number(root, "success.damage-weight"),
         number(root, "success.speed-weight"),
         number(root, "success.survival-weight"),
-        wholeNumber(root, "success.reference-kill-ticks"));
+        wholeNumber(root, "success.reference-kill-ticks"),
+        number(root, "success.survival-weight-max"),
+        number(root, "success.danger-ratio-low"),
+        number(root, "success.danger-ratio-high"),
+        number(root, "success.danger-prior-damage"));
   }
 
   private double number(ConfigurationSection root, String path) {

@@ -122,6 +122,8 @@ class TraceLevelsTest {
             PlanEndReason.TARGET_DIED,
             1.0,
             new PlanScores(1, 1, 1),
+            0,
+            0,
             20.0,
             TICK,
             TICK);
