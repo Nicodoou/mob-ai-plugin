@@ -29,7 +29,7 @@ Cada función hace una sola cosa y cada clase tiene un solo motivo para cambiar;
 **Funciones**
 
 - **Cortas:** si no entra en la pantalla sin hacer scroll, se divide. Guía: unas 20 líneas.
-- **Hasta 3 parámetros.** Con más, se agrupan en un objeto (por ejemplo, una foto).
+- **Hasta 3 parámetros.** Con más, se agrupan en un objeto (por ejemplo, una foto). El constructor canónico de un `record` queda exento: el record es ese objeto. ArchUnit lo verifica.
 - **Sin parámetros booleanos que cambian el comportamiento:** `attack(true)` no dice nada; se separa en dos funciones con nombre propio.
 - **Retornos tempranos** en vez de `if` anidados: primero se descartan los casos que no aplican.
 - **Sin efectos ocultos:** una función que se llama `calculate...` no modifica estado.

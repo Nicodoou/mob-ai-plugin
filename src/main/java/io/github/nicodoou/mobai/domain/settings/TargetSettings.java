@@ -15,6 +15,9 @@ public record TargetSettings(
     SettingsChecks.requirePositive(
         "TargetSettings.weaknessThreatMultiplierPerLevel", weaknessThreatMultiplierPerLevel);
     SettingsChecks.requireBetween(
-        "TargetSettings.weaknessThreatMultiplierPerLevel", weaknessThreatMultiplierPerLevel, 0, 1);
+        new NamedSetting(
+            "TargetSettings.weaknessThreatMultiplierPerLevel", weaknessThreatMultiplierPerLevel),
+        0,
+        1);
   }
 }

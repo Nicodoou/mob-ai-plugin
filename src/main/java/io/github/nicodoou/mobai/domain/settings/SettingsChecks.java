@@ -21,17 +21,29 @@ final class SettingsChecks {
     }
   }
 
-  static void requireBetween(String field, double value, double minimum, double maximum) {
-    if (!(value >= minimum && value <= maximum)) {
+  static void requireBetween(NamedSetting setting, double minimum, double maximum) {
+    if (!(setting.value() >= minimum && setting.value() <= maximum)) {
       throw new IllegalArgumentException(
-          field + " must be between " + minimum + " and " + maximum + ", got " + value);
+          setting.field()
+              + " must be between "
+              + minimum
+              + " and "
+              + maximum
+              + ", got "
+              + setting.value());
     }
   }
 
-  static void requireNotAbove(String lowerField, double lower, String upperField, double upper) {
-    if (lower > upper) {
+  static void requireNotAbove(NamedSetting lower, NamedSetting upper) {
+    if (lower.value() > upper.value()) {
       throw new IllegalArgumentException(
-          lowerField + " must not exceed " + upperField + ", got " + lower + " > " + upper);
+          lower.field()
+              + " must not exceed "
+              + upper.field()
+              + ", got "
+              + lower.value()
+              + " > "
+              + upper.value());
     }
   }
 }

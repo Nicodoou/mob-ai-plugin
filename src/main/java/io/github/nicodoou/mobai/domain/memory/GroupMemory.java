@@ -12,6 +12,8 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public final class GroupMemory {
+  private static final double FULL_WEIGHT = 1.0;
+
   private final Supplier<MemorySettings> settings;
   private final Map<PlayerId, Map<Attack, AttackRecord>> attackRecords = new HashMap<>();
   private final Map<PlayerId, Map<StrategyId, AttackRecord>> strategyRecords = new HashMap<>();
@@ -43,7 +45,9 @@ public final class GroupMemory {
     Map<Attack, AttackRecord> records =
         attackRecords.computeIfAbsent(observation.player(), player -> new EnumMap<>(Attack.class));
     return applyObservation(
-        records, observation.attack(), observation.credit(), 1.0, observation.tick());
+        records,
+        new KeyedObservation<>(
+            observation.attack(), observation.credit(), FULL_WEIGHT, observation.tick()));
   }
 
   public RecordChange recordStrategy(StrategyObservation observation) {
@@ -51,10 +55,11 @@ public final class GroupMemory {
         strategyRecords.computeIfAbsent(observation.player(), player -> new HashMap<>());
     return applyObservation(
         records,
-        observation.strategy(),
-        observation.credit(),
-        observation.weight(),
-        observation.tick());
+        new KeyedObservation<>(
+            observation.strategy(),
+            observation.credit(),
+            observation.weight(),
+            observation.tick()));
   }
 
   public void recordDanger(DangerObservation observation) {
@@ -119,10 +124,12 @@ public final class GroupMemory {
   }
 
   private <K> RecordChange applyObservation(
-      Map<K, AttackRecord> records, K key, double credit, double weight, long tick) {
-    AttackRecord before = storedOrEmpty(records, key, tick).decayedTo(tick, halfLifeTicks());
-    AttackRecord after = before.withObservation(credit, weight);
-    records.put(key, after);
+      Map<K, AttackRecord> records, KeyedObservation<K> observation) {
+    long tick = observation.tick();
+    AttackRecord before =
+        storedOrEmpty(records, observation.key(), tick).decayedTo(tick, halfLifeTicks());
+    AttackRecord after = before.withObservation(observation.credit(), observation.weight());
+    records.put(observation.key(), after);
     return new RecordChange(before, after);
   }
 
@@ -146,4 +153,6 @@ public final class GroupMemory {
   private LearningPrior priorFromSettings() {
     return LearningPrior.fromLearningSpeed(settings.get().learningSpeed());
   }
+
+  private record KeyedObservation<K>(K key, double credit, double weight, long tick) {}
 }

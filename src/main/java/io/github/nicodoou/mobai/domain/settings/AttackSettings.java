@@ -25,11 +25,9 @@ public record AttackSettings(
     SettingsChecks.requireNonNegative("AttackSettings.evasiveMarginBlocks", evasiveMarginBlocks);
     SettingsChecks.requireAtLeast("AttackSettings.evasiveSafetyTicks", evasiveSafetyTicks, 0);
     SettingsChecks.requireBetween(
-        "AttackSettings.evasiveAimMarginDegrees", evasiveAimMarginDegrees, 0, 90);
+        new NamedSetting("AttackSettings.evasiveAimMarginDegrees", evasiveAimMarginDegrees), 0, 90);
     SettingsChecks.requireNotAbove(
-        "AttackSettings.shootMinDistanceBlocks",
-        shootMinDistanceBlocks,
-        "AttackSettings.shootMaxDistanceBlocks",
-        shootMaxDistanceBlocks);
+        new NamedSetting("AttackSettings.shootMinDistanceBlocks", shootMinDistanceBlocks),
+        new NamedSetting("AttackSettings.shootMaxDistanceBlocks", shootMaxDistanceBlocks));
   }
 }

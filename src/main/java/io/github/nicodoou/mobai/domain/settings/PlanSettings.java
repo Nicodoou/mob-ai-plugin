@@ -12,10 +12,12 @@ public record PlanSettings(
         "PlanSettings.targetLostDistanceBlocks", targetLostDistanceBlocks);
     SettingsChecks.requireAtLeast("PlanSettings.targetLostTicks", targetLostTicks, 1);
     SettingsChecks.requireBetween(
-        "PlanSettings.retreatHealthFraction", retreatHealthFraction, 0, 1);
+        new NamedSetting("PlanSettings.retreatHealthFraction", retreatHealthFraction), 0, 1);
     SettingsChecks.requirePositive(
         "PlanSettings.fullSuccessDamageFraction", fullSuccessDamageFraction);
     SettingsChecks.requireBetween(
-        "PlanSettings.fullSuccessDamageFraction", fullSuccessDamageFraction, 0, 1);
+        new NamedSetting("PlanSettings.fullSuccessDamageFraction", fullSuccessDamageFraction),
+        0,
+        1);
   }
 }

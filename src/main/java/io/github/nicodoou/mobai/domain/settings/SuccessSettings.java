@@ -14,13 +14,18 @@ public record SuccessSettings(
   private static final double WEIGHT_SUM_TOLERANCE = 1e-9;
 
   public SuccessSettings {
-    SettingsChecks.requireBetween("SuccessSettings.damageWeight", damageWeight, 0, 1);
-    SettingsChecks.requireBetween("SuccessSettings.speedWeight", speedWeight, 0, 1);
-    SettingsChecks.requireBetween("SuccessSettings.survivalWeight", survivalWeight, 0, 1);
+    SettingsChecks.requireBetween(
+        new NamedSetting("SuccessSettings.damageWeight", damageWeight), 0, 1);
+    SettingsChecks.requireBetween(
+        new NamedSetting("SuccessSettings.speedWeight", speedWeight), 0, 1);
+    SettingsChecks.requireBetween(
+        new NamedSetting("SuccessSettings.survivalWeight", survivalWeight), 0, 1);
     SettingsChecks.requireAtLeast("SuccessSettings.referenceKillTicks", referenceKillTicks, 1);
     requireWeightsAddUpToOne(damageWeight + speedWeight + survivalWeight);
     SettingsChecks.requireBetween(
-        "SuccessSettings.survivalWeightMax", survivalWeightMax, survivalWeight, 1);
+        new NamedSetting("SuccessSettings.survivalWeightMax", survivalWeightMax),
+        survivalWeight,
+        1);
     SettingsChecks.requirePositive("SuccessSettings.dangerRatioLow", dangerRatioLow);
     requireHighAboveLow(dangerRatioLow, dangerRatioHigh);
     SettingsChecks.requirePositive("SuccessSettings.dangerPriorDamage", dangerPriorDamage);
