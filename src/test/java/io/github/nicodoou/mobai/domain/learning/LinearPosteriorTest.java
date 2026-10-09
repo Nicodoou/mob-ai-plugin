@@ -22,6 +22,24 @@ class LinearPosteriorTest {
   }
 
   @Test
+  void modelsWithTheSameContentAreEqual() {
+    LinearPosterior first = oneObservation();
+    LinearPosterior second = oneObservation();
+
+    assertThat(first).isEqualTo(second).hasSameHashCodeAs(second);
+  }
+
+  @Test
+  void aDifferentObservationMakesADifferentModel() {
+    LinearPosterior prior = LinearPosterior.prior(new double[] {0, 0}, 1);
+
+    LinearPosterior high = prior.withObservation(new double[] {1, 2}, 0.7, 0.5);
+    LinearPosterior low = prior.withObservation(new double[] {1, 2}, 0.2, 0.5);
+
+    assertThat(high).isNotEqualTo(low);
+  }
+
+  @Test
   void priorMeanIsTheGivenMean() {
     LinearPosterior prior = LinearPosterior.prior(new double[] {0.5, 0, -1}, 4);
 
