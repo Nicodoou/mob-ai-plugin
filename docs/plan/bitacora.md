@@ -797,3 +797,26 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Opinión del código.**
 - **Lo bueno:** el incidente guarda solo lo que la decisión toca, y quitó código duplicado.
 - **Lo flojo:** los incidentes de versiones anteriores ya no se leen. Es esperable, porque reproducían código viejo.
+
+## WP-33I — Base del server y entrenamiento por jugador (PR #68, Opus; especificado en la nube)
+
+**Qué hizo.**
+- **`RecipeBase`:** el modelo del server, sin olvido, y la lista de jugadores en entrenamiento.
+- **Punto de partida del jugador:** el ancla de su modelo es la base, con un tope de peso de `base-weight-plans` (600) que se aplica con la misma operación del olvido.
+- **Qué enseña a la base:** solo los planes contra jugadores en entrenamiento, y con exploración `training-exploration-scale`.
+- **Incidentes:** copian la base y los entrenadores (JSON v4).
+
+**Revisión local.** Rebase sobre main; build y CI en verde. Mis roturas mordieron:
+- enseñarle a la base sin chequear el entrenamiento → 1;
+- sin tope de peso → 1.
+
+`config.yml` de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:**
+  - el tope reusa el olvido, así que pesa exactamente N planes;
+  - el entrenamiento por jugador evita que un visitante ensucie la base.
+- **Lo flojo:**
+  - la base todavía no se guarda en disco (WP-33J);
+  - la lista de entrenadores se pierde al reiniciar hasta el 33J.
+- **Riesgo:** una base entrenada solo por Nico queda afinada a su estilo. Los rasgos lo mitigan.
