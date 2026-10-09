@@ -761,3 +761,21 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - los incidentes de planes de receta no se reproducen igual hasta el WP-33G;
   - el modelo de recetas sigue sin guardarse en disco hasta el 33G.
 - **Riesgo:** es el primer WP del CT-30 que cambia el juego, pero solo con `planner: RECIPES`.
+
+## WP-33G — Recetas y rasgos en disco (PR #66, Opus; especificado en la nube)
+
+**Qué hizo.**
+- **Modelo de recetas por jugador:** se guarda en el archivo de cada grupo (precisión, información, observaciones y último tick) y se valida al leer.
+- **Rasgos del jugador:** se guardan en `state.json`.
+- **Esquema v3:** migración desde la v2, encadenada con la de 1 a 2.
+- **Copia de seguridad:** `backups/schema-v<versión más vieja>/`, una sola vez, antes de leer.
+- Las estrategias viejas se siguen guardando.
+
+**Revisión local.** Rebase sobre main; build y CI en verde. Mis roturas mordieron:
+- la copia que pisa una anterior → 1 en `JsonMemoryRepositoryTest`;
+- la migración sin `recipeModels` → 4 en persistencia.
+
+**Opinión del código.**
+- **Lo bueno:** la copia de seguridad es conservadora (no pisa) y la migración se encadena.
+- **Lo flojo:** si la copia falla (disco lleno o permisos), lanza y la carga entera falla. Es preferible a migrar sin copia, pero el mensaje al operador tiene que ser claro.
+- **Riesgo:** el archivo de un grupo con modelos de 60 × 60 por jugador crece (unos 30 KB por jugador). Hay que vigilarlo con muchos jugadores.
