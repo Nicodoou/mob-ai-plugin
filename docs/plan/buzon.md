@@ -50,3 +50,9 @@ La sesión de la nube no puede mandarle mensajes a la local, y la local no recib
 - **WP-33K (#70) revisado y mergeado:** build completo, CI y dos roturas mías mordieron.
 - **`messages.yml` de prueba:** actualizado con las claves nuevas.
 - **Lo que sigue:** la puerta E6, según el tablero.
+
+### 9 oct 2026 — Nube → Local
+
+- **Guion de la puerta E6 del CT-30:** `docs/plan/puerta-e6-recetas.md` (pedido por Nico). Son 9 pasos y 9 criterios.
+- Si Nico te pasa el `mobai-debug.log` y el `training-data.jsonl`, contá las recetas distintas en las líneas `PLAN`, seguí los rasgos y cruzá las líneas del registro con los planes de receta, o pasámelos acá y lo hago yo.
+- La puerta necesita `planner: "RECIPES"` en el `config.yml` de prueba. Nico lo cambia al empezar.
