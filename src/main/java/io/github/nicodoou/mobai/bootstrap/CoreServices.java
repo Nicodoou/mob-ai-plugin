@@ -19,6 +19,7 @@ import io.github.nicodoou.mobai.application.ResetMemories;
 import io.github.nicodoou.mobai.application.SaveMemories;
 import io.github.nicodoou.mobai.application.SettingsHolder;
 import io.github.nicodoou.mobai.application.TickGroups;
+import io.github.nicodoou.mobai.application.TraitCaptureMapper;
 import io.github.nicodoou.mobai.domain.brain.Brain;
 import io.github.nicodoou.mobai.domain.brain.BrainParts;
 import io.github.nicodoou.mobai.domain.brain.RegroupWindow;
@@ -27,15 +28,8 @@ import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.port.MemoryRepository;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.port.StoredState;
-import io.github.nicodoou.mobai.domain.port.StoredTraits;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
-import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
-import io.github.nicodoou.mobai.domain.strategy.TraitSums;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /** The domain and the use cases, assembled once; no Paper here, so it is tested in JUnit. */
 public record CoreServices(
@@ -93,26 +87,16 @@ public record CoreServices(
   }
 
   public StoredState storedState() {
-    return new StoredState(clock.currentTick(), regroupWindow.currentTicks(), storedTraits());
+    return new StoredState(
+        clock.currentTick(),
+        regroupWindow.currentTicks(),
+        new TraitCaptureMapper().toStored(traitLedger.capture()));
   }
 
   public void restore(StoredState state) {
     clock.restore(state.serverTick());
     regroupWindow.restore(state.regroupWindowTicks());
-    traitLedger.restore(capturedTraits(state));
-  }
-
-  private List<StoredTraits> storedTraits() {
-    Map<PlayerId, TraitSums> captured = traitLedger.capture();
-    return captured.keySet().stream()
-        .sorted(Comparator.comparing(PlayerId::value))
-        .map(player -> new StoredTraits(player, captured.get(player)))
-        .toList();
-  }
-
-  private static Map<PlayerId, TraitSums> capturedTraits(StoredState state) {
-    return state.traits().stream()
-        .collect(Collectors.toMap(StoredTraits::player, StoredTraits::sums));
+    traitLedger.restore(new TraitCaptureMapper().toSums(state.traits()));
   }
 
   private static Foundation foundation(MobAiSettings initialSettings) {
