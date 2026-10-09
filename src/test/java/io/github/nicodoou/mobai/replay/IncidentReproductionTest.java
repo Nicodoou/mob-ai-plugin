@@ -58,6 +58,15 @@ class IncidentReproductionTest {
   }
 
   @Test
+  void trainingPlanOpeningReproducesFromItsJson() {
+    IncidentReport incident = throughJson(IncidentFixture.trainingPlanOpening());
+
+    assertThat(incident.base().model()).isPresent();
+    assertThat(incident.base().trainers()).containsExactly(ALICE);
+    assertThatCode(() -> TraceReplay.assertReproduces(incident)).doesNotThrowAnyException();
+  }
+
+  @Test
   void tamperedTraitsAreDetected() {
     IncidentReport original = throughJson(IncidentFixture.recordedRecipeDecision(START_TICK + 20));
     IncidentReport tampered = withTraitsBefore(original, withShieldAsWeight(original));
@@ -175,7 +184,8 @@ class IncidentReproductionTest {
         base.after(),
         base.regroupWindowTicksAfter(),
         traits,
-        base.traitsAfter());
+        base.traitsAfter(),
+        base.base());
   }
 
   private static IncidentReport withDraws(IncidentReport base, List<RecordedDraw> draws) {
@@ -193,7 +203,8 @@ class IncidentReproductionTest {
         base.after(),
         base.regroupWindowTicksAfter(),
         base.traitsBefore(),
-        base.traitsAfter());
+        base.traitsAfter(),
+        base.base());
   }
 
   private static IncidentReport withBefore(IncidentReport base, GroupCapture before) {
@@ -211,7 +222,8 @@ class IncidentReproductionTest {
         base.after(),
         base.regroupWindowTicksAfter(),
         base.traitsBefore(),
-        base.traitsAfter());
+        base.traitsAfter(),
+        base.base());
   }
 
   private static IncidentReport withRegroupWindowBefore(IncidentReport base, long ticks) {
@@ -229,6 +241,7 @@ class IncidentReproductionTest {
         base.after(),
         base.regroupWindowTicksAfter(),
         base.traitsBefore(),
-        base.traitsAfter());
+        base.traitsAfter(),
+        base.base());
   }
 }

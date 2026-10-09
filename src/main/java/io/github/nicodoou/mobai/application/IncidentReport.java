@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.port.StoredTraits;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBaseCapture;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,7 +23,8 @@ public record IncidentReport(
     GroupCapture after,
     long regroupWindowTicksAfter,
     List<StoredTraits> traitsBefore,
-    List<StoredTraits> traitsAfter) {
+    List<StoredTraits> traitsAfter,
+    RecipeBaseCapture base) {
   public IncidentReport {
     Objects.requireNonNull(id, "IncidentReport.id");
     Objects.requireNonNull(location, "IncidentReport.location");
@@ -32,6 +34,7 @@ public record IncidentReport(
     Objects.requireNonNull(settings, "IncidentReport.settings");
     Objects.requireNonNull(result, "IncidentReport.result");
     Objects.requireNonNull(after, "IncidentReport.after");
+    Objects.requireNonNull(base, "IncidentReport.base");
     draws = List.copyOf(draws);
     traitsBefore = List.copyOf(traitsBefore);
     traitsAfter = List.copyOf(traitsAfter);

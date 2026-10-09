@@ -132,3 +132,5 @@ learning:
   max-retreat-health-fraction: 0.5
   # Vida media de lo que se recuerda de cada jugador (escudo, arco, armadura).
   traits-half-life-ticks: 6000
+  # Cuánto pesa la base del server para un jugador nuevo, en planes (0: no se usa).
+  base-weight-plans: 600

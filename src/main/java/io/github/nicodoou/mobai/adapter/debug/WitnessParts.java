@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.application.GroupEvents;
 import io.github.nicodoou.mobai.application.RecordingRandomSource;
 import io.github.nicodoou.mobai.application.SettingsHolder;
 import io.github.nicodoou.mobai.domain.brain.RegroupWindow;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
 import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
 import java.util.Objects;
 
@@ -13,12 +14,14 @@ public record WitnessParts(
     RecordingRandomSource draws,
     RegroupWindow regroupWindow,
     SettingsHolder settings,
-    TraitLedger traitLedger) {
+    TraitLedger traitLedger,
+    RecipeBase recipeBase) {
   public WitnessParts {
     Objects.requireNonNull(groupEvents, "WitnessParts.groupEvents");
     Objects.requireNonNull(draws, "WitnessParts.draws");
     Objects.requireNonNull(regroupWindow, "WitnessParts.regroupWindow");
     Objects.requireNonNull(settings, "WitnessParts.settings");
     Objects.requireNonNull(traitLedger, "WitnessParts.traitLedger");
+    Objects.requireNonNull(recipeBase, "WitnessParts.recipeBase");
   }
 }

@@ -3,14 +3,15 @@ package io.github.nicodoou.mobai.domain.strategy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
+import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
+import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
@@ -28,9 +29,13 @@ import org.junit.jupiter.api.Test;
 
 class RecipePlannerTest {
   private static final double TOLERANCE = 1e-9;
+  private static final double HALF_FEATURE = 0.5;
+  private static final double MODEL_NOISE_VARIANCE = 0.01;
+  private static final PlayerId BOB = new PlayerId(new UUID(0, 22));
   private static final PlayerTraits NO_TRAITS = new PlayerTraits(0, 0, 0);
   private static final PlayerTraits SHIELD_USER = new PlayerTraits(1, 0, 0);
   private static final PlayerSnapshot TARGET = new PlayerSnapshotBuilder().build();
+  private static final PlayerId ALICE = TARGET.id();
   private static final MobId FRONT = mobId(1);
   private static final MobId RIGHT = mobId(2);
   private static final MobId BEHIND = mobId(3);
@@ -38,6 +43,7 @@ class RecipePlannerTest {
   private static final MobId SKELETON = mobId(5);
 
   private final MobAiSettings settings = TestSettings.defaults();
+  private final RecipeBase base = new RecipeBase();
 
   @Test
   void priorHasSixtyNumbersAndThePriorSuccess() {
@@ -70,6 +76,86 @@ class RecipePlannerTest {
 
     assertThat(current.mean()).containsExactly(expected.mean(), within(TOLERANCE));
     assertThat(current.observations()).isCloseTo(0.5, within(TOLERANCE));
+  }
+
+  @Test
+  void withoutABaseTheAnchorIsThePrior() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+
+    assertThat(planner.anchor()).isEqualTo(planner.prior());
+  }
+
+  @Test
+  void aSmallBaseIsTheAnchorAsIs() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+    LinearPosterior small = observed(planner.prior(), 3);
+    base.replace(small);
+
+    assertThat(planner.anchor()).isEqualTo(small);
+  }
+
+  @Test
+  void aLargeBaseWeighsAsTheCap() {
+    RecipePlanner planner = plannerWithCap(2);
+    base.replace(observed(planner.prior(), 4));
+
+    assertThat(planner.anchor().observations()).isCloseTo(2, within(TOLERANCE));
+  }
+
+  @Test
+  void aZeroCapIgnoresTheBase() {
+    RecipePlanner planner = plannerWithCap(0);
+    base.replace(observed(planner.prior(), 4));
+
+    assertThat(planner.anchor()).isEqualTo(planner.prior());
+  }
+
+  @Test
+  void aNewPlayerStartsFromTheBase() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+    base.replace(observed(planner.prior(), 3));
+
+    LinearPosterior current = planner.current(Optional.empty(), 5000);
+
+    assertThat(current).isEqualTo(planner.anchor());
+  }
+
+  @Test
+  void forgettingPullsTowardTheBase() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+    base.replace(observed(planner.prior(), 3));
+    LinearPosterior stored = observed(planner.prior(), 5);
+    long manyHalfLives = 100L * settings.memory().halfLifeTicks();
+
+    LinearPosterior current =
+        planner.current(Optional.of(new RecipeModelRecord(stored, 0)), manyHalfLives);
+
+    assertThat(current.mean()).containsExactly(planner.anchor().mean(), within(1e-6));
+  }
+
+  @Test
+  void trainingExploresMore() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+    base.startTraining(ALICE);
+
+    assertThat(planner.explorationScaleFor(ALICE)).isCloseTo(2.0, within(TOLERANCE));
+    assertThat(planner.explorationScaleFor(BOB)).isCloseTo(1.0, within(TOLERANCE));
+  }
+
+  @Test
+  void onlyTrainersTeachTheBase() {
+    RecipePlanner planner = plannerWithNeutralDraws(1);
+    RecipeOutcome outcome = outcomeOf(planner);
+    base.startTraining(ALICE);
+
+    planner.teachBase(BOB, outcome);
+
+    assertThat(base.model()).isEmpty();
+
+    planner.teachBase(ALICE, outcome);
+    planner.teachBase(ALICE, outcome);
+
+    assertThat(base.model().orElseThrow().observations()).isCloseTo(2, within(TOLERANCE));
   }
 
   @Test
@@ -180,8 +266,55 @@ class RecipePlannerTest {
 
   private RecipePlanner plannerWithNeutralDraws(int plans) {
     double[] draws = new double[ContextualFeatures.DIMENSION * plans];
-    return new RecipePlanner(
-        () -> settings, new ScriptedRandomSource().withGaussians(draws), new CombatGeometry());
+    return new RecipePlanner(() -> settings, new ScriptedRandomSource().withGaussians(draws), base);
+  }
+
+  private RecipePlanner plannerWithCap(long baseWeightPlans) {
+    LearningSettings learning = settings.learning();
+    LearningSettings capped =
+        new LearningSettings(
+            learning.planner(),
+            learning.modelNoiseVariance(),
+            learning.priorVariance(),
+            learning.priorSuccess(),
+            learning.explorationScale(),
+            learning.trainingExplorationScale(),
+            learning.minReserveDelayTicks(),
+            learning.maxReserveDelayTicks(),
+            learning.maxRetreatHealthFraction(),
+            learning.traitsHalfLifeTicks(),
+            baseWeightPlans);
+    MobAiSettings cappedSettings =
+        new MobAiSettings(
+            settings.group(),
+            settings.memory(),
+            settings.selection(),
+            settings.target(),
+            settings.plan(),
+            settings.attack(),
+            settings.spider(),
+            settings.persistence(),
+            settings.debug(),
+            settings.retreat(),
+            settings.volley(),
+            settings.success(),
+            capped);
+    return new RecipePlanner(() -> cappedSettings, new ScriptedRandomSource(), base);
+  }
+
+  private static LinearPosterior observed(LinearPosterior start, int observations) {
+    double[] features = new double[ContextualFeatures.DIMENSION];
+    Arrays.fill(features, HALF_FEATURE);
+    LinearPosterior model = start;
+    for (int i = 0; i < observations; i++) {
+      model = model.withObservation(features, 1.0, MODEL_NOISE_VARIANCE);
+    }
+    return model;
+  }
+
+  private RecipeOutcome outcomeOf(RecipePlanner planner) {
+    RecipePlay play = planner.plan(fourZombiesFlankRequest(NO_TRAITS));
+    return new RecipeOutcome(play, 0.7, 500);
   }
 
   private static RecipeRequest fourZombiesFlankRequest(PlayerTraits traits) {

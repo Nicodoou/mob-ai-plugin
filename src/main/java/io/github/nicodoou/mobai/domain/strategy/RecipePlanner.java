@@ -10,6 +10,7 @@ import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
+import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
@@ -40,15 +41,19 @@ public final class RecipePlanner {
 
   private final Supplier<MobAiSettings> settings;
   private final RandomSource random;
-  private final CombatGeometry geometry;
+  private final CombatGeometry geometry = new CombatGeometry();
+  private final RecipeBase base;
   private final RecipeSearch search;
 
-  public RecipePlanner(
-      Supplier<MobAiSettings> settings, RandomSource random, CombatGeometry geometry) {
+  public RecipePlanner(Supplier<MobAiSettings> settings, RandomSource random, RecipeBase base) {
     this.settings = Objects.requireNonNull(settings, "RecipePlanner.settings");
     this.random = Objects.requireNonNull(random, "RecipePlanner.random");
-    this.geometry = Objects.requireNonNull(geometry, "RecipePlanner.geometry");
+    this.base = Objects.requireNonNull(base, "RecipePlanner.base");
     this.search = new RecipeSearch(this::bounds);
+  }
+
+  public RecipeBase base() {
+    return base;
   }
 
   public LinearPosterior prior() {
@@ -58,13 +63,34 @@ public final class RecipePlanner {
     return LinearPosterior.prior(mean, learning.priorVariance());
   }
 
+  // Where a player's model starts and what its forgetting pulls toward: the base, capped in weight.
+  public LinearPosterior anchor() {
+    long weightCapPlans = learning().baseWeightPlans();
+    if (base.model().isEmpty() || weightCapPlans == 0) {
+      return prior();
+    }
+    LinearPosterior model = base.model().get();
+    if (model.observations() <= weightCapPlans) {
+      return model;
+    }
+    return model.shrunkToward(prior(), weightCapPlans / model.observations());
+  }
+
   public LinearPosterior current(Optional<RecipeModelRecord> stored, long tick) {
     Objects.requireNonNull(stored, "RecipePlanner.stored");
     if (stored.isEmpty()) {
-      return prior();
+      return anchor();
     }
     RecipeModelRecord record = stored.get();
-    return record.model().shrunkToward(prior(), keepAfter(record.lastTick(), tick));
+    return record.model().shrunkToward(anchor(), keepAfter(record.lastTick(), tick));
+  }
+
+  public double explorationScaleFor(PlayerId target) {
+    Objects.requireNonNull(target, "RecipePlanner.target");
+    LearningSettings learning = learning();
+    return base.isTraining(target)
+        ? learning.trainingExplorationScale()
+        : learning.explorationScale();
   }
 
   public RecipePlay plan(RecipeRequest request) {
@@ -83,11 +109,22 @@ public final class RecipePlanner {
   public RecipeModelRecord learned(LinearPosterior current, RecipeOutcome outcome) {
     Objects.requireNonNull(current, "RecipePlanner.current");
     Objects.requireNonNull(outcome, "RecipePlanner.outcome");
+    return new RecipeModelRecord(observed(current, outcome), outcome.tick());
+  }
+
+  public void teachBase(PlayerId target, RecipeOutcome outcome) {
+    Objects.requireNonNull(target, "RecipePlanner.target");
+    Objects.requireNonNull(outcome, "RecipePlanner.outcome");
+    if (!base.isTraining(target)) {
+      return;
+    }
+    base.replace(observed(base.model().orElseGet(this::prior), outcome));
+  }
+
+  private LinearPosterior observed(LinearPosterior model, RecipeOutcome outcome) {
     double[] features =
         outcome.play().features().stream().mapToDouble(Double::doubleValue).toArray();
-    LinearPosterior model =
-        current.withObservation(features, outcome.success(), learning().modelNoiseVariance());
-    return new RecipeModelRecord(model, outcome.tick());
+    return model.withObservation(features, outcome.success(), learning().modelNoiseVariance());
   }
 
   // The same half-life as the rest of the group memory, so every record forgets alike.
@@ -98,7 +135,7 @@ public final class RecipePlanner {
   }
 
   private double[] foldedWeights(RecipeRequest request) {
-    double[] sampled = request.model().sample(random, learning().explorationScale());
+    double[] sampled = request.model().sample(random, explorationScaleFor(request.target()));
     return ContextualFeatures.weightsFor(sampled, request.traits());
   }
 

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import io.github.nicodoou.mobai.application.IncidentReport;
 
 public final class IncidentJson {
-  static final int CURRENT_VERSION = 3;
+  static final int CURRENT_VERSION = 4;
 
   private final Gson gson = DebugGson.create();
 

@@ -160,7 +160,8 @@ public final class ConfigLoader {
         wholeNumber(root, "learning.min-reserve-delay-ticks"),
         wholeNumber(root, "learning.max-reserve-delay-ticks"),
         number(root, "learning.max-retreat-health-fraction"),
-        wholeNumber(root, "learning.traits-half-life-ticks"));
+        wholeNumber(root, "learning.traits-half-life-ticks"),
+        wholeNumber(root, "learning.base-weight-plans"));
   }
 
   private double number(ConfigurationSection root, String path) {

@@ -34,6 +34,7 @@ import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.strategy.StrategyCatalog;
 import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
@@ -181,7 +182,7 @@ final class LearningSimulation {
               new RegroupRule(settings::retreat, regroupWindow),
               regroupWindow,
               new RallyPointRule(settings::retreat),
-              new RecipePlanner(() -> settings, brainRandom, new CombatGeometry()),
+              new RecipePlanner(() -> settings, brainRandom, new RecipeBase()),
               new TraitLedger(settings::learning)));
     }
 

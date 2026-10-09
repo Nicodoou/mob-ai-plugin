@@ -15,6 +15,7 @@ import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.port.StoredTraits;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBaseCapture;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,7 +32,8 @@ public final class TraceReplay {
       GroupCapture after,
       long regroupWindowTicksAfter,
       int remainingDraws,
-      List<StoredTraits> traitsAfter) {}
+      List<StoredTraits> traitsAfter,
+      RecipeBaseCapture baseAfter) {}
 
   public static Outcome replay(IncidentReport report) {
     SettingsHolder holder = new SettingsHolder(report.settings());
@@ -42,6 +44,7 @@ public final class TraceReplay {
     ReplayRandomSource random = new ReplayRandomSource(report.draws());
     BrainParts parts = BrainParts.standard(holder::current, random, window);
     parts.traitLedger().restore(TRAITS.toSums(report.traitsBefore()));
+    parts.recipePlanner().base().restore(report.base());
     Decision decision = decide(new Brain(holder::current, parts), group, report.snapshot());
     return new Outcome(
         decision.result(),
@@ -49,7 +52,8 @@ public final class TraceReplay {
         mapper.capture(group),
         window.currentTicks(),
         random.remaining(),
-        TRAITS.forSnapshot(parts.traitLedger(), report.snapshot()));
+        TRAITS.forSnapshot(parts.traitLedger(), report.snapshot()),
+        parts.recipePlanner().base().capture());
   }
 
   private static Decision decide(Brain brain, Group group, GroupSnapshot snapshot) {
@@ -75,6 +79,7 @@ public final class TraceReplay {
         .as("regroup window after")
         .isEqualTo(report.regroupWindowTicksAfter());
     assertThat(outcome.traitsAfter()).as("traits after").isEqualTo(report.traitsAfter());
+    assertThat(outcome.baseAfter()).as("base after").isEqualTo(report.base());
     assertThat(outcome.remainingDraws()).as("unused draws").isZero();
   }
 

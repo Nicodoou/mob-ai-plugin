@@ -45,12 +45,9 @@ public final class ClosePlan {
     RecipePlay play = plan.recipe().orElseThrow();
     LinearPosterior current =
         recipePlanner.current(group.memory().recipeModel(plan.target()), plan.endTick());
-    group
-        .memory()
-        .storeRecipeModel(
-            plan.target(),
-            recipePlanner.learned(
-                current, new RecipeOutcome(play, plan.success(), plan.endTick())));
+    RecipeOutcome outcome = new RecipeOutcome(play, plan.success(), plan.endTick());
+    group.memory().storeRecipeModel(plan.target(), recipePlanner.learned(current, outcome));
+    recipePlanner.teachBase(plan.target(), outcome);
   }
 
   private static RecordChange recordStrategy(Group group, ClosedPlan plan) {
