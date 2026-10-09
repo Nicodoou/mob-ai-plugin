@@ -40,6 +40,15 @@ class LinearPosteriorTest {
   }
 
   @Test
+  void aDifferentObservationCountMakesADifferentModel() {
+    LinearPosterior model = oneObservation();
+    LinearPosterior recounted =
+        LinearPosterior.of(model.precision(), model.information(), model.observations() + 1);
+
+    assertThat(recounted).isNotEqualTo(model);
+  }
+
+  @Test
   void priorMeanIsTheGivenMean() {
     LinearPosterior prior = LinearPosterior.prior(new double[] {0.5, 0, -1}, 4);
 
