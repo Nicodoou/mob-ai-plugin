@@ -8,6 +8,7 @@ import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.memory.AttackObservation;
 import io.github.nicodoou.mobai.domain.memory.DangerObservation;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
+import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.memory.StrategyObservation;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -16,7 +17,11 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
+import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
+import io.github.nicodoou.mobai.testsupport.ScriptedRandomSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.List;
 import java.util.UUID;
@@ -27,8 +32,13 @@ class DescribePlayerMemoryTest {
 
   private final PlayerId player = new PlayerId(new UUID(2, 1));
   private final ActiveGroups activeGroups = new ActiveGroups();
+  private final RecipePlanner planner =
+      new RecipePlanner(TestSettings::defaults, new ScriptedRandomSource(), new RecipeBase());
   private final DescribePlayerMemory describePlayerMemory =
-      new DescribePlayerMemory(activeGroups, () -> TestSettings.defaults().success());
+      new DescribePlayerMemory(
+          activeGroups,
+          () -> TestSettings.defaults().success(),
+          new RecipeAdvisor(planner, new TraitLedger(() -> TestSettings.defaults().learning())));
 
   @Test
   void viewShowsOnlyTheRecordedAttacksAndStrategies() {
@@ -84,6 +94,19 @@ class DescribePlayerMemoryTest {
     List<PlayerMemoryView> views = describePlayerMemory.execute(player, TICK);
 
     assertThat(views).extracting(PlayerMemoryView::group).containsExactly(groupId(1));
+  }
+
+  @Test
+  void aPlayerWithOnlyARecipeModelIsRemembered() {
+    Group group = newGroup(1);
+    activeGroups.add(group);
+    activeGroups.join(groupId(1), mob(1), MobKind.ZOMBIE);
+    group.memory().storeRecipeModel(player, new RecipeModelRecord(planner.prior(), TICK));
+
+    List<PlayerMemoryView> views = describePlayerMemory.execute(player, TICK);
+
+    assertThat(views).hasSize(1);
+    assertThat(views.getFirst().recipes()).isPresent();
   }
 
   private Group addGroupWithMemory(long n) {

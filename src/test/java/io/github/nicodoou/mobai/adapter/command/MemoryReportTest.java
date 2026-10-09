@@ -13,6 +13,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +103,6 @@ class MemoryReportTest {
   private PlayerMemoryView view(
       Map<Attack, SuccessEstimate> attacks, Map<StrategyId, SuccessEstimate> strategies) {
     return new PlayerMemoryView(
-        group, player, attacks, strategies, new DangerRecord(80, 10, 0), 0.5);
+        group, player, attacks, strategies, new DangerRecord(80, 10, 0), 0.5, Optional.empty());
   }
 }
