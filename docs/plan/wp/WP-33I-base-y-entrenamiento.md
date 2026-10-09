@@ -141,7 +141,10 @@ Componente nuevo **al final**: `long baseWeightPlans`. Validación: `SettingsChe
 ### Pruebas de soporte
 
 - `TestSettings`: `baseWeightPlans` 600.
-- `TraceReplay`: antes de decidir, `parts.recipePlanner().base().restore(report.base())`.
+- `TraceReplay`:
+  - antes de decidir, `parts.recipePlanner().base().restore(report.base())`;
+  - `Outcome` suma, al final, `RecipeBaseCapture baseAfter`: `parts.recipePlanner().base().capture()` después de decidir;
+  - `assertReproduces` suma `assertThat(outcome.baseAfter()).as("base after").isEqualTo(report.base())`. La decisión no cambia la base (aprende `ClosePlan`), así que la de después tiene que ser la del incidente.
 - `IncidentFixture`:
   - `record(...)` copia `parts.recipePlanner().base().capture()` antes de decidir y la pasa al `IncidentReport`;
   - fábrica nueva `public static IncidentReport trainingPlanOpening()`, con `TestSettings.withRecipes()`:
@@ -225,7 +228,7 @@ Total: **17 pruebas**.
 | 2 | `anchor` sin tope | 4 observaciones | `aLargeBaseWeighsAsTheCap` |
 | 3 | `teachBase` sin mirar el entrenamiento | la base aprende de Bob | `onlyTrainersTeachTheBase` |
 | 4 | `explorationScaleFor` devuelve siempre `explorationScale` | 1,0 para Alice | `trainingExploresMore` |
-| 5 | `TraceReplay` sin restaurar la base | la reproducción abre otra receta | `trainingPlanOpeningReproducesFromItsJson` |
+| 5 | `TraceReplay` sin restaurar la base | «base after» vacía | `trainingPlanOpeningReproducesFromItsJson` |
 
 ## Verificación en el juego (Nico, después del merge)
 
@@ -254,7 +257,7 @@ Si este WP se implementa en una sesión en la nube sin JDK 25 ni acceso a `repo.
 
 1. Formato de Spotless.
 2. Si una función pasa las 20 líneas o los 3 parámetros, separala o agrupá y avisalo.
-3. Si la rotura 5 no muerde (la reproducción sin base abre la misma receta), subí las observaciones de `baseModel()` de 20 a 100 y avisalo. Si tampoco muerde, frená y reportá.
+3. (Corregido el 9 oct.) La primera versión esperaba que, sin la base, la reproducción abriera otra receta. No pasa: una base que aprende en una dirección compartida por todas las recetas no cambia su orden. Por eso `TraceReplay` compara la base de después.
 
 ## Fuera de alcance
 
