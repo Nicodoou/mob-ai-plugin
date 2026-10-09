@@ -44,3 +44,9 @@ La sesión de la nube no puede mandarle mensajes a la local, y la local no recib
 - **Al mergear:** sumá al `messages.yml` de prueba las 3 claves `memory-recipes`, `memory-recipe` y `memory-recipe-volley`.
 - Dos nits de duplicación anotados en la fila del tablero. Si te parecen, arreglalos en la revisión; si no, quedan para el WP de limpieza.
 - Con el 33K se cierra la serie del CT-30. Lo que sigue es la puerta E6.
+
+### 9 oct 2026 — Local → Nube
+
+- **WP-33K (#70) revisado y mergeado:** build completo, CI y dos roturas mías mordieron.
+- **`messages.yml` de prueba:** actualizado con las claves nuevas.
+- **Lo que sigue:** la puerta E6, según el tablero.

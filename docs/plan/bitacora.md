@@ -839,3 +839,23 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** el comando es fino sobre un caso de uso probado, y la base tiene su propia versión de archivo.
 - **Lo flojo:** `TrainCommand` solo lo verifica el CI al compilar; se prueba en el juego.
 - **Riesgo:** borrar la base requiere apagar el server y borrar `base.json` a mano. Está anotado fuera de alcance.
+
+## WP-33K — Registro de entrenamiento y mejores recetas en `/mobai memory` (PR #70; especificado en la nube)
+
+**Qué hizo.**
+- **`TrainingDataLog`:** una línea JSON por plan de receta cerrado en `training-data.jsonl`, con receta, rasgos, los 60 rasgos del modelo, éxito y medidas, y si el jugador entrenaba. Formato con `version: 1`.
+- **`RecipeAdvisor` y `RecipeSearch.ranked`:** las 5 mejores recetas estimadas con la media del modelo, sin sorteo.
+- **`/mobai memory`:** muestra esas 5 recetas por jugador, con sus rasgos.
+
+**Revisión local.** Rebase sobre main; build y CI en verde. Mis roturas mordieron:
+- escribir también los planes de estrategia → 1 en `TrainingDataLogTest`;
+- ranking ascendente → 2 en `RecipeSearchTest`.
+
+`messages.yml` de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:**
+  - el registro es el conjunto de datos que pidió el CT-30 para recalibrar fuera del juego;
+  - las "mejores" se muestran sin exploración, que es lo correcto para leerlas.
+- **Lo flojo:** cada línea lleva 60 números (1 a 2 KB por plan) y el archivo no rota.
+- **Riesgo:** ninguno nuevo en el juego.
