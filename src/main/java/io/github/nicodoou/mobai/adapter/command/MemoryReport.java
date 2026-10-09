@@ -2,7 +2,12 @@ package io.github.nicodoou.mobai.adapter.command;
 
 import io.github.nicodoou.mobai.adapter.config.MessageKey;
 import io.github.nicodoou.mobai.application.PlayerMemoryView;
+import io.github.nicodoou.mobai.application.RecipeAdvice;
 import io.github.nicodoou.mobai.domain.memory.SuccessEstimate;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
+import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipeEstimate;
+import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,6 +38,7 @@ final class MemoryReport {
   private static List<MessageLine> linesOf(PlayerMemoryView view) {
     List<MessageLine> lines = new ArrayList<>();
     lines.add(header(view));
+    view.recipes().ifPresent(advice -> lines.addAll(recipeLines(advice)));
     lines.addAll(estimateLines(view.strategies(), STRATEGY_LINE, strategy -> strategy.value()));
     lines.addAll(estimateLines(view.attacks(), ATTACK_LINE, attack -> attack.id()));
     return lines;
@@ -46,6 +52,48 @@ final class MemoryReport {
             "danger", String.format(Locale.ROOT, "%.2f", view.danger()),
             "lost", String.format(Locale.ROOT, "%.1f", view.dangerRecord().healthLost()),
             "dealt", String.format(Locale.ROOT, "%.1f", view.dangerRecord().damageDealt())));
+  }
+
+  private static List<MessageLine> recipeLines(RecipeAdvice advice) {
+    List<MessageLine> lines = new ArrayList<>();
+    lines.add(recipesHeader(advice));
+    for (int index = 0; index < advice.best().size(); index++) {
+      lines.add(recipeLine(index + 1, advice.best().get(index)));
+    }
+    return lines;
+  }
+
+  private static MessageLine recipesHeader(RecipeAdvice advice) {
+    PlayerTraits traits = advice.traits();
+    return new MessageLine(
+        MessageKey.MEMORY_RECIPES,
+        Map.of(
+            "shield", String.format(Locale.ROOT, "%.2f", traits.shield()),
+            "ranged", String.format(Locale.ROOT, "%.2f", traits.ranged()),
+            "armor", String.format(Locale.ROOT, "%.2f", traits.armor()),
+            "plans", String.format(Locale.ROOT, "%.0f", advice.observations())));
+  }
+
+  private static MessageLine recipeLine(int rank, RecipeEstimate estimate) {
+    PlanRecipe recipe = estimate.recipe();
+    MessageKey key = recipe.volley() ? MessageKey.MEMORY_RECIPE_VOLLEY : MessageKey.MEMORY_RECIPE;
+    return new MessageLine(
+        key,
+        Map.of(
+            "rank", String.valueOf(rank),
+            "zombies", zombieSplit(recipe.zombies()),
+            "spiders", recipe.spiders().press() + "/" + recipe.spiders().flank(),
+            "delay", String.valueOf(recipe.reserveDelayTicks()),
+            "retreat", String.valueOf(Math.round(recipe.retreatHealthFraction() * PERCENT)),
+            "rate", String.valueOf(clampedPercent(estimate.predictedSuccess()))));
+  }
+
+  private static String zombieSplit(RoleSplit split) {
+    return split.press() + "/" + split.flank() + "/" + split.reserve();
+  }
+
+  private static long clampedPercent(double fraction) {
+    return Math.max(0, Math.min((long) PERCENT, Math.round(fraction * PERCENT)));
   }
 
   private static <K> List<MessageLine> estimateLines(

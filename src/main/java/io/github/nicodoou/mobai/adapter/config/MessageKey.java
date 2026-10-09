@@ -29,7 +29,10 @@ public enum MessageKey {
   TRAIN_OFF("train-off"),
   TRAIN_STATUS("train-status"),
   TRAIN_STATUS_NOBODY("train-status-nobody"),
-  TRAIN_STRATEGIES("train-strategies");
+  TRAIN_STRATEGIES("train-strategies"),
+  MEMORY_RECIPES("memory-recipes"),
+  MEMORY_RECIPE("memory-recipe"),
+  MEMORY_RECIPE_VOLLEY("memory-recipe-volley");
 
   private final String path;
 
