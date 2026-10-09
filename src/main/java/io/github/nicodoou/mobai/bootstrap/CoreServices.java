@@ -9,6 +9,7 @@ import io.github.nicodoou.mobai.application.DescribePlayerMemory;
 import io.github.nicodoou.mobai.application.DisbandGroup;
 import io.github.nicodoou.mobai.application.GroupEvents;
 import io.github.nicodoou.mobai.application.LoadMemories;
+import io.github.nicodoou.mobai.application.RecipeAdvisor;
 import io.github.nicodoou.mobai.application.RecordDamageTaken;
 import io.github.nicodoou.mobai.application.RecordOutcome;
 import io.github.nicodoou.mobai.application.RecordPlayerDeath;
@@ -30,6 +31,7 @@ import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
 
 /** The domain and the use cases, assembled once; no Paper here, so it is tested in JUnit. */
@@ -62,7 +64,7 @@ public record CoreServices(
     return new CoreServices(
         foundation,
         messaging,
-        new UseCases(combat(foundation, messaging), tools(foundation, repository)));
+        new UseCases(combat(foundation, messaging), tools(foundation, messaging, repository)));
   }
 
   private CoreServices(Foundation foundation, Messaging messaging, UseCases useCases) {
@@ -128,7 +130,8 @@ public record CoreServices(
         randomDraws,
         brain,
         parts.traitLedger(),
-        parts.recipePlanner().base());
+        parts.recipePlanner().base(),
+        parts.recipePlanner());
   }
 
   private static CombatUseCases combat(Foundation foundation, Messaging messaging) {
@@ -149,13 +152,15 @@ public record CoreServices(
     return new RemoveMember(foundation.activeGroups(), disbandGroup, foundation.regroupWindow());
   }
 
-  private static ToolUseCases tools(Foundation foundation, MemoryRepository repository) {
+  private static ToolUseCases tools(
+      Foundation foundation, Messaging messaging, MemoryRepository repository) {
     ActiveGroups activeGroups = foundation.activeGroups();
+    RecipeAdvisor advisor = new RecipeAdvisor(messaging.recipePlanner(), messaging.traitLedger());
     return new ToolUseCases(
         new ResetMemories(activeGroups),
         new DescribeGroup(activeGroups),
         new DescribePlayerMemory(
-            activeGroups, foundation.settings().section(MobAiSettings::success)),
+            activeGroups, foundation.settings().section(MobAiSettings::success), advisor),
         new SaveMemories(activeGroups, repository),
         new LoadMemories(activeGroups, foundation.settings(), repository));
   }
@@ -172,7 +177,8 @@ public record CoreServices(
       RecordingRandomSource randomDraws,
       Brain brain,
       TraitLedger traitLedger,
-      RecipeBase recipeBase) {}
+      RecipeBase recipeBase,
+      RecipePlanner recipePlanner) {}
 
   private record CombatUseCases(
       TickGroups tickGroups,

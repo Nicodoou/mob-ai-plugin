@@ -1,6 +1,7 @@
 package io.github.nicodoou.mobai.domain.strategy;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -22,6 +23,21 @@ public final class RecipeSearch {
     ToDoubleFunction<PlanRecipe> score =
         recipe -> scoreOf(weights, RecipeFeatures.of(recipe, composition.skeletons(), current));
     return highestScoring(candidatesFor(composition, tuning), score);
+  }
+
+  public List<PlanRecipe> ranked(double[] weights, GroupComposition composition, int count) {
+    if (count < 1) {
+      throw new IllegalArgumentException("RecipeSearch.count must be at least 1, got " + count);
+    }
+    validate(weights, composition);
+    RecipeBounds current = bounds.get();
+    Tuning tuning = tuningFor(weights, current);
+    ToDoubleFunction<PlanRecipe> score =
+        recipe -> scoreOf(weights, RecipeFeatures.of(recipe, composition.skeletons(), current));
+    return candidatesFor(composition, tuning).stream()
+        .sorted(Comparator.comparingDouble(score).reversed())
+        .limit(count)
+        .toList();
   }
 
   private static void validate(double[] weights, GroupComposition composition) {

@@ -62,6 +62,7 @@ public final class PluginRuntime {
     adapters.incidentWriter().shutdown();
     adapters.traceWriter().shutdown();
     adapters.debugLog().shutdown();
+    adapters.trainingDataLog().shutdown();
   }
 
   private void runTick() {

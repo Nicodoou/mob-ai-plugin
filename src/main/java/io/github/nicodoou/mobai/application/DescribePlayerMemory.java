@@ -22,9 +22,13 @@ public final class DescribePlayerMemory {
   private final ActiveGroups activeGroups;
   private final Supplier<SuccessSettings> success;
 
-  public DescribePlayerMemory(ActiveGroups activeGroups, Supplier<SuccessSettings> success) {
+  private final RecipeAdvisor advisor;
+
+  public DescribePlayerMemory(
+      ActiveGroups activeGroups, Supplier<SuccessSettings> success, RecipeAdvisor advisor) {
     this.activeGroups = Objects.requireNonNull(activeGroups, "DescribePlayerMemory.activeGroups");
     this.success = Objects.requireNonNull(success, "DescribePlayerMemory.success");
+    this.advisor = Objects.requireNonNull(advisor, "DescribePlayerMemory.advisor");
   }
 
   public List<PlayerMemoryView> execute(PlayerId player, long tick) {
@@ -35,7 +39,8 @@ public final class DescribePlayerMemory {
   }
 
   private static boolean remembers(Group group, PlayerId player) {
-    return group.memory().attackRecords().containsKey(player)
+    return group.memory().recipeModels().containsKey(player)
+        || group.memory().attackRecords().containsKey(player)
         || group.memory().strategyRecords().containsKey(player)
         || group.memory().dangerRecords().containsKey(player);
   }
@@ -49,7 +54,8 @@ public final class DescribePlayerMemory {
         attackEstimates(memory, player, tick),
         strategyEstimates(memory, player, tick),
         record,
-        DangerLevel.of(record, success.get()));
+        DangerLevel.of(record, success.get()),
+        advisor.adviceFor(group, player, tick));
   }
 
   private static Map<Attack, SuccessEstimate> attackEstimates(

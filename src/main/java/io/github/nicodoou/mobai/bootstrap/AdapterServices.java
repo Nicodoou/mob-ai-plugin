@@ -21,6 +21,7 @@ import io.github.nicodoou.mobai.adapter.debug.TraceDestinations;
 import io.github.nicodoou.mobai.adapter.debug.TraceHub;
 import io.github.nicodoou.mobai.adapter.debug.TraceLevels;
 import io.github.nicodoou.mobai.adapter.debug.TraceWriter;
+import io.github.nicodoou.mobai.adapter.debug.TrainingDataLog;
 import io.github.nicodoou.mobai.adapter.debug.WitnessParts;
 import io.github.nicodoou.mobai.adapter.goal.Bodies;
 import io.github.nicodoou.mobai.adapter.goal.BowShooter;
@@ -87,7 +88,9 @@ public record AdapterServices(
     TraceWriter traceWriter,
     DebugLog debugLog,
     RecoveryHealer recoveryHealer,
-    ProjectileResolver projectileResolver) {
+    ProjectileResolver projectileResolver,
+    TrainingDataLog trainingDataLog) {
+  private static final String TRAINING_DATA_FILE = "training-data.jsonl";
   private static final String DEBUG_FOLDER = "debug";
   private static final String TRACE_FILE_PREFIX = "trace-";
   private static final String TRACE_FILE_SUFFIX = ".jsonl";
@@ -97,6 +100,7 @@ public record AdapterServices(
     Logger logger = plugin.getSLF4JLogger();
     SharedParts parts = sharedParts(core, debugParts(plugin, core, logger));
     GoalInstaller goalInstaller = goalInstaller(plugin, core, parts);
+    TrainingDataLog trainingDataLog = trainingDataLog(plugin, core, logger);
     return new AdapterServices(
         parts.translator(),
         goalInstaller,
@@ -117,7 +121,15 @@ public record AdapterServices(
         parts.debug().outputs().debugLog(),
         new RecoveryHealer(parts.roles(), new HealSchedule()),
         new ProjectileResolver(
-            parts.tracker(), parts.debug().hub(), core.settings().section(MobAiSettings::attack)));
+            parts.tracker(), parts.debug().hub(), core.settings().section(MobAiSettings::attack)),
+        trainingDataLog);
+  }
+
+  private static TrainingDataLog trainingDataLog(Plugin plugin, CoreServices core, Logger logger) {
+    Path file = plugin.getDataFolder().toPath().resolve(TRAINING_DATA_FILE);
+    TrainingDataLog log = new TrainingDataLog(new LineFileWriter(file, logger), core.recipeBase());
+    core.events().subscribe(PlanClosed.class, log::planClosed);
+    return log;
   }
 
   private static MobAiCommand mobAiCommand(Plugin plugin, CoreServices core, CommandParts command) {

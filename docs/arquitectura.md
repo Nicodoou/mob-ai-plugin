@@ -513,6 +513,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Rasgos del jugador en los incidentes, antes y después de la decisión (CT-30) | `TraitCaptureMapper`, `IncidentReport.traitsBefore`, `IncidentReport.traitsAfter` | Aplicación |
 | Base del server y entrenamiento por jugador (CT-30) | `RecipeBase`, `RecipeBaseCapture`, `RecipePlanner.anchor`, `RecipePlanner.teachBase`, `learning.base-weight-plans` | Dominio |
 | La base en disco y el comando de entrenamiento (CT-30) | `base.json`, `BaseFile`, `TrainPlayers`, `TrainingStatus`, `TrainCommand` (`/mobai train`) | Persistencia, aplicación y adaptadores |
+| Recetas estimadas en la memoria y registro de entrenamiento (CT-30) | `RecipeQuery`, `RecipeEstimate`, `RecipeSearch.ranked`, `RecipeAdvisor`, `RecipeAdvice`, `TrainingDataLog` (`training-data.jsonl`) | Dominio, aplicación y adaptadores |
 
 «Escape» se reserva para el mob (RF-08: `MemberEscaped`, `RecordEscape`). Cuando el que se va es el jugador, el plan cierra con `TARGET_LOST`; nunca se lo llama escape en el código.
 
