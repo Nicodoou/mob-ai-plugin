@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 790" width="1200" height="790" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6475"/>
+    </marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7f8fb"/>
+      <stop offset="1" stop-color="#eef1f6"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="790" rx="18" fill="url(#bg)"/>
+
+  <text x="40" y="52" font-size="28" font-weight="700" fill="#1d2433">MobAI</text>
+  <text x="140" y="52" font-size="16" fill="#5b6475">cómo pelea y aprende un grupo de mobs · v1.0 MVP</text>
+
+  <!-- Columna 1: servidor -->
+  <rect x="40" y="90" width="230" height="560" rx="14" fill="#ffffff" stroke="#d5dae3"/>
+  <text x="60" y="122" font-size="13" font-weight="700" fill="#7a8396" letter-spacing="1">SERVIDOR PAPER</text>
+
+  <rect x="60" y="140" width="190" height="96" rx="10" fill="#e8f3ec" stroke="#8cc5a0"/>
+  <text x="76" y="166" font-size="15" font-weight="700" fill="#1f5133">Jugador</text>
+  <text x="76" y="188" font-size="12.5" fill="#2f5c41">posición, mirada, escudo,</text>
+  <text x="76" y="205" font-size="12.5" fill="#2f5c41">carga del arma, arco,</text>
+  <text x="76" y="222" font-size="12.5" fill="#2f5c41">armadura, efectos</text>
+
+  <rect x="60" y="256" width="190" height="112" rx="10" fill="#f3ece6" stroke="#cfa98a"/>
+  <text x="76" y="282" font-size="15" font-weight="700" fill="#5c3a1f">Mobs del grupo</text>
+  <text x="76" y="304" font-size="12.5" fill="#6b4a2f">zombies, esqueletos</text>
+  <text x="76" y="321" font-size="12.5" fill="#6b4a2f">y arañas, con goals</text>
+  <text x="76" y="338" font-size="12.5" fill="#6b4a2f">propios: presionar, flanquear,</text>
+  <text x="76" y="355" font-size="12.5" fill="#6b4a2f">disparar, retirarse…</text>
+
+  <rect x="60" y="388" width="190" height="96" rx="10" fill="#eef0f5" stroke="#b7bfcd"/>
+  <text x="76" y="414" font-size="15" font-weight="700" fill="#2d3546">Eventos</text>
+  <text x="76" y="436" font-size="12.5" fill="#465068">golpes, flechas, daño,</text>
+  <text x="76" y="453" font-size="12.5" fill="#465068">escudos, muertes,</text>
+  <text x="76" y="470" font-size="12.5" fill="#465068">chunks que se descargan</text>
+
+  <rect x="60" y="504" width="190" height="126" rx="10" fill="#eef0f5" stroke="#b7bfcd"/>
+  <text x="76" y="530" font-size="15" font-weight="700" fill="#2d3546">Comandos</text>
+  <text x="76" y="552" font-size="12.5" fill="#465068">/mobai spawngroup</text>
+  <text x="76" y="569" font-size="12.5" fill="#465068">/mobai status · memory</text>
+  <text x="76" y="586" font-size="12.5" fill="#465068">/mobai reinforce · train</text>
+  <text x="76" y="603" font-size="12.5" fill="#465068">/mobai reset · reload</text>
+  <text x="76" y="620" font-size="12.5" fill="#465068">/mobai debug</text>
+
+  <!-- Columna 2: lectura y rastreo -->
+  <rect x="310" y="90" width="230" height="560" rx="14" fill="#ffffff" stroke="#d5dae3"/>
+  <text x="330" y="122" font-size="13" font-weight="700" fill="#7a8396" letter-spacing="1">LECTURA DEL MUNDO</text>
+
+  <rect x="330" y="140" width="190" height="112" rx="10" fill="#e9eefb" stroke="#97a9dc"/>
+  <text x="346" y="166" font-size="15" font-weight="700" fill="#22336b">Foto del grupo</text>
+  <text x="346" y="188" font-size="12.5" fill="#33447a">cada 10 ticks: vida,</text>
+  <text x="346" y="205" font-size="12.5" fill="#33447a">posiciones, jugadores</text>
+  <text x="346" y="222" font-size="12.5" fill="#33447a">cercanos y su amenaza</text>
+  <text x="346" y="239" font-size="12.5" fill="#33447a">(sin tocar Paper)</text>
+
+  <rect x="330" y="272" width="190" height="130" rx="10" fill="#e9eefb" stroke="#97a9dc"/>
+  <text x="346" y="298" font-size="15" font-weight="700" fill="#22336b">Rastreador</text>
+  <text x="346" y="320" font-size="12.5" fill="#33447a">sigue cada golpe y flecha</text>
+  <text x="346" y="337" font-size="12.5" fill="#33447a">hasta su resultado:</text>
+  <text x="346" y="354" font-size="12.5" fill="#33447a">acierto, parcial (escudo),</text>
+  <text x="346" y="371" font-size="12.5" fill="#33447a">fallo o neutral (aliado,</text>
+  <text x="346" y="388" font-size="12.5" fill="#33447a">invulnerable, terreno)</text>
+
+  <rect x="330" y="422" width="190" height="96" rx="10" fill="#e9eefb" stroke="#97a9dc"/>
+  <text x="346" y="448" font-size="15" font-weight="700" fill="#22336b">Rasgos del jugador</text>
+  <text x="346" y="470" font-size="12.5" fill="#33447a">cuánto bloquea, si usa</text>
+  <text x="346" y="487" font-size="12.5" fill="#33447a">arco, cuánta armadura;</text>
+  <text x="346" y="504" font-size="12.5" fill="#33447a">promedio con olvido</text>
+
+  <rect x="330" y="538" width="190" height="92" rx="10" fill="#e9eefb" stroke="#97a9dc"/>
+  <text x="346" y="564" font-size="15" font-weight="700" fill="#22336b">Traductor de versión</text>
+  <text x="346" y="586" font-size="12.5" fill="#33447a">el único lugar con las</text>
+  <text x="346" y="603" font-size="12.5" fill="#33447a">constantes de Paper 26.3</text>
+
+  <!-- Columna 3: cerebro -->
+  <rect x="580" y="90" width="300" height="560" rx="14" fill="#ffffff" stroke="#d5dae3"/>
+  <text x="600" y="122" font-size="13" font-weight="700" fill="#7a8396" letter-spacing="1">CEREBRO DEL GRUPO</text>
+
+  <rect x="600" y="140" width="260" height="62" rx="10" fill="#fdf1dc" stroke="#e0b25e"/>
+  <text x="616" y="164" font-size="15" font-weight="700" fill="#6a4508">1 · Elegir objetivo</text>
+  <text x="616" y="186" font-size="12.5" fill="#7a5418">amenaza ÷ tiempo para matarlo</text>
+
+  <rect x="600" y="214" width="260" height="104" rx="10" fill="#fdf1dc" stroke="#e0b25e"/>
+  <text x="616" y="238" font-size="15" font-weight="700" fill="#6a4508">2 · Elegir el plan</text>
+  <text x="616" y="260" font-size="12.5" fill="#7a5418">estrategias: directo, flanqueo,</text>
+  <text x="616" y="277" font-size="12.5" fill="#7a5418">contener y disparar, andanada</text>
+  <text x="616" y="294" font-size="12.5" fill="#7a5418">o recetas: proporciones de roles,</text>
+  <text x="616" y="311" font-size="12.5" fill="#7a5418">reserva, andanada y retirada</text>
+
+  <rect x="600" y="330" width="260" height="80" rx="10" fill="#fdf1dc" stroke="#e0b25e"/>
+  <text x="616" y="354" font-size="15" font-weight="700" fill="#6a4508">3 · Roles y ataques</text>
+  <text x="616" y="376" font-size="12.5" fill="#7a5418">PRESS, FLANK, SHOOT, RETREAT…</text>
+  <text x="616" y="393" font-size="12.5" fill="#7a5418">y un ataque sorteado por mob</text>
+
+  <rect x="600" y="422" width="260" height="80" rx="10" fill="#fdf1dc" stroke="#e0b25e"/>
+  <text x="616" y="446" font-size="15" font-weight="700" fill="#6a4508">4 · Ejecutar y evaluar</text>
+  <text x="616" y="468" font-size="12.5" fill="#7a5418">el plan dura hasta 30 s; se puntúa</text>
+  <text x="616" y="485" font-size="12.5" fill="#7a5418">daño × supervivencia del grupo</text>
+
+  <rect x="600" y="514" width="260" height="116" rx="10" fill="#fbe7e4" stroke="#df9a90"/>
+  <text x="616" y="538" font-size="15" font-weight="700" fill="#6e231a">Retirada y reagrupamiento</text>
+  <text x="616" y="560" font-size="12.5" fill="#7d342a">mob con poca vida: se aleja,</text>
+  <text x="616" y="577" font-size="12.5" fill="#7d342a">se cubre y se cura. Grupo roto:</text>
+  <text x="616" y="594" font-size="12.5" fill="#7d342a">se junta en un punto lejos del</text>
+  <text x="616" y="611" font-size="12.5" fill="#7d342a">jugador y vuelve a atacar</text>
+
+  <!-- Columna 4: memoria -->
+  <rect x="920" y="90" width="240" height="560" rx="14" fill="#ffffff" stroke="#d5dae3"/>
+  <text x="940" y="122" font-size="13" font-weight="700" fill="#7a8396" letter-spacing="1">MEMORIA DEL GRUPO</text>
+
+  <rect x="940" y="140" width="200" height="112" rx="10" fill="#f0eafb" stroke="#ad97dc"/>
+  <text x="956" y="166" font-size="15" font-weight="700" fill="#3f246e">Por ataque</text>
+  <text x="956" y="188" font-size="12.5" fill="#4e3580">éxitos e intentos por</text>
+  <text x="956" y="205" font-size="12.5" fill="#4e3580">jugador; se sortea una</text>
+  <text x="956" y="222" font-size="12.5" fill="#4e3580">tasa de una Beta</text>
+  <text x="956" y="239" font-size="12.5" fill="#4e3580">(Thompson Sampling)</text>
+
+  <rect x="940" y="264" width="200" height="96" rx="10" fill="#f0eafb" stroke="#ad97dc"/>
+  <text x="956" y="290" font-size="15" font-weight="700" fill="#3f246e">Por estrategia</text>
+  <text x="956" y="312" font-size="12.5" fill="#4e3580">el éxito de cada plan,</text>
+  <text x="956" y="329" font-size="12.5" fill="#4e3580">también con Beta</text>
+  <text x="956" y="346" font-size="12.5" fill="#4e3580">por jugador</text>
+
+  <rect x="940" y="372" width="200" height="112" rx="10" fill="#f0eafb" stroke="#ad97dc"/>
+  <text x="956" y="398" font-size="15" font-weight="700" fill="#3f246e">Modelo de recetas</text>
+  <text x="956" y="420" font-size="12.5" fill="#4e3580">regresión bayesiana:</text>
+  <text x="956" y="437" font-size="12.5" fill="#4e3580">cuánto aporta cada perilla</text>
+  <text x="956" y="454" font-size="12.5" fill="#4e3580">contra cada estilo de</text>
+  <text x="956" y="471" font-size="12.5" fill="#4e3580">jugador</text>
+
+  <rect x="940" y="496" width="200" height="134" rx="10" fill="#f0eafb" stroke="#ad97dc"/>
+  <text x="956" y="522" font-size="15" font-weight="700" fill="#3f246e">Peligro del jugador</text>
+  <text x="956" y="544" font-size="12.5" fill="#4e3580">vida que pierde el grupo</text>
+  <text x="956" y="561" font-size="12.5" fill="#4e3580">por punto de daño que</text>
+  <text x="956" y="578" font-size="12.5" fill="#4e3580">hace: contra los buenos,</text>
+  <text x="956" y="595" font-size="12.5" fill="#4e3580">sobrevivir pesa más.</text>
+  <text x="956" y="612" font-size="12.5" fill="#4e3580">Todo se olvida de a poco.</text>
+
+  <!-- Flechas entre columnas -->
+  <g fill="none" stroke="#5b6475" stroke-width="2">
+    <path d="M270,200 H326" marker-end="url(#arrow)"/>
+    <path d="M270,398 H326" marker-end="url(#arrow)"/>
+    <path d="M540,171 H596" marker-end="url(#arrow)"/>
+    <path d="M540,470 H548 V280 H596" marker-end="url(#arrow)"/>
+    <path d="M936,300 H890 V266 H864" marker-end="url(#arrow)"/>
+    <path d="M600,370 H590 V78 H28 V312 H56" marker-end="url(#arrow)"/>
+  </g>
+  <g fill="none" stroke="#8c7bb8" stroke-width="2" stroke-dasharray="6 5">
+    <path d="M540,337 H560 V664 H1172 V196 H1144" marker-end="url(#arrow)"/>
+    <path d="M860,462 H936" marker-end="url(#arrow)"/>
+  </g>
+  <text x="300" y="72" font-size="12" fill="#5b6475">órdenes a los goals: rol, objetivo y ataque de cada mob</text>
+  <text x="640" y="660" font-size="12" fill="#7a5aa8">resultado de cada golpe y flecha</text>
+  <text x="866" y="452" font-size="11" fill="#7a5aa8">éxito</text>
+  <text x="866" y="485" font-size="11" fill="#7a5aa8">del plan</text>
+
+  <!-- Disco -->
+  <rect x="40" y="690" width="1120" height="74" rx="14" fill="#ffffff" stroke="#d5dae3"/>
+  <text x="60" y="722" font-size="13" font-weight="700" fill="#7a8396" letter-spacing="1">EN DISCO</text>
+  <text x="170" y="722" font-size="13" fill="#2d3546">memories/groups/*.json · memories/state.json · memories/base.json · backups/schema-vN/</text>
+  <text x="170" y="744" font-size="13" fill="#2d3546">debug/mobai-debug.log (un plan y un ataque por línea) · training-data.jsonl (un plan de receta por línea)</text>
+</svg>
