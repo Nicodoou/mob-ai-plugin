@@ -32,7 +32,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-27](#ct-27--éxito-con-tres-medidas) Éxito con tres medidas | 8 oct 2026 | Nico | WP-30A, WP-30B |
 | [CT-28](#ct-28--retirada-aprendida) Retirada aprendida | 8 oct 2026 | Nico | WP-30C |
 | [CT-29](#ct-29--punto-de-reunión-al-reagruparse) Punto de reunión al reagruparse | 8 oct 2026 | Nico (diseño), Opus (detalle) | WP-32A y WP-32B |
-| [CT-30](#ct-30--planes-por-receta-modelo-bayesiano-y-modo-entrenamiento) Planes por receta, modelo bayesiano y modo entrenamiento | 8 oct 2026 | Nico (idea y decisiones), Opus (diseño) | Aprobado con cambios (8 oct). WP-33A a WP-33I |
+| [CT-30](#ct-30--planes-por-receta-modelo-bayesiano-y-modo-entrenamiento) Planes por receta, modelo bayesiano y modo entrenamiento | 8 oct 2026 | Nico (idea y decisiones), Opus (diseño) | Aprobado con cambios (8 oct). WP-33A a WP-33K |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -588,9 +588,11 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 | WP-33F | Las recetas en el cerebro: conmutador `planner`, rasgos observados en cada decisión, reserva por fases (`FALL_BACK` hasta la demora y después `PRESS`), umbral de retirada por plan, aprender al cerrar, incidentes y log de debug | Opus |
 | WP-33G | Modelos por jugador y rasgos en disco, esquema 3 sin borrar lo viejo, copia de seguridad antes de migrar | Sonnet |
 | WP-33H | Incidentes con rasgos: la copia y la reproducción restauran los rasgos y el modelo | Sonnet |
-| WP-33I | `/mobai train`, exploración del modo, `base.json` y su peso, `training-data.jsonl` y `/mobai memory` | Sonnet |
+| WP-33I | Base del server y entrenamiento por jugador en el dominio: punto de partida desde la base con tope configurable, exploración y aprendizaje de la base solo contra jugadores en entrenamiento; incidentes con la base | Sonnet |
+| WP-33J | `base.json` en disco y `/mobai train on/off <jugador>` y `status` | Sonnet |
+| WP-33K | `training-data.jsonl` y `/mobai memory <jugador>` con sus mejores recetas estimadas | Sonnet |
 
-**Reordenamiento del 8 oct (al especificar el WP-33D):** la reserva no necesita un goal propio. El cerebro la maneja por fases, como la andanada (CT-23): `FALL_BACK` mientras el plan es más joven que la demora y `PRESS` después, con los goals que ya existen. El viejo WP-33F (goal de reserva) desaparece y la serie queda en 33D a 33G. Al especificar el WP-33E, el cerebro se separó del planificador (pasaba el tamaño máximo): la serie queda en 33D a 33H. Al especificar el WP-33G, los incidentes se separaron del disco: la serie queda en 33D a 33I. Se corrigió además el umbral máximo de retirada de las recetas (0,6, igual a la vuelta a pelear: un mob habría oscilado), que baja a 0,5 con validación.
+**Reordenamiento del 8 oct (al especificar el WP-33D):** la reserva no necesita un goal propio. El cerebro la maneja por fases, como la andanada (CT-23): `FALL_BACK` mientras el plan es más joven que la demora y `PRESS` después, con los goals que ya existen. El viejo WP-33F (goal de reserva) desaparece y la serie queda en 33D a 33G. Al especificar el WP-33E, el cerebro se separó del planificador (pasaba el tamaño máximo): la serie queda en 33D a 33H. Al especificar el WP-33G, los incidentes se separaron del disco: la serie queda en 33D a 33I. El 9 oct, el modo entrenamiento se partió en tres (33I dominio, 33J disco y comando, 33K registro y memoria) y Nico decidió: **entrenamiento por jugador** (`/mobai train on <jugador>`, no global: solo esos planes enseñan a la base y exploran de más) y **tope de la base configurable** (`learning.base-weight-plans`, 600 por defecto, lo calibrado en el WP-33C). El modo no se guarda: al reiniciar arranca apagado. Se corrigió además el umbral máximo de retirada de las recetas (0,6, igual a la vuelta a pelear: un mob habría oscilado), que baja a 0,5 con validación.
 
 **Riesgos.**
 - **Interacciones:** el modelo lineal solo ve las interacciones que se le dan. Si en el juego aparece una combinación ganadora que el modelo no puede expresar, se suma ese rasgo; `training-data.jsonl` permite verificarlo sin jugar de nuevo.
