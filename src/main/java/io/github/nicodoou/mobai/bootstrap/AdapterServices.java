@@ -10,6 +10,7 @@ import io.github.nicodoou.mobai.adapter.command.ResetCommand;
 import io.github.nicodoou.mobai.adapter.command.SpawnGroupCommand;
 import io.github.nicodoou.mobai.adapter.command.StatusCommand;
 import io.github.nicodoou.mobai.adapter.command.Subcommand;
+import io.github.nicodoou.mobai.adapter.command.TrainCommand;
 import io.github.nicodoou.mobai.adapter.config.Messages;
 import io.github.nicodoou.mobai.adapter.debug.DebugLog;
 import io.github.nicodoou.mobai.adapter.debug.DecisionWitness;
@@ -55,6 +56,7 @@ import io.github.nicodoou.mobai.adapter.snapshot.MovementTracker;
 import io.github.nicodoou.mobai.adapter.snapshot.SnapshotFactory;
 import io.github.nicodoou.mobai.adapter.tracker.AttackTracker;
 import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
+import io.github.nicodoou.mobai.application.TrainPlayers;
 import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
 import io.github.nicodoou.mobai.domain.attack.BiteSlowness;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
@@ -128,6 +130,11 @@ public record AdapterServices(
         new ReinforceCommand(
             new ReinforceCommand.ReinforceParts(
                 command.spawner(), core.describeGroup(), core.settings()),
+            messages));
+    subcommands.put(
+        "train",
+        new TrainCommand(
+            new TrainPlayers(core.recipeBase(), core.settings().section(MobAiSettings::learning)),
             messages));
     subcommands.put("status", new StatusCommand(core.describeGroup(), messages));
     subcommands.put(

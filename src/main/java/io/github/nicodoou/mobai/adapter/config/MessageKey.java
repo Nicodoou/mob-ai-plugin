@@ -23,7 +23,13 @@ public enum MessageKey {
   MEMORY_ATTACK("memory-attack"),
   REINFORCE_USAGE("reinforce-usage"),
   GROUP_FULL("group-full"),
-  GROUP_REINFORCED("group-reinforced");
+  GROUP_REINFORCED("group-reinforced"),
+  TRAIN_USAGE("train-usage"),
+  TRAIN_ON("train-on"),
+  TRAIN_OFF("train-off"),
+  TRAIN_STATUS("train-status"),
+  TRAIN_STATUS_NOBODY("train-status-nobody"),
+  TRAIN_STRATEGIES("train-strategies");
 
   private final String path;
 

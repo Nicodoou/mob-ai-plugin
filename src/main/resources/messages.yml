@@ -2,7 +2,7 @@
 # Lo que va entre <...> sin formato (por ejemplo <reason>) lo completa el plugin.
 
 no-permission: "<red>No tenés permiso para usar este comando."
-unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|reinforce|status|memory|reset|reload|debug>"
+unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|reinforce|status|memory|reset|train|reload|debug>"
 reload-done: "<green>Configuración recargada."
 reload-failed: "<red>No se recargó la configuración: <gray><reason>"
 player-only: "<red>Este comando lo tiene que usar un jugador."
@@ -24,3 +24,9 @@ memory-attack: "<gray>  ataque <white><attack></white>: <white><rate>%</white> �
 reinforce-usage: "<red>Usá: <gray>/mobai reinforce [grupo]</gray>. Los grupos están en <gray>/mobai status</gray>."
 group-full: "<yellow>El grupo <white><group></white> ya tiene <white><members></white> miembros: no entra nadie más."
 group-reinforced: "<green>Grupo <white><group></white> reforzado con <white><added></white> mobs (<members> en total)."
+train-usage: "<red>Usá: <gray>/mobai train <on|off> <jugador></gray> o <gray>/mobai train status</gray>."
+train-on: "<green><white><player></white> entra en entrenamiento: sus peleas le enseñan a la base del server."
+train-off: "<green><white><player></white> sale del entrenamiento."
+train-status: "<gray>Base del server: <white><plans></white> planes (pesa hasta <white><cap></white>). En entrenamiento: <white><trainers></white>."
+train-status-nobody: "<gray>Base del server: <white><plans></white> planes (pesa hasta <white><cap></white>). Nadie en entrenamiento."
+train-strategies: "<yellow>El planificador es STRATEGIES: el entrenamiento no hace nada hasta poner <gray>planner: \"RECIPES\"</gray>."
