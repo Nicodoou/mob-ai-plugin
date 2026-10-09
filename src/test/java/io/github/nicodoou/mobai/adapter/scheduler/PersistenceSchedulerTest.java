@@ -32,7 +32,7 @@ class PersistenceSchedulerTest {
   private static final long SAVE_INTERVAL_TICKS = 6000;
   private static final String WRITER_THREAD_NAME = "MobAI-memory-writer";
 
-  private final StoredState state = new StoredState(500, 600);
+  private final StoredState state = new StoredState(500, 600, List.of());
   private final ActiveGroups activeGroups = activeGroupsWithOneGroup();
 
   @Test

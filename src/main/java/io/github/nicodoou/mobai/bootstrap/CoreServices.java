@@ -27,7 +27,15 @@ import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.port.MemoryRepository;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.port.StoredState;
+import io.github.nicodoou.mobai.domain.port.StoredTraits;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.shared.PlayerId;
+import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
+import io.github.nicodoou.mobai.domain.strategy.TraitSums;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /** The domain and the use cases, assembled once; no Paper here, so it is tested in JUnit. */
 public record CoreServices(
@@ -48,7 +56,8 @@ public record CoreServices(
     DescribeGroup describeGroup,
     DescribePlayerMemory describePlayerMemory,
     SaveMemories saveMemories,
-    LoadMemories loadMemories) {
+    LoadMemories loadMemories,
+    TraitLedger traitLedger) {
 
   public static CoreServices create(
       MobAiSettings initialSettings, MemoryRepository repository, RandomSource random) {
@@ -79,16 +88,31 @@ public record CoreServices(
         useCases.tools().describeGroup(),
         useCases.tools().describePlayerMemory(),
         useCases.tools().saveMemories(),
-        useCases.tools().loadMemories());
+        useCases.tools().loadMemories(),
+        messaging.traitLedger());
   }
 
   public StoredState storedState() {
-    return new StoredState(clock.currentTick(), regroupWindow.currentTicks());
+    return new StoredState(clock.currentTick(), regroupWindow.currentTicks(), storedTraits());
   }
 
   public void restore(StoredState state) {
     clock.restore(state.serverTick());
     regroupWindow.restore(state.regroupWindowTicks());
+    traitLedger.restore(capturedTraits(state));
+  }
+
+  private List<StoredTraits> storedTraits() {
+    Map<PlayerId, TraitSums> captured = traitLedger.capture();
+    return captured.keySet().stream()
+        .sorted(Comparator.comparing(PlayerId::value))
+        .map(player -> new StoredTraits(player, captured.get(player)))
+        .toList();
+  }
+
+  private static Map<PlayerId, TraitSums> capturedTraits(StoredState state) {
+    return state.traits().stream()
+        .collect(Collectors.toMap(StoredTraits::player, StoredTraits::sums));
   }
 
   private static Foundation foundation(MobAiSettings initialSettings) {
@@ -109,7 +133,8 @@ public record CoreServices(
     ClosePlan closePlan = new ClosePlan(foundation.activeGroups(), parts.recipePlanner());
     publisher.subscribe(PlanClosed.class, closePlan::execute);
     Brain brain = new Brain(settings::current, parts);
-    return new Messaging(publisher, new GroupEvents(publisher), randomDraws, brain);
+    return new Messaging(
+        publisher, new GroupEvents(publisher), randomDraws, brain, parts.traitLedger());
   }
 
   private static CombatUseCases combat(Foundation foundation, Messaging messaging) {
@@ -151,7 +176,8 @@ public record CoreServices(
       DomainEventPublisher events,
       GroupEvents groupEvents,
       RecordingRandomSource randomDraws,
-      Brain brain) {}
+      Brain brain,
+      TraitLedger traitLedger) {}
 
   private record CombatUseCases(
       TickGroups tickGroups,

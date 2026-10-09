@@ -22,14 +22,14 @@ class InMemoryMemoryRepositoryTest {
   @Test
   void loadReturnsTheLastSave() {
     var repository = new InMemoryMemoryRepository();
-    var first = new StoredMemories(new StoredState(10, 600), List.of());
-    var second = new StoredMemories(new StoredState(20, 600), List.of());
+    var first = new StoredMemories(new StoredState(10, 600, List.of()), List.of());
+    var second = new StoredMemories(new StoredState(20, 600, List.of()), List.of());
 
     repository.save(first);
     repository.save(second);
     var load = repository.load();
 
-    assertThat(load.state()).isEqualTo(Optional.of(new StoredState(20, 600)));
+    assertThat(load.state()).isEqualTo(Optional.of(new StoredState(20, 600, List.of())));
     assertThat(repository.saveCount()).isEqualTo(2);
   }
 }

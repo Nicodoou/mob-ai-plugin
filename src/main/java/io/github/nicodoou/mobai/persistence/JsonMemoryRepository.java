@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 public final class JsonMemoryRepository implements MemoryRepository {
   private static final String JSON_SUFFIX = ".json";
+  private static final String VERSION_FIELD = "schemaVersion";
 
   private final MemoryFiles files;
   private final AtomicFileWriter writer = new AtomicFileWriter();
@@ -52,10 +54,47 @@ public final class JsonMemoryRepository implements MemoryRepository {
     if (!files.rootExists()) {
       return MemoryLoad.empty();
     }
+    backUpOlderFiles();
     List<String> quarantined = new ArrayList<>();
     Optional<StoredState> state = loadState(quarantined);
     List<StoredGroup> groups = loadGroups(quarantined);
     return new MemoryLoad(state, groups, quarantined);
+  }
+
+  private void backUpOlderFiles() {
+    OptionalInt oldest = oldestVersion();
+    if (oldest.isPresent() && oldest.getAsInt() < SchemaMigrator.CURRENT_VERSION) {
+      files.backupOnce(oldest.getAsInt());
+    }
+  }
+
+  private OptionalInt oldestVersion() {
+    List<Path> candidates = new ArrayList<>(files.groupFiles());
+    if (Files.exists(files.stateFile())) {
+      candidates.add(files.stateFile());
+    }
+    return candidates.stream()
+        .map(this::peekVersion)
+        .filter(OptionalInt::isPresent)
+        .mapToInt(OptionalInt::getAsInt)
+        .min();
+  }
+
+  // An unreadable file is skipped here: the normal read quarantines it.
+  private OptionalInt peekVersion(Path file) {
+    try {
+      JsonElement parsed = JsonParser.parseString(readText(file));
+      if (!parsed.isJsonObject() || !parsed.getAsJsonObject().has(VERSION_FIELD)) {
+        return OptionalInt.empty();
+      }
+      return OptionalInt.of(parsed.getAsJsonObject().get(VERSION_FIELD).getAsInt());
+    } catch (JsonParseException
+        | IllegalArgumentException
+        | IllegalStateException
+        | UnsupportedOperationException
+        | UncheckedIOException exception) {
+      return OptionalInt.empty();
+    }
   }
 
   private void deleteGroupFilesNotIn(List<StoredGroup> groups) {

@@ -2,19 +2,24 @@ package io.github.nicodoou.mobai.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.nicodoou.mobai.domain.group.Member;
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.AttackRecord;
 import io.github.nicodoou.mobai.domain.memory.DangerRecord;
+import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.port.MemoryLoad;
 import io.github.nicodoou.mobai.domain.port.StoredAttackRecord;
 import io.github.nicodoou.mobai.domain.port.StoredDangerRecord;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
 import io.github.nicodoou.mobai.domain.port.StoredMemories;
+import io.github.nicodoou.mobai.domain.port.StoredRecipeModel;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import io.github.nicodoou.mobai.domain.port.StoredStrategyRecord;
+import io.github.nicodoou.mobai.domain.port.StoredTraits;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
@@ -22,9 +27,11 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.strategy.TraitSums;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,7 +53,7 @@ class JsonMemoryRepositoryTest {
   }
 
   private static StoredState sampleState() {
-    return new StoredState(123_000, 600);
+    return new StoredState(123_000, 600, List.of());
   }
 
   private static StoredGroup sampleGroup(long n) {
@@ -61,6 +68,7 @@ class JsonMemoryRepositoryTest {
         List.of(
             new StoredStrategyRecord(
                 PLAYER, new StrategyId("FLANK"), new AttackRecord(0.4, 1.0, 700))),
+        List.of(),
         List.of());
   }
 
@@ -72,7 +80,46 @@ class JsonMemoryRepositoryTest {
         group.members(),
         group.attackRecords(),
         group.strategyRecords(),
-        List.of(new StoredDangerRecord(PLAYER, new DangerRecord(12.5, 3.25, 700))));
+        List.of(new StoredDangerRecord(PLAYER, new DangerRecord(12.5, 3.25, 700))),
+        group.recipeModels());
+  }
+
+  private static final int MODEL_DIMENSION = 60;
+
+  private static LinearPosterior sampleModel() {
+    double[] mean = new double[MODEL_DIMENSION];
+    mean[0] = 0.5;
+    double[] features = new double[MODEL_DIMENSION];
+    Arrays.fill(features, 0.1);
+    features[0] = 1;
+    return LinearPosterior.prior(mean, 1.0).withObservation(features, 0.7, 0.01);
+  }
+
+  private static StoredGroup withRecipeModel(StoredGroup group) {
+    return new StoredGroup(
+        group.id(),
+        group.policy(),
+        group.lastPlanSequence(),
+        group.members(),
+        group.attackRecords(),
+        group.strategyRecords(),
+        group.dangerRecords(),
+        List.of(new StoredRecipeModel(PLAYER, new RecipeModelRecord(sampleModel(), 4200))));
+  }
+
+  private String versionTwoGroupText(long n) {
+    return "{\"schemaVersion\": 2, \"groupId\": \""
+        + groupId(n).value()
+        + "\", \"policy\": \"THOMPSON_SAMPLING\", \"lastPlanSequence\": 0,"
+        + " \"members\": [], \"attackRecords\": [], \"strategyRecords\": [],"
+        + " \"dangerRecords\": []}";
+  }
+
+  private Path backupOfGroup(long n) {
+    return root.resolve("backups")
+        .resolve("schema-v2")
+        .resolve("groups")
+        .resolve(groupId(n).value() + ".json");
   }
 
   private static StoredMemories memoriesOf(StoredGroup... groups) {
@@ -165,7 +212,7 @@ class JsonMemoryRepositoryTest {
 
     JsonObject json = readJson(groupFile(1));
 
-    assertThat(json.get("schemaVersion").getAsInt()).isEqualTo(2);
+    assertThat(json.get("schemaVersion").getAsInt()).isEqualTo(3);
     assertThat(json.get("groupId").getAsString()).isEqualTo("00000000-0000-0000-0000-000000000001");
     assertThat(json.get("policy").getAsString()).isEqualTo("THOMPSON_SAMPLING");
     assertThat(json.get("lastPlanSequence").getAsLong()).isEqualTo(3);
@@ -240,7 +287,7 @@ class JsonMemoryRepositoryTest {
   void loadRejectsANewerSchemaVersionAndKeepsTheFile() throws IOException {
     repository().save(memoriesOf(sampleGroup(1)));
     JsonObject json = readJson(groupFile(1));
-    json.addProperty("schemaVersion", 3);
+    json.addProperty("schemaVersion", 4);
     String newer = json.toString();
     Files.writeString(groupFile(1), newer);
 
@@ -269,5 +316,54 @@ class JsonMemoryRepositoryTest {
 
     assertThat(load.groups()).isEqualTo(List.of(sampleGroup(1)));
     expectQuarantined(load, groupFile(2));
+  }
+
+  @Test
+  void recipeModelsAndTraitsSurviveSaveAndLoad() {
+    var traits = new StoredTraits(PLAYER, new TraitSums(0.5, 0, 0.25, 1.5, 7000));
+    var state = new StoredState(123_000, 600, List.of(traits));
+    repository().save(new StoredMemories(state, List.of(withRecipeModel(sampleGroup(1)))));
+
+    var load = repository().load();
+
+    var loaded = load.groups().get(0).recipeModels().get(0).record();
+    var saved = sampleModel();
+    assertThat(loaded.model().mean()).containsExactly(saved.mean(), within(1e-9));
+    assertThat(loaded.model().observations()).isEqualTo(saved.observations(), within(1e-9));
+    assertThat(loaded.lastTick()).isEqualTo(4200);
+    assertThat(load.state().orElseThrow().traits()).isEqualTo(List.of(traits));
+  }
+
+  @Test
+  void migratingBacksUpTheOldFilesFirst() throws IOException {
+    Files.createDirectories(groupFile(1).getParent());
+    Files.writeString(groupFile(1), versionTwoGroupText(1));
+
+    var load = repository().load();
+
+    assertThat(load.quarantinedFiles()).isEmpty();
+    assertThat(load.groups()).hasSize(1);
+    assertThat(Files.readString(backupOfGroup(1))).isEqualTo(versionTwoGroupText(1));
+  }
+
+  @Test
+  void aSecondLoadKeepsTheFirstBackup() throws IOException {
+    Files.createDirectories(groupFile(1).getParent());
+    Files.writeString(groupFile(1), versionTwoGroupText(1));
+    repository().load();
+    Files.writeString(backupOfGroup(1), "marker");
+
+    repository().load();
+
+    assertThat(Files.readString(backupOfGroup(1))).isEqualTo("marker");
+  }
+
+  @Test
+  void currentFilesMakeNoBackup() {
+    repository().save(memoriesOf(sampleGroup(1)));
+
+    repository().load();
+
+    assertThat(root.resolve("backups")).doesNotExist();
   }
 }

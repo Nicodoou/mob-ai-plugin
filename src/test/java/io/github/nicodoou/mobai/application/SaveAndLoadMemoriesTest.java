@@ -2,12 +2,15 @@ package io.github.nicodoou.mobai.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.group.Member;
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.AttackObservation;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
+import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.memory.StrategyObservation;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
 import io.github.nicodoou.mobai.domain.port.StoredMemories;
@@ -22,14 +25,17 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import io.github.nicodoou.mobai.testsupport.InMemoryMemoryRepository;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SaveAndLoadMemoriesTest {
+  private static final int RECIPE_MODEL_DIMENSION = 60;
+
   private final PlayerId player = new PlayerId(new UUID(2, 1));
-  private final StoredState state = new StoredState(500, 650);
+  private final StoredState state = new StoredState(500, 650, List.of());
   private final SettingsHolder settings = new SettingsHolder(TestSettings.defaults());
   private final ActiveGroups savedGroups = new ActiveGroups();
   private final InMemoryMemoryRepository inner = new InMemoryMemoryRepository();
@@ -77,13 +83,33 @@ class SaveAndLoadMemoriesTest {
   }
 
   @Test
+  void aGroupKeepsItsRecipeModelAcrossARestart() {
+    addGroupWithMemory(savedGroups, 1);
+    LinearPosterior model = recipeModel();
+    savedGroups
+        .group(groupId(1))
+        .orElseThrow()
+        .memory()
+        .storeRecipeModel(player, new RecipeModelRecord(model, 4200));
+    inner.save(saveMemories.capture(state));
+    ActiveGroups loadedGroups = new ActiveGroups();
+
+    new LoadMemories(loadedGroups, settings, inner).execute();
+
+    RecipeModelRecord loaded =
+        loadedGroups.group(groupId(1)).orElseThrow().memory().recipeModel(player).orElseThrow();
+    assertThat(loaded.model().mean()).containsExactly(model.mean(), within(1e-9));
+    assertThat(loaded.lastTick()).isEqualTo(4200);
+  }
+
+  @Test
   void loadReturnsTheStoredStateWithoutApplyingIt() {
     addGroupWithMemory(savedGroups, 1);
     inner.save(saveMemories.capture(state));
 
     LoadReport report = new LoadMemories(new ActiveGroups(), settings, inner).execute();
 
-    assertThat(report.state()).isEqualTo(Optional.of(new StoredState(500, 650)));
+    assertThat(report.state()).isEqualTo(Optional.of(new StoredState(500, 650, List.of())));
   }
 
   @Test
@@ -117,6 +143,7 @@ class SaveAndLoadMemoriesTest {
         List.of(new Member(mobId, MobKind.ZOMBIE, 1)),
         List.of(),
         List.of(),
+        List.of(),
         List.of());
   }
 
@@ -128,6 +155,15 @@ class SaveAndLoadMemoriesTest {
     memory.recordAttack(new AttackObservation(player, Attack.ZOMBIE_FRONT_STRIKE, 1.0, 100));
     memory.recordAttack(new AttackObservation(player, Attack.SKELETON_DIRECT_SHOT, 0.0, 100));
     memory.recordStrategy(new StrategyObservation(player, new StrategyId("FLANK"), 0.4, 1.0, 100));
+  }
+
+  private static LinearPosterior recipeModel() {
+    double[] mean = new double[RECIPE_MODEL_DIMENSION];
+    mean[0] = 0.5;
+    double[] features = new double[RECIPE_MODEL_DIMENSION];
+    Arrays.fill(features, 0.1);
+    features[0] = 1;
+    return LinearPosterior.prior(mean, 1.0).withObservation(features, 0.7, 0.01);
   }
 
   private static MobId mob(long n) {

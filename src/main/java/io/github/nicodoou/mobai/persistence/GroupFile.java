@@ -10,4 +10,5 @@ record GroupFile(
     List<MemberEntry> members,
     List<RecordEntry> attackRecords,
     List<RecordEntry> strategyRecords,
-    List<DangerEntry> dangerRecords) {}
+    List<DangerEntry> dangerRecords,
+    List<RecipeModelEntry> recipeModels) {}
