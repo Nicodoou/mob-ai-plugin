@@ -1,6 +1,7 @@
 package io.github.nicodoou.mobai.application;
 
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
+import io.github.nicodoou.mobai.domain.port.StoredTraits;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import java.util.List;
@@ -19,7 +20,9 @@ public record IncidentReport(
     List<RecordedDraw> draws,
     Optional<BrainResult> result,
     GroupCapture after,
-    long regroupWindowTicksAfter) {
+    long regroupWindowTicksAfter,
+    List<StoredTraits> traitsBefore,
+    List<StoredTraits> traitsAfter) {
   public IncidentReport {
     Objects.requireNonNull(id, "IncidentReport.id");
     Objects.requireNonNull(location, "IncidentReport.location");
@@ -30,6 +33,8 @@ public record IncidentReport(
     Objects.requireNonNull(result, "IncidentReport.result");
     Objects.requireNonNull(after, "IncidentReport.after");
     draws = List.copyOf(draws);
+    traitsBefore = List.copyOf(traitsBefore);
+    traitsAfter = List.copyOf(traitsAfter);
     if (failure.isPresent() == result.isPresent()) {
       throw new IllegalArgumentException("IncidentReport must have either a failure or a result");
     }

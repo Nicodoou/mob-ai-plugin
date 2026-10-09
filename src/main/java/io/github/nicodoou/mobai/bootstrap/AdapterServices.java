@@ -147,7 +147,11 @@ public record AdapterServices(
     IncidentWriter writer = new IncidentWriter(folder, logger);
     WitnessParts witnessParts =
         new WitnessParts(
-            core.groupEvents(), core.randomDraws(), core.regroupWindow(), core.settings());
+            core.groupEvents(),
+            core.randomDraws(),
+            core.regroupWindow(),
+            core.settings(),
+            core.traitLedger());
     return new DebugParts(hub, writer, new DecisionWitness(witnessParts, hub, writer), outputs);
   }
 

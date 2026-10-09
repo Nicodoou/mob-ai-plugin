@@ -26,9 +26,11 @@ import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
+import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
+import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.SeededRandomSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import io.github.nicodoou.mobai.testsupport.TraceReplay;
@@ -54,8 +56,8 @@ class DecisionWitnessTest {
   private final RegroupWindow window = new RegroupWindow(settings::retreat);
   private final RecordingRandomSource draws =
       new RecordingRandomSource(new SeededRandomSource(SEED));
-  private final Brain brain =
-      new Brain(() -> settings, BrainParts.standard(() -> settings, draws, window));
+  private final BrainParts parts = BrainParts.standard(() -> settings, draws, window);
+  private final Brain brain = new Brain(() -> settings, parts);
   private final ActiveGroups activeGroups = new ActiveGroups();
   private final DomainEventPublisher publisher = new DomainEventPublisher();
   private final GroupEvents groupEvents = new GroupEvents(publisher);
@@ -73,7 +75,8 @@ class DecisionWitnessTest {
     hub = new TraceHub(activeGroups, destinations(recorder));
     writer = new IncidentWriter(folder, NOPLogger.NOP_LOGGER);
     witness =
-        new DecisionWitness(new WitnessParts(groupEvents, draws, window, holder), hub, writer);
+        new DecisionWitness(
+            new WitnessParts(groupEvents, draws, window, holder, parts.traitLedger()), hub, writer);
     mobs.forEach(mob -> group.roster().addMember(mob.id(), mob.kind()));
     activeGroups.add(group);
     decide(START_TICK);
@@ -137,6 +140,21 @@ class DecisionWitnessTest {
 
     assertThat(report.before()).isEqualTo(observation.before());
     assertThat(report.after()).isNotEqualTo(report.before());
+  }
+
+  @Test
+  void incidentKeepsTheTraitsFromBeforeTheDecision() {
+    Observation observation = witness.before(group, snapshotWithStranger());
+    PlayerSnapshot blockingAlice =
+        new PlayerSnapshotBuilder().withId(ALICE).withBlocking(true).build();
+    parts.traitLedger().observe(BrainFixture.snapshot(MID_PLAN_TICK + 1, mobs, blockingAlice));
+
+    IncidentReport report =
+        witness.failed(group, observation, new IllegalStateException("failed half way"));
+    writer.shutdown();
+
+    assertThat(report.traitsBefore()).isEqualTo(observation.traitsBefore());
+    assertThat(report.traitsAfter()).isNotEqualTo(report.traitsBefore());
   }
 
   private TraceDestinations destinations(FlightRecorder recorder) {
