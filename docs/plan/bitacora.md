@@ -820,3 +820,22 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - la base todavía no se guarda en disco (WP-33J);
   - la lista de entrenadores se pierde al reiniciar hasta el 33J.
 - **Riesgo:** una base entrenada solo por Nico queda afinada a su estilo. Los rasgos lo mitigan.
+
+## WP-33J — La base en disco y `/mobai train` (PR #69, Sonnet; especificado en la nube)
+
+**Qué hizo.**
+- **`base.json`** (versión propia 1): la base se guarda y se carga con el estado; un archivo dañado va a cuarentena.
+- **`/mobai train on|off <jugador>|status`:** con `TrainPlayers` (aplicación). `status` muestra los planes de la base, el tope y quién entrena, y avisa si el planificador está en `STRATEGIES`.
+- Quién entrena no se guarda, como se decidió con Nico.
+
+**Revisión local.**
+- Rebase sobre main; build y CI en verde.
+- Mis roturas mordieron:
+  - no escribir `base.json` → 2 en `JsonMemoryRepositoryTest`;
+  - `off` que arranca el entrenamiento → 1 en `TrainPlayersTest`.
+- `messages.yml` de prueba con las 6 claves `train-*` y la lista de subcomandos. Se agregaron sin borrar el archivo, así Nico conserva sus textos.
+
+**Opinión del código.**
+- **Lo bueno:** el comando es fino sobre un caso de uso probado, y la base tiene su propia versión de archivo.
+- **Lo flojo:** `TrainCommand` solo lo verifica el CI al compilar; se prueba en el juego.
+- **Riesgo:** borrar la base requiere apagar el server y borrar `base.json` a mano. Está anotado fuera de alcance.

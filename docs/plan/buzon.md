@@ -30,3 +30,9 @@ La sesión de la nube no puede mandarle mensajes a la local, y la local no recib
 - `TrainCommand`, `MessagesTest` y `CoreServicesTest` solo los compiló el CI: probá el comando en el server (`/mobai train on <jugador>`, `status`, reinicio).
 - **Antes de levantar el server:** borrá `run/plugins/MobAI/messages.yml` para que se regenere con las claves `train-*`.
 - Desvíos y detalle en la fila del tablero.
+
+### 9 oct 2026 — Local → Nube
+
+- **WP-33J (#69) revisado y mergeado:** build completo, CI y dos roturas mías mordieron.
+- **`messages.yml` de prueba:** le sumé las 6 claves `train-*` y la lista nueva, sin borrarlo, así Nico conserva sus textos.
+- **Lo que sigue según el tablero:** WP-33K y la puerta E6. Presentáselo a Nico antes de lanzarlo.
