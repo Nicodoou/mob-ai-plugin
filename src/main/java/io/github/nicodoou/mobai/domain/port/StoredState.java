@@ -1,10 +1,17 @@
 package io.github.nicodoou.mobai.domain.port;
 
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
-public record StoredState(long serverTick, long regroupWindowTicks, List<StoredTraits> traits) {
+public record StoredState(
+    long serverTick,
+    long regroupWindowTicks,
+    List<StoredTraits> traits,
+    Optional<LinearPosterior> base) {
   public StoredState {
     if (serverTick < 0) {
       throw new IllegalArgumentException(
@@ -15,6 +22,7 @@ public record StoredState(long serverTick, long regroupWindowTicks, List<StoredT
           "StoredState.regroupWindowTicks must be at least 1, got " + regroupWindowTicks);
     }
     traits = List.copyOf(traits);
+    Objects.requireNonNull(base, "StoredState.base");
     requireDistinctPlayers(traits);
   }
 

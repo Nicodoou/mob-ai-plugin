@@ -11,6 +11,7 @@ import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.PlanStart;
 import io.github.nicodoou.mobai.domain.group.Role;
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
@@ -24,6 +25,7 @@ import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.SeededRandomSource;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +36,7 @@ class CoreServicesTest {
   private static final StrategyId STRATEGY = new StrategyId("DIRECT_ASSAULT");
   private static final PlayerId PLAYER = new PlayerId(new UUID(2, 1));
   private static final long SEED = 7;
+  private static final int MODEL_DIMENSION = 60;
 
   private final InMemoryMemoryRepository repository = new InMemoryMemoryRepository();
   private final CoreServices core = newCore();
@@ -94,12 +97,12 @@ class CoreServicesTest {
 
     StoredState state = core.storedState();
 
-    assertThat(state).isEqualTo(new StoredState(1234, 600, List.of()));
+    assertThat(state).isEqualTo(new StoredState(1234, 600, List.of(), Optional.empty()));
   }
 
   @Test
   void restoreAppliesTheSavedState() {
-    core.restore(new StoredState(5000, 700, List.of()));
+    core.restore(new StoredState(5000, 700, List.of(), Optional.empty()));
 
     assertThat(core.clock().currentTick()).isEqualTo(5000);
     assertThat(core.regroupWindow().currentTicks()).isEqualTo(700);
@@ -136,6 +139,38 @@ class CoreServicesTest {
     assertThat(state.traits()).hasSize(1);
     assertThat(state.traits().get(0).player()).isEqualTo(PLAYER);
     assertThat(freshCore.storedState().traits()).isEqualTo(state.traits());
+  }
+
+  @Test
+  void baseTravelsWithTheStoredState() {
+    LinearPosterior model = trainedModel();
+    core.recipeBase().replace(model);
+    StoredState state = core.storedState();
+    CoreServices freshCore = newCore();
+
+    freshCore.restore(state);
+
+    assertThat(state.base()).isEqualTo(Optional.of(model));
+    assertThat(freshCore.recipeBase().model()).isEqualTo(Optional.of(model));
+  }
+
+  @Test
+  void trainingIsNotStored() {
+    core.recipeBase().startTraining(PLAYER);
+    CoreServices freshCore = newCore();
+
+    freshCore.restore(core.storedState());
+
+    assertThat(core.recipeBase().isTraining(PLAYER)).isTrue();
+    assertThat(freshCore.recipeBase().isTraining(PLAYER)).isFalse();
+  }
+
+  private static LinearPosterior trainedModel() {
+    double[] mean = new double[MODEL_DIMENSION];
+    mean[0] = 0.5;
+    double[] features = new double[MODEL_DIMENSION];
+    Arrays.fill(features, 0.5);
+    return LinearPosterior.prior(mean, 1.0).withObservation(features, 1.0, 0.01);
   }
 
   private CoreServices newCore() {
