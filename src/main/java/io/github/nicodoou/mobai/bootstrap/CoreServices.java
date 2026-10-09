@@ -29,6 +29,7 @@ import io.github.nicodoou.mobai.domain.port.MemoryRepository;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
 import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
 
 /** The domain and the use cases, assembled once; no Paper here, so it is tested in JUnit. */
@@ -51,7 +52,8 @@ public record CoreServices(
     DescribePlayerMemory describePlayerMemory,
     SaveMemories saveMemories,
     LoadMemories loadMemories,
-    TraitLedger traitLedger) {
+    TraitLedger traitLedger,
+    RecipeBase recipeBase) {
 
   public static CoreServices create(
       MobAiSettings initialSettings, MemoryRepository repository, RandomSource random) {
@@ -83,7 +85,8 @@ public record CoreServices(
         useCases.tools().describePlayerMemory(),
         useCases.tools().saveMemories(),
         useCases.tools().loadMemories(),
-        messaging.traitLedger());
+        messaging.traitLedger(),
+        messaging.recipeBase());
   }
 
   public StoredState storedState() {
@@ -118,7 +121,12 @@ public record CoreServices(
     publisher.subscribe(PlanClosed.class, closePlan::execute);
     Brain brain = new Brain(settings::current, parts);
     return new Messaging(
-        publisher, new GroupEvents(publisher), randomDraws, brain, parts.traitLedger());
+        publisher,
+        new GroupEvents(publisher),
+        randomDraws,
+        brain,
+        parts.traitLedger(),
+        parts.recipePlanner().base());
   }
 
   private static CombatUseCases combat(Foundation foundation, Messaging messaging) {
@@ -161,7 +169,8 @@ public record CoreServices(
       GroupEvents groupEvents,
       RecordingRandomSource randomDraws,
       Brain brain,
-      TraitLedger traitLedger) {}
+      TraitLedger traitLedger,
+      RecipeBase recipeBase) {}
 
   private record CombatUseCases(
       TickGroups tickGroups,

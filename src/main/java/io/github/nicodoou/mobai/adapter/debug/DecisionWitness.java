@@ -36,7 +36,8 @@ public final class DecisionWitness {
         snapshot,
         mapper.capture(group),
         parts.regroupWindow().currentTicks(),
-        traits.forSnapshot(parts.traitLedger(), snapshot));
+        traits.forSnapshot(parts.traitLedger(), snapshot),
+        parts.recipeBase().capture());
   }
 
   public void succeeded(Group group, Observation observation, BrainResult result) {
@@ -65,6 +66,7 @@ public final class DecisionWitness {
         mapper.capture(group),
         parts.regroupWindow().currentTicks(),
         observation.traitsBefore(),
-        traits.forSnapshot(parts.traitLedger(), snapshot));
+        traits.forSnapshot(parts.traitLedger(), snapshot),
+        observation.base());
   }
 }

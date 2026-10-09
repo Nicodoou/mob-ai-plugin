@@ -27,6 +27,8 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBaseCapture;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,9 @@ public final class IncidentFixture {
   private static final long MID_PLAN_OFFSET = 20;
   private static final double LEARNED_FEATURE_VALUE = 0.5;
   private static final double LEARNED_REWARD = 1.0;
+  private static final int BASE_EXTRA_OBSERVATIONS = 20;
+  private static final double BASE_FEATURE_VALUE = 1.0;
+  private static final double BASE_REWARD = 0.0;
   private static final int UNKILLABLE_REGENERATION_LEVEL = 10;
   private static final IncidentLocation LOCATION =
       new IncidentLocation("domain", "Brain", "decide", "TickGroups");
@@ -87,6 +92,14 @@ public final class IncidentFixture {
     return fixture.record(BrainFixture.snapshot(tick, fixture.mobs, BrainFixture.alice()));
   }
 
+  public static IncidentReport trainingPlanOpening() {
+    IncidentFixture fixture = new IncidentFixture(TestSettings.withRecipes());
+    RecipeBase base = fixture.parts.recipePlanner().base();
+    base.replace(fixture.baseModel());
+    base.startTraining(ALICE);
+    return fixture.record(BrainFixture.snapshot(START_TICK, fixture.mobs, BrainFixture.alice()));
+  }
+
   public static IncidentReport provokedFailure() {
     IncidentFixture fixture = afterPreviousDecisions(TestSettings.defaults());
     List<MobSnapshot> withStranger = new ArrayList<>(fixture.mobs);
@@ -107,12 +120,28 @@ public final class IncidentFixture {
   }
 
   private RecipeModelRecord learnedRecord() {
+    return new RecipeModelRecord(learnedModel(), START_TICK);
+  }
+
+  private LinearPosterior learnedModel() {
     LinearPosterior prior = parts.recipePlanner().prior();
-    double[] features = new double[prior.dimension()];
-    Arrays.fill(features, LEARNED_FEATURE_VALUE);
+    return observed(prior, LEARNED_FEATURE_VALUE, LEARNED_REWARD, 1);
+  }
+
+  private LinearPosterior baseModel() {
+    return observed(learnedModel(), BASE_FEATURE_VALUE, BASE_REWARD, BASE_EXTRA_OBSERVATIONS);
+  }
+
+  private LinearPosterior observed(
+      LinearPosterior start, double featureValue, double reward, int count) {
+    double[] features = new double[start.dimension()];
+    Arrays.fill(features, featureValue);
     double noise = settings.learning().modelNoiseVariance();
-    LinearPosterior learned = prior.withObservation(features, LEARNED_REWARD, noise);
-    return new RecipeModelRecord(learned, START_TICK);
+    LinearPosterior model = start;
+    for (int i = 0; i < count; i++) {
+      model = model.withObservation(features, reward, noise);
+    }
+    return model;
   }
 
   private void decidePrevious() {
@@ -126,7 +155,8 @@ public final class IncidentFixture {
         new Start(
             mapper.capture(group),
             window.currentTicks(),
-            traits.forSnapshot(parts.traitLedger(), snapshot));
+            traits.forSnapshot(parts.traitLedger(), snapshot),
+            parts.recipePlanner().base().capture());
     recorder.clear();
     return report(start, snapshot, decideCatching(snapshot));
   }
@@ -154,7 +184,8 @@ public final class IncidentFixture {
         mapper.capture(group),
         window.currentTicks(),
         start.traitsBefore(),
-        traits.forSnapshot(parts.traitLedger(), snapshot));
+        traits.forSnapshot(parts.traitLedger(), snapshot),
+        start.base());
   }
 
   private Group newGroup() {
@@ -164,7 +195,11 @@ public final class IncidentFixture {
         new GroupKnowledge(new GroupMemory(settings::memory), new ThreatLedger(settings::target)));
   }
 
-  private record Start(GroupCapture before, long windowTicks, List<StoredTraits> traitsBefore) {}
+  private record Start(
+      GroupCapture before,
+      long windowTicks,
+      List<StoredTraits> traitsBefore,
+      RecipeBaseCapture base) {}
 
   private record Decided(Optional<IncidentFailure> failure, Optional<BrainResult> result) {}
 }

@@ -42,6 +42,7 @@ public final class TraceReplay {
     ReplayRandomSource random = new ReplayRandomSource(report.draws());
     BrainParts parts = BrainParts.standard(holder::current, random, window);
     parts.traitLedger().restore(TRAITS.toSums(report.traitsBefore()));
+    parts.recipePlanner().base().restore(report.base());
     Decision decision = decide(new Brain(holder::current, parts), group, report.snapshot());
     return new Outcome(
         decision.result(),

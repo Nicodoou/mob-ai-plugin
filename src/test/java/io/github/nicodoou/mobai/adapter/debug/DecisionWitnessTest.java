@@ -76,7 +76,15 @@ class DecisionWitnessTest {
     writer = new IncidentWriter(folder, NOPLogger.NOP_LOGGER);
     witness =
         new DecisionWitness(
-            new WitnessParts(groupEvents, draws, window, holder, parts.traitLedger()), hub, writer);
+            new WitnessParts(
+                groupEvents,
+                draws,
+                window,
+                holder,
+                parts.traitLedger(),
+                parts.recipePlanner().base()),
+            hub,
+            writer);
     mobs.forEach(mob -> group.roster().addMember(mob.id(), mob.kind()));
     activeGroups.add(group);
     decide(START_TICK);
@@ -155,6 +163,19 @@ class DecisionWitnessTest {
 
     assertThat(report.traitsBefore()).isEqualTo(observation.traitsBefore());
     assertThat(report.traitsAfter()).isNotEqualTo(report.traitsBefore());
+  }
+
+  @Test
+  void incidentKeepsTheBaseFromBeforeTheDecision() {
+    parts.recipePlanner().base().startTraining(ALICE);
+    Observation observation = witness.before(group, snapshotWithStranger());
+    parts.recipePlanner().base().stopTraining(ALICE);
+
+    IncidentReport report =
+        witness.failed(group, observation, new IllegalStateException("failed half way"));
+    writer.shutdown();
+
+    assertThat(report.base().trainers()).containsExactly(ALICE);
   }
 
   private TraceDestinations destinations(FlightRecorder recorder) {

@@ -151,7 +151,8 @@ public record AdapterServices(
             core.randomDraws(),
             core.regroupWindow(),
             core.settings(),
-            core.traitLedger());
+            core.traitLedger(),
+            core.recipeBase());
     return new DebugParts(hub, writer, new DecisionWitness(witnessParts, hub, writer), outputs);
   }
 
