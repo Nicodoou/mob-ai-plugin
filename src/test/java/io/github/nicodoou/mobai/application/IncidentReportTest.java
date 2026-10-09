@@ -64,6 +64,8 @@ class IncidentReportTest {
         base.draws(),
         result,
         base.after(),
-        base.regroupWindowTicksAfter());
+        base.regroupWindowTicksAfter(),
+        base.traitsBefore(),
+        base.traitsAfter());
   }
 }

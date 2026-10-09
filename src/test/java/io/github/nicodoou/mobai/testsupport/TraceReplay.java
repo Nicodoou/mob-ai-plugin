@@ -7,16 +7,22 @@ import io.github.nicodoou.mobai.application.GroupCaptureMapper;
 import io.github.nicodoou.mobai.application.IncidentReport;
 import io.github.nicodoou.mobai.application.ReplayRandomSource;
 import io.github.nicodoou.mobai.application.SettingsHolder;
+import io.github.nicodoou.mobai.application.TraitCaptureMapper;
 import io.github.nicodoou.mobai.domain.brain.Brain;
 import io.github.nicodoou.mobai.domain.brain.BrainParts;
 import io.github.nicodoou.mobai.domain.brain.RegroupWindow;
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.group.Group;
+import io.github.nicodoou.mobai.domain.port.StoredTraits;
+import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 /** Repeats the decision of an incident and checks that it comes out exactly the same. */
 public final class TraceReplay {
+  private static final TraitCaptureMapper TRAITS = new TraitCaptureMapper();
+
   private TraceReplay() {}
 
   public record Outcome(
@@ -24,7 +30,8 @@ public final class TraceReplay {
       Optional<String> failure,
       GroupCapture after,
       long regroupWindowTicksAfter,
-      int remainingDraws) {}
+      int remainingDraws,
+      List<StoredTraits> traitsAfter) {}
 
   public static Outcome replay(IncidentReport report) {
     SettingsHolder holder = new SettingsHolder(report.settings());
@@ -33,16 +40,24 @@ public final class TraceReplay {
     GroupCaptureMapper mapper = new GroupCaptureMapper();
     Group group = mapper.restore(report.before(), holder);
     ReplayRandomSource random = new ReplayRandomSource(report.draws());
-    Brain brain = new Brain(holder::current, BrainParts.standard(holder::current, random, window));
-    Optional<BrainResult> result = Optional.empty();
-    Optional<String> failure = Optional.empty();
-    try {
-      result = Optional.of(brain.decide(group, report.snapshot()));
-    } catch (RuntimeException exception) {
-      failure = Optional.of(summaryOf(exception));
-    }
+    BrainParts parts = BrainParts.standard(holder::current, random, window);
+    parts.traitLedger().restore(TRAITS.toSums(report.traitsBefore()));
+    Decision decision = decide(new Brain(holder::current, parts), group, report.snapshot());
     return new Outcome(
-        result, failure, mapper.capture(group), window.currentTicks(), random.remaining());
+        decision.result(),
+        decision.failure(),
+        mapper.capture(group),
+        window.currentTicks(),
+        random.remaining(),
+        TRAITS.forSnapshot(parts.traitLedger(), report.snapshot()));
+  }
+
+  private static Decision decide(Brain brain, Group group, GroupSnapshot snapshot) {
+    try {
+      return new Decision(Optional.of(brain.decide(group, snapshot)), Optional.empty());
+    } catch (RuntimeException exception) {
+      return new Decision(Optional.empty(), Optional.of(summaryOf(exception)));
+    }
   }
 
   public static void assertReproduces(IncidentReport report) {
@@ -59,6 +74,7 @@ public final class TraceReplay {
     assertThat(outcome.regroupWindowTicksAfter())
         .as("regroup window after")
         .isEqualTo(report.regroupWindowTicksAfter());
+    assertThat(outcome.traitsAfter()).as("traits after").isEqualTo(report.traitsAfter());
     assertThat(outcome.remainingDraws()).as("unused draws").isZero();
   }
 
@@ -66,4 +82,6 @@ public final class TraceReplay {
     String message = Objects.requireNonNullElse(exception.getMessage(), "");
     return exception.getClass().getName() + ": " + message;
   }
+
+  private record Decision(Optional<BrainResult> result, Optional<String> failure) {}
 }

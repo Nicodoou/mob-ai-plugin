@@ -1,6 +1,7 @@
 package io.github.nicodoou.mobai.domain.learning;
 
 import io.github.nicodoou.mobai.domain.port.RandomSource;
+import java.util.Arrays;
 
 /**
  * Bayesian linear regression with known noise, kept in information form: precision and precision
@@ -86,6 +87,21 @@ public final class LinearPosterior {
     double[] draws = standardNormals(random, dimension());
     double[] deviation = Cholesky.of(precision).solveTransposed(draws);
     return plusScaled(mean(), deviation, Math.sqrt(explorationScale));
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof LinearPosterior posterior
+        && Arrays.deepEquals(precision, posterior.precision)
+        && Arrays.equals(information, posterior.information)
+        && Double.compare(observations, posterior.observations) == 0;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Arrays.deepHashCode(precision);
+    result = 31 * result + Arrays.hashCode(information);
+    return 31 * result + Double.hashCode(observations);
   }
 
   private double[][] plusOuterProduct(double[] features, double scale) {

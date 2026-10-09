@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.application.GroupCaptureMapper;
 import io.github.nicodoou.mobai.application.IncidentFailure;
 import io.github.nicodoou.mobai.application.IncidentLocation;
 import io.github.nicodoou.mobai.application.IncidentReport;
+import io.github.nicodoou.mobai.application.TraitCaptureMapper;
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
@@ -19,6 +20,7 @@ public final class DecisionWitness {
   private final TraceHub hub;
   private final IncidentWriter writer;
   private final GroupCaptureMapper mapper = new GroupCaptureMapper();
+  private final TraitCaptureMapper traits = new TraitCaptureMapper();
 
   public DecisionWitness(WitnessParts parts, TraceHub hub, IncidentWriter writer) {
     this.parts = Objects.requireNonNull(parts, "DecisionWitness.parts");
@@ -30,7 +32,11 @@ public final class DecisionWitness {
   public Observation before(Group group, GroupSnapshot snapshot) {
     parts.groupEvents().publishPending(group);
     parts.draws().clear();
-    return new Observation(snapshot, mapper.capture(group), parts.regroupWindow().currentTicks());
+    return new Observation(
+        snapshot,
+        mapper.capture(group),
+        parts.regroupWindow().currentTicks(),
+        traits.forSnapshot(parts.traitLedger(), snapshot));
   }
 
   public void succeeded(Group group, Observation observation, BrainResult result) {
@@ -57,6 +63,8 @@ public final class DecisionWitness {
         parts.draws().draws(),
         Optional.empty(),
         mapper.capture(group),
-        parts.regroupWindow().currentTicks());
+        parts.regroupWindow().currentTicks(),
+        observation.traitsBefore(),
+        traits.forSnapshot(parts.traitLedger(), snapshot));
   }
 }

@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.replay;
 
+import static io.github.nicodoou.mobai.testsupport.BrainFixture.ALICE;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.START_TICK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -10,6 +11,8 @@ import io.github.nicodoou.mobai.application.DrawKind;
 import io.github.nicodoou.mobai.application.GroupCapture;
 import io.github.nicodoou.mobai.application.IncidentReport;
 import io.github.nicodoou.mobai.application.RecordedDraw;
+import io.github.nicodoou.mobai.domain.port.StoredTraits;
+import io.github.nicodoou.mobai.domain.strategy.TraitSums;
 import io.github.nicodoou.mobai.domain.threat.ThreatCapture;
 import io.github.nicodoou.mobai.testsupport.IncidentFixture;
 import io.github.nicodoou.mobai.testsupport.TraceReplay;
@@ -35,6 +38,33 @@ class IncidentReproductionTest {
 
     assertThat(incident.result().get().closedPlan()).isPresent();
     assertThatCode(() -> TraceReplay.assertReproduces(incident)).doesNotThrowAnyException();
+  }
+
+  @Test
+  void recipeDecisionReproducesFromItsJson() {
+    IncidentReport incident = throughJson(IncidentFixture.recordedRecipeDecision(START_TICK + 20));
+
+    assertThat(incident.before().stored().recipeModels()).isNotEmpty();
+    assertThat(incident.traitsBefore()).extracting(StoredTraits::player).contains(ALICE);
+    assertThatCode(() -> TraceReplay.assertReproduces(incident)).doesNotThrowAnyException();
+  }
+
+  @Test
+  void recipePlanClosingReproducesFromItsJson() {
+    IncidentReport incident = throughJson(IncidentFixture.recordedRecipeDecision(START_TICK + 700));
+
+    assertThat(incident.result().get().closedPlan()).isPresent();
+    assertThatCode(() -> TraceReplay.assertReproduces(incident)).doesNotThrowAnyException();
+  }
+
+  @Test
+  void tamperedTraitsAreDetected() {
+    IncidentReport original = throughJson(IncidentFixture.recordedRecipeDecision(START_TICK + 20));
+    IncidentReport tampered = withTraitsBefore(original, withShieldAsWeight(original));
+
+    assertThatThrownBy(() -> TraceReplay.assertReproduces(tampered))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("traits after");
   }
 
   @Test
@@ -119,6 +149,35 @@ class IncidentReproductionTest {
     return new GroupCapture(capture.stored(), capture.lifecycle(), empty, capture.spiderTargets());
   }
 
+  private static List<StoredTraits> withShieldAsWeight(IncidentReport report) {
+    return report.traitsBefore().stream().map(IncidentReproductionTest::shieldAsWeight).toList();
+  }
+
+  private static StoredTraits shieldAsWeight(StoredTraits stored) {
+    TraitSums sums = stored.sums();
+    TraitSums tampered =
+        new TraitSums(sums.weight(), sums.ranged(), sums.armor(), sums.weight(), sums.lastTick());
+    return new StoredTraits(stored.player(), tampered);
+  }
+
+  private static IncidentReport withTraitsBefore(IncidentReport base, List<StoredTraits> traits) {
+    return new IncidentReport(
+        base.id(),
+        base.tick(),
+        base.location(),
+        base.failure(),
+        base.before(),
+        base.regroupWindowTicksBefore(),
+        base.snapshot(),
+        base.settings(),
+        base.draws(),
+        base.result(),
+        base.after(),
+        base.regroupWindowTicksAfter(),
+        traits,
+        base.traitsAfter());
+  }
+
   private static IncidentReport withDraws(IncidentReport base, List<RecordedDraw> draws) {
     return new IncidentReport(
         base.id(),
@@ -132,7 +191,9 @@ class IncidentReproductionTest {
         draws,
         base.result(),
         base.after(),
-        base.regroupWindowTicksAfter());
+        base.regroupWindowTicksAfter(),
+        base.traitsBefore(),
+        base.traitsAfter());
   }
 
   private static IncidentReport withBefore(IncidentReport base, GroupCapture before) {
@@ -148,7 +209,9 @@ class IncidentReproductionTest {
         base.draws(),
         base.result(),
         base.after(),
-        base.regroupWindowTicksAfter());
+        base.regroupWindowTicksAfter(),
+        base.traitsBefore(),
+        base.traitsAfter());
   }
 
   private static IncidentReport withRegroupWindowBefore(IncidentReport base, long ticks) {
@@ -164,6 +227,8 @@ class IncidentReproductionTest {
         base.draws(),
         base.result(),
         base.after(),
-        base.regroupWindowTicksAfter());
+        base.regroupWindowTicksAfter(),
+        base.traitsBefore(),
+        base.traitsAfter());
   }
 }
