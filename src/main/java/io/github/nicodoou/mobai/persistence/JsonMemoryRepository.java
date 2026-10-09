@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.port.MemoryLoad;
 import io.github.nicodoou.mobai.domain.port.MemoryRepository;
 import io.github.nicodoou.mobai.domain.port.StoredGroup;
@@ -43,6 +44,10 @@ public final class JsonMemoryRepository implements MemoryRepository {
   @Override
   public void save(StoredMemories memories) {
     writer.write(files.stateFile(), gson.toJson(mapper.toFile(memories.state())));
+    memories
+        .state()
+        .base()
+        .ifPresent(base -> writer.write(files.baseFile(), gson.toJson(mapper.toBaseFile(base))));
     for (StoredGroup group : memories.groups()) {
       writer.write(files.groupFile(group.id()), gson.toJson(mapper.toFile(group)));
     }
@@ -112,7 +117,29 @@ public final class JsonMemoryRepository implements MemoryRepository {
     if (!Files.exists(file)) {
       return Optional.empty();
     }
-    return readOrQuarantine(file, () -> read(file, StateFile.class, mapper::fromFile), quarantined);
+    return readOrQuarantine(file, () -> read(file, StateFile.class, mapper::fromFile), quarantined)
+        .map(state -> withBase(state, loadBase(quarantined)));
+  }
+
+  private Optional<LinearPosterior> loadBase(List<String> quarantined) {
+    Path file = files.baseFile();
+    if (!Files.exists(file)) {
+      return Optional.empty();
+    }
+    return readOrQuarantine(file, () -> readBase(file), quarantined);
+  }
+
+  // The base has its own schema version, so it skips the migrator of the memory files.
+  private LinearPosterior readBase(Path file) {
+    JsonElement parsed = JsonParser.parseString(readText(file));
+    if (!parsed.isJsonObject()) {
+      throw new IllegalArgumentException("Memory file base.json is not a JSON object");
+    }
+    return mapper.fromBaseFile(gson.fromJson(parsed, BaseFile.class));
+  }
+
+  private static StoredState withBase(StoredState state, Optional<LinearPosterior> base) {
+    return new StoredState(state.serverTick(), state.regroupWindowTicks(), state.traits(), base);
   }
 
   private List<StoredGroup> loadGroups(List<String> quarantined) {

@@ -93,13 +93,15 @@ public record CoreServices(
     return new StoredState(
         clock.currentTick(),
         regroupWindow.currentTicks(),
-        new TraitCaptureMapper().toStored(traitLedger.capture()));
+        new TraitCaptureMapper().toStored(traitLedger.capture()),
+        recipeBase.model());
   }
 
   public void restore(StoredState state) {
     clock.restore(state.serverTick());
     regroupWindow.restore(state.regroupWindowTicks());
     traitLedger.restore(new TraitCaptureMapper().toSums(state.traits()));
+    state.base().ifPresent(recipeBase::replace);
   }
 
   private static Foundation foundation(MobAiSettings initialSettings) {

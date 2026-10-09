@@ -16,6 +16,7 @@ import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.strategy.TraitSums;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -95,7 +96,7 @@ class StoredDataTest {
 
   @Test
   void storedMemoriesRejectsADuplicateGroup() {
-    var state = new StoredState(0, 600, List.of());
+    var state = new StoredState(0, 600, List.of(), Optional.empty());
     var groups =
         List.of(group(1, twoMembers(), List.of(), 0), group(1, twoMembers(), List.of(), 0));
 
@@ -129,7 +130,7 @@ class StoredDataTest {
     var traits = new StoredTraits(PLAYER, new TraitSums(0.5, 0, 0.25, 1.5, 7000));
     var duplicated = List.of(traits, traits);
 
-    assertThatThrownBy(() -> new StoredState(0, 600, duplicated))
+    assertThatThrownBy(() -> new StoredState(0, 600, duplicated, Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("StoredState.traits has a duplicate entry " + PLAYER);
   }

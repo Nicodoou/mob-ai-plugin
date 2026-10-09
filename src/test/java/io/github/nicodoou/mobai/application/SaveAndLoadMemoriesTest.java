@@ -35,7 +35,7 @@ class SaveAndLoadMemoriesTest {
   private static final int RECIPE_MODEL_DIMENSION = 60;
 
   private final PlayerId player = new PlayerId(new UUID(2, 1));
-  private final StoredState state = new StoredState(500, 650, List.of());
+  private final StoredState state = new StoredState(500, 650, List.of(), Optional.empty());
   private final SettingsHolder settings = new SettingsHolder(TestSettings.defaults());
   private final ActiveGroups savedGroups = new ActiveGroups();
   private final InMemoryMemoryRepository inner = new InMemoryMemoryRepository();
@@ -109,7 +109,8 @@ class SaveAndLoadMemoriesTest {
 
     LoadReport report = new LoadMemories(new ActiveGroups(), settings, inner).execute();
 
-    assertThat(report.state()).isEqualTo(Optional.of(new StoredState(500, 650, List.of())));
+    assertThat(report.state())
+        .isEqualTo(Optional.of(new StoredState(500, 650, List.of(), Optional.empty())));
   }
 
   @Test

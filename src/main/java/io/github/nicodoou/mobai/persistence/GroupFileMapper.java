@@ -20,9 +20,12 @@ import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.strategy.TraitSums;
+import java.util.Optional;
 import java.util.UUID;
 
 final class GroupFileMapper {
+  static final int BASE_VERSION = 1;
+
   GroupFile toFile(StoredGroup group) {
     return new GroupFile(
         SchemaMigrator.CURRENT_VERSION,
@@ -72,7 +75,27 @@ final class GroupFileMapper {
         file.regroupWindowTicks(),
         required(file.traits(), "StateFile.traits").stream()
             .map(GroupFileMapper::toTraits)
-            .toList());
+            .toList(),
+        Optional.empty());
+  }
+
+  BaseFile toBaseFile(LinearPosterior base) {
+    return new BaseFile(BASE_VERSION, base.precision(), base.information(), base.observations());
+  }
+
+  LinearPosterior fromBaseFile(BaseFile file) {
+    required(file, "BaseFile");
+    if (file.schemaVersion() != BASE_VERSION) {
+      throw new IllegalArgumentException(
+          "base.json has schema version "
+              + file.schemaVersion()
+              + ", this plugin reads "
+              + BASE_VERSION);
+    }
+    return LinearPosterior.of(
+        required(file.precision(), "BaseFile.precision"),
+        required(file.information(), "BaseFile.information"),
+        file.observations());
   }
 
   private static MemberEntry toEntry(Member member) {

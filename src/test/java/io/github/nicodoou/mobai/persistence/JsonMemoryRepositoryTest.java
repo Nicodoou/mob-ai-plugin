@@ -53,7 +53,11 @@ class JsonMemoryRepositoryTest {
   }
 
   private static StoredState sampleState() {
-    return new StoredState(123_000, 600, List.of());
+    return new StoredState(123_000, 600, List.of(), Optional.empty());
+  }
+
+  private static StoredState stateWithBase() {
+    return new StoredState(123_000, 600, List.of(), Optional.of(sampleModel()));
   }
 
   private static StoredGroup sampleGroup(long n) {
@@ -321,7 +325,7 @@ class JsonMemoryRepositoryTest {
   @Test
   void recipeModelsAndTraitsSurviveSaveAndLoad() {
     var traits = new StoredTraits(PLAYER, new TraitSums(0.5, 0, 0.25, 1.5, 7000));
-    var state = new StoredState(123_000, 600, List.of(traits));
+    var state = new StoredState(123_000, 600, List.of(traits), Optional.empty());
     repository().save(new StoredMemories(state, List.of(withRecipeModel(sampleGroup(1)))));
 
     var load = repository().load();
@@ -332,6 +336,47 @@ class JsonMemoryRepositoryTest {
     assertThat(loaded.model().observations()).isEqualTo(saved.observations(), within(1e-9));
     assertThat(loaded.lastTick()).isEqualTo(4200);
     assertThat(load.state().orElseThrow().traits()).isEqualTo(List.of(traits));
+  }
+
+  @Test
+  void baseSurvivesSaveAndLoad() {
+    repository().save(new StoredMemories(stateWithBase(), List.of()));
+
+    var load = repository().load();
+
+    assertThat(load.state().orElseThrow().base()).isEqualTo(Optional.of(sampleModel()));
+  }
+
+  @Test
+  void stateWithoutBaseWritesNoBaseFile() {
+    repository().save(memoriesOf(sampleGroup(1)));
+
+    assertThat(root.resolve("base.json")).doesNotExist();
+  }
+
+  @Test
+  void corruptBaseIsQuarantinedAndTheStateStillLoads() throws IOException {
+    repository().save(new StoredMemories(stateWithBase(), List.of()));
+    Files.writeString(root.resolve("base.json"), "{");
+
+    var load = repository().load();
+
+    assertThat(load.state().orElseThrow().base()).isEmpty();
+    expectQuarantined(load, root.resolve("base.json"));
+  }
+
+  @Test
+  void unknownBaseVersionIsQuarantined() throws IOException {
+    repository().save(new StoredMemories(stateWithBase(), List.of()));
+    Path baseFile = root.resolve("base.json");
+    JsonObject text = readJson(baseFile);
+    text.addProperty("schemaVersion", 2);
+    Files.writeString(baseFile, text.toString());
+
+    var load = repository().load();
+
+    assertThat(load.state().orElseThrow().base()).isEmpty();
+    expectQuarantined(load, baseFile);
   }
 
   @Test

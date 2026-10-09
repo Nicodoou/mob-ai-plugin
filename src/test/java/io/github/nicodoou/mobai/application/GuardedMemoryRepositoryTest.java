@@ -9,6 +9,7 @@ import io.github.nicodoou.mobai.domain.port.StoredMemories;
 import io.github.nicodoou.mobai.domain.port.StoredState;
 import io.github.nicodoou.mobai.testsupport.InMemoryMemoryRepository;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class GuardedMemoryRepositoryTest {
@@ -16,7 +17,7 @@ class GuardedMemoryRepositoryTest {
       "Memories were never loaded successfully; saving now would delete stored groups";
 
   private final StoredMemories memories =
-      new StoredMemories(new StoredState(500, 650, List.of()), List.of());
+      new StoredMemories(new StoredState(500, 650, List.of(), Optional.empty()), List.of());
   private final InMemoryMemoryRepository inner = new InMemoryMemoryRepository();
 
   @Test

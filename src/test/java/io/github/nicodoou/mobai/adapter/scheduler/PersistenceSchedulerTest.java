@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.slf4j.helpers.NOPLogger;
@@ -32,7 +33,7 @@ class PersistenceSchedulerTest {
   private static final long SAVE_INTERVAL_TICKS = 6000;
   private static final String WRITER_THREAD_NAME = "MobAI-memory-writer";
 
-  private final StoredState state = new StoredState(500, 600, List.of());
+  private final StoredState state = new StoredState(500, 600, List.of(), Optional.empty());
   private final ActiveGroups activeGroups = activeGroupsWithOneGroup();
 
   @Test

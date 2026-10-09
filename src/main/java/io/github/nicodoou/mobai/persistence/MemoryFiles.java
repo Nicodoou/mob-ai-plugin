@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 final class MemoryFiles {
   private static final String STATE_FILE_NAME = "state.json";
+  private static final String BASE_FILE_NAME = "base.json";
   private static final String GROUPS_FOLDER_NAME = "groups";
   private static final String JSON_SUFFIX = ".json";
   private static final String QUARANTINE_SUFFIX = ".corrupt";
@@ -29,6 +30,10 @@ final class MemoryFiles {
 
   Path stateFile() {
     return root.resolve(STATE_FILE_NAME);
+  }
+
+  Path baseFile() {
+    return root.resolve(BASE_FILE_NAME);
   }
 
   Path groupFile(GroupId id) {
