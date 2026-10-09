@@ -106,6 +106,24 @@ public final class RecipePlanner {
         reserveOf(recipe, request, flankers));
   }
 
+  public List<RecipeEstimate> estimates(RecipeQuery query, int count) {
+    Objects.requireNonNull(query, "RecipePlanner.query");
+    double[] folded = ContextualFeatures.weightsFor(query.model().mean(), query.traits());
+    int skeletons = query.composition().skeletons();
+    return search.ranked(folded, query.composition(), count).stream()
+        .map(recipe -> new RecipeEstimate(recipe, predictionOf(folded, recipe, skeletons)))
+        .toList();
+  }
+
+  private double predictionOf(double[] folded, PlanRecipe recipe, int skeletons) {
+    double[] features = RecipeFeatures.of(recipe, skeletons, bounds());
+    double prediction = 0;
+    for (int index = 0; index < folded.length; index++) {
+      prediction += folded[index] * features[index];
+    }
+    return prediction;
+  }
+
   public RecipeModelRecord learned(LinearPosterior current, RecipeOutcome outcome) {
     Objects.requireNonNull(current, "RecipePlanner.current");
     Objects.requireNonNull(outcome, "RecipePlanner.outcome");

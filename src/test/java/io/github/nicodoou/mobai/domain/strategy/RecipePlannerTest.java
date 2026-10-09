@@ -42,6 +42,13 @@ class RecipePlannerTest {
   private static final MobId LEFT = mobId(4);
   private static final MobId SKELETON = mobId(5);
 
+  private static final RecipeBounds ESTIMATE_BOUNDS = new RecipeBounds(20, 400, 0.5);
+  private static final GroupComposition FOUR_ZOMBIES_TWO_SPIDERS = new GroupComposition(4, 0, 2);
+  private static final PlanRecipe WORKING_RECIPE =
+      new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(0, 2, 0), false, 20, 0);
+  private static final PlanRecipe FAILED_RECIPE =
+      new PlanRecipe(new RoleSplit(4, 0, 0), new RoleSplit(2, 0, 0), false, 20, 0);
+
   private final MobAiSettings settings = TestSettings.defaults();
   private final RecipeBase base = new RecipeBase();
 
@@ -262,6 +269,58 @@ class RecipePlannerTest {
     assertThat(learned.lastTick()).isEqualTo(500);
     assertThat(learned.model().observations()).isCloseTo(1, within(TOLERANCE));
     assertThat(learned.model().mean()).containsExactly(expected.mean(), within(TOLERANCE));
+  }
+
+  @Test
+  void estimatesPredictWithTheMean() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+    LinearPosterior model = trainedModel(planner, SHIELD_USER);
+
+    List<RecipeEstimate> estimates =
+        planner.estimates(new RecipeQuery(model, SHIELD_USER, FOUR_ZOMBIES_TWO_SPIDERS), 5);
+
+    assertThat(estimates).hasSize(5);
+    assertThat(estimates)
+        .allSatisfy(
+            estimate ->
+                assertThat(estimate.predictedSuccess())
+                    .isCloseTo(
+                        model.predict(
+                            ContextualFeatures.of(
+                                RecipeFeatures.of(estimate.recipe(), 0, ESTIMATE_BOUNDS),
+                                SHIELD_USER)),
+                        within(TOLERANCE)));
+  }
+
+  @Test
+  void estimatesFavorWhatWorked() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+    LinearPosterior model = trainedModel(planner, SHIELD_USER);
+
+    List<RecipeEstimate> estimates =
+        planner.estimates(new RecipeQuery(model, SHIELD_USER, FOUR_ZOMBIES_TWO_SPIDERS), 5);
+
+    double failed =
+        model.predict(
+            ContextualFeatures.of(
+                RecipeFeatures.of(FAILED_RECIPE, 0, ESTIMATE_BOUNDS), SHIELD_USER));
+    assertThat(estimates.getFirst().predictedSuccess()).isGreaterThan(failed);
+  }
+
+  private LinearPosterior trainedModel(RecipePlanner planner, PlayerTraits traits) {
+    LinearPosterior model = planner.prior();
+    for (int plan = 0; plan < 3; plan++) {
+      model = learnedFrom(model, WORKING_RECIPE, traits, 1.0);
+      model = learnedFrom(model, FAILED_RECIPE, traits, 0.0);
+    }
+    return model;
+  }
+
+  private LinearPosterior learnedFrom(
+      LinearPosterior model, PlanRecipe recipe, PlayerTraits traits, double reward) {
+    double[] features =
+        ContextualFeatures.of(RecipeFeatures.of(recipe, 0, ESTIMATE_BOUNDS), traits);
+    return model.withObservation(features, reward, settings.learning().modelNoiseVariance());
   }
 
   private RecipePlanner plannerWithNeutralDraws(int plans) {
