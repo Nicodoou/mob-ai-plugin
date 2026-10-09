@@ -13,7 +13,8 @@ public record LearningSettings(
     long minReserveDelayTicks,
     long maxReserveDelayTicks,
     double maxRetreatHealthFraction,
-    long traitsHalfLifeTicks) {
+    long traitsHalfLifeTicks,
+    long baseWeightPlans) {
   public LearningSettings {
     Objects.requireNonNull(planner, "LearningSettings.planner");
     SettingsChecks.requirePositive("LearningSettings.modelNoiseVariance", modelNoiseVariance);
@@ -26,6 +27,7 @@ public record LearningSettings(
     requireReserveDelayRange(minReserveDelayTicks, maxReserveDelayTicks);
     requireRetreatFractionInsideUnit(maxRetreatHealthFraction);
     SettingsChecks.requireAtLeast("LearningSettings.traitsHalfLifeTicks", traitsHalfLifeTicks, 1);
+    SettingsChecks.requireAtLeast("LearningSettings.baseWeightPlans", baseWeightPlans, 0);
   }
 
   private static void requireReserveDelayRange(long min, long max) {

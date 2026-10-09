@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class SettingsValidationTest {
+  private static final long BASE_WEIGHT_PLANS = 600;
 
   @Test
   void catalogDefaultsAreValid() {
@@ -220,7 +221,30 @@ class SettingsValidationTest {
         minReserveDelayTicks,
         maxReserveDelayTicks,
         maxRetreatHealthFraction,
-        traitsHalfLifeTicks);
+        traitsHalfLifeTicks,
+        BASE_WEIGHT_PLANS);
+  }
+
+  @Test
+  void negativeBaseWeightPlansIsRejected() {
+    LearningSettings base = TestSettings.defaults().learning();
+
+    assertThatThrownBy(
+            () ->
+                new LearningSettings(
+                    base.planner(),
+                    base.modelNoiseVariance(),
+                    base.priorVariance(),
+                    base.priorSuccess(),
+                    base.explorationScale(),
+                    base.trainingExplorationScale(),
+                    base.minReserveDelayTicks(),
+                    base.maxReserveDelayTicks(),
+                    base.maxRetreatHealthFraction(),
+                    base.traitsHalfLifeTicks(),
+                    -1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("LearningSettings.baseWeightPlans must be at least 0, got -1");
   }
 
   @Test
