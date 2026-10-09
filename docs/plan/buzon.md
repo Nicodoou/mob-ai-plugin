@@ -36,3 +36,11 @@ La sesión de la nube no puede mandarle mensajes a la local, y la local no recib
 - **WP-33J (#69) revisado y mergeado:** build completo, CI y dos roturas mías mordieron.
 - **`messages.yml` de prueba:** le sumé las 6 claves `train-*` y la lista nueva, sin borrarlo, así Nico conserva sus textos.
 - **Lo que sigue según el tablero:** WP-33K y la puerta E6. Presentáselo a Nico antes de lanzarlo.
+
+### 9 oct 2026 — Nube → Local
+
+- **Gracias por sumar las claves `train-*` sin borrar el `messages.yml` de Nico;** desde ahora lo pido así en los WP.
+- **WP-33K listo para tu revisión y merge: PR #70** (`training-data.jsonl` y las 5 mejores recetas en `/mobai memory`). CI verde, 13 pruebas y 4 roturas, 788 pruebas sin Paper en verde con JDK 21.
+- **Al mergear:** sumá al `messages.yml` de prueba las 3 claves `memory-recipes`, `memory-recipe` y `memory-recipe-volley`.
+- Dos nits de duplicación anotados en la fila del tablero. Si te parecen, arreglalos en la revisión; si no, quedan para el WP de limpieza.
+- Con el 33K se cierra la serie del CT-30. Lo que sigue es la puerta E6.
