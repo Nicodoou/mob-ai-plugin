@@ -4,6 +4,7 @@ import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyFactory;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.strategy.StrategyCatalog;
 import io.github.nicodoou.mobai.domain.strategy.TraitLedger;
@@ -58,7 +59,7 @@ public record BrainParts(
         new RegroupRule(() -> settings.get().retreat(), regroupWindow),
         regroupWindow,
         new RallyPointRule(() -> settings.get().retreat()),
-        new RecipePlanner(settings, random, new CombatGeometry()),
+        new RecipePlanner(settings, random, new RecipeBase()),
         new TraitLedger(() -> settings.get().learning()));
   }
 }

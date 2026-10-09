@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.within;
 import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
-import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
@@ -23,6 +22,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
 import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBase;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
 import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
@@ -39,12 +39,12 @@ import org.junit.jupiter.api.Test;
 
 class ClosePlanTest {
   private final PlayerId player = new PlayerId(new UUID(2, 1));
+  private final PlayerId bystander = new PlayerId(new UUID(2, 2));
   private final ActiveGroups activeGroups = new ActiveGroups();
+  private final RecipeBase base = new RecipeBase();
   private final ClosePlan closePlan =
       new ClosePlan(
-          activeGroups,
-          new RecipePlanner(
-              TestSettings::defaults, new SeededRandomSource(1), new CombatGeometry()));
+          activeGroups, new RecipePlanner(TestSettings::defaults, new SeededRandomSource(1), base));
 
   @Test
   void planClosedRecordsTheStrategyWithFullWeight() {
@@ -88,6 +88,26 @@ class ClosePlanTest {
   }
 
   @Test
+  void closingATrainersRecipePlanTeachesTheBase() {
+    activeGroups.add(newGroup(1));
+    base.startTraining(player);
+
+    closePlan.execute(recipeEvent(player));
+
+    assertThat(base.model().orElseThrow().observations()).isCloseTo(1, within(1e-9));
+  }
+
+  @Test
+  void closingSomeoneElsesRecipePlanLeavesTheBase() {
+    activeGroups.add(newGroup(1));
+    base.startTraining(player);
+
+    closePlan.execute(recipeEvent(bystander));
+
+    assertThat(base.model()).isEmpty();
+  }
+
+  @Test
   void aStrategyPlanLeavesTheRecipeModelsAlone() {
     Group group = newGroup(1);
     activeGroups.add(group);
@@ -98,11 +118,15 @@ class ClosePlanTest {
   }
 
   private PlanClosed recipeEvent() {
+    return recipeEvent(player);
+  }
+
+  private PlanClosed recipeEvent(PlayerId target) {
     return new PlanClosed(
         new ClosedPlan(
             new PlanId(groupId(1), 1),
             RecipePlanner.STRATEGY_ID,
-            player,
+            target,
             PlanEndReason.TIMED_OUT,
             0.6,
             new PlanScores(1, 1, 1),
