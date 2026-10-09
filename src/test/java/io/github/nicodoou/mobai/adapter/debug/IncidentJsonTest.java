@@ -23,6 +23,15 @@ class IncidentJsonTest {
   }
 
   @Test
+  void recipeModelsAndTraitsSurviveTheJson() {
+    IncidentReport original = IncidentFixture.recordedRecipeDecision(START_TICK + 20);
+
+    IncidentReport read = json.read(json.write(original));
+
+    assertThat(read).isEqualTo(original);
+  }
+
+  @Test
   void failureReportRoundTripsThroughJson() {
     IncidentReport original = IncidentFixture.provokedFailure();
 
@@ -47,17 +56,17 @@ class IncidentJsonTest {
 
     JsonObject parsed = JsonParser.parseString(text).getAsJsonObject();
 
-    assertThat(parsed.get("schemaVersion").getAsInt()).isEqualTo(2);
+    assertThat(parsed.get("schemaVersion").getAsInt()).isEqualTo(3);
     assertThat(parsed.get("report").isJsonObject()).isTrue();
   }
 
   @Test
   void unknownSchemaVersionIsRejected() {
     String text = json.write(IncidentFixture.recordedDecision(START_TICK + 20));
-    String otherVersion = text.replace("\"schemaVersion\": 2", "\"schemaVersion\": 1");
+    String otherVersion = text.replace("\"schemaVersion\": 3", "\"schemaVersion\": 1");
 
     assertThatThrownBy(() -> json.read(otherVersion))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Incident file has schema version 1, this plugin reads 2");
+        .hasMessage("Incident file has schema version 1, this plugin reads 3");
   }
 }
