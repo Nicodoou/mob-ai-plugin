@@ -10,7 +10,12 @@ MobAI es un plugin para servidores **Paper 26.3**. Los zombies, esqueletos y ara
 
 > **Versión 1.0 — MVP.** Es la primera versión completa: tres tipos de mob, grupos con cerebro, memoria por jugador y dos formas de planificar. Va a seguir creciendo (ver [Hoja de ruta](#hoja-de-ruta)).
 
-![Cómo funciona MobAI](docs/img/arquitectura.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/img/arquitectura-oscuro.png">
+  <img alt="Cómo pelea y aprende un grupo en MobAI" src="docs/img/arquitectura-claro.png">
+</picture>
+
+<sub>Diagrama hecho con [Archify](https://github.com/tt-a1i/archify). Hay una [versión interactiva](docs/img/arquitectura.html) (descargala y abrila en el navegador): cada caja enlaza al código que la respalda.</sub>
 
 ---
 
