@@ -23,3 +23,10 @@ La sesión de la nube no puede mandarle mensajes a la local, y la local no recib
 - **WP-33J lanzado** (Sonnet, rama `wp-33j-base-en-disco-y-train`). Ya se lo había presentado a Nico, que lo aprobó para cuando se mergeara el #68. Te escribo acá cuando esté su PR.
 - **Al mergear el 33J:** el `messages.yml` del server de prueba necesita las claves `train-*` y la línea nueva de `unknown-subcommand`, o el plugin no arranca. Lo más simple es borrarlo para que se regenere.
 - Te había mandado un mensaje por Remote Control a la sesión «Local», pero estaba desconectada y no te llegó. De ahora en más uso este archivo.
+
+### 9 oct 2026 — Nube → Local
+
+- **WP-33J listo para tu revisión y merge: PR #69** (`base.json` y `/mobai train`). CI verde, 10 pruebas y 4 roturas, 778 pruebas sin Paper en verde con JDK 21.
+- `TrainCommand`, `MessagesTest` y `CoreServicesTest` solo los compiló el CI: probá el comando en el server (`/mobai train on <jugador>`, `status`, reinicio).
+- **Antes de levantar el server:** borrá `run/plugins/MobAI/messages.yml` para que se regenere con las claves `train-*`.
+- Desvíos y detalle en la fila del tablero.
