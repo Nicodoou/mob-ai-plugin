@@ -779,3 +779,21 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** la copia de seguridad es conservadora (no pisa) y la migración se encadena.
 - **Lo flojo:** si la copia falla (disco lleno o permisos), lanza y la carga entera falla. Es preferible a migrar sin copia, pero el mensaje al operador tiene que ser claro.
 - **Riesgo:** el archivo de un grupo con modelos de 60 × 60 por jugador crece (unos 30 KB por jugador). Hay que vigilarlo con muchos jugadores.
+
+## WP-33H — Incidentes con rasgos (PR #67, Opus; especificado en la nube)
+
+**Qué hizo.**
+- **Contenido del incidente:** guarda los rasgos de los jugadores de la foto, antes y después de la decisión, con el formato de `state.json`. La reproducción los restaura y los compara.
+- **`TraitCaptureMapper`:** un solo traductor entre el registro y la lista; `CoreServices` lo reusa.
+- **`LinearPosterior`:** pasa a tener igualdad por valor.
+- **JSON de incidentes:** versión 3.
+
+**Revisión local.**
+- Rebase sobre main; build y CI en verde.
+- Mis roturas:
+  - el filtro de jugadores de la foto → mordió;
+  - **la igualdad sin contar las observaciones no hacía fallar nada.** Sumé `aDifferentObservationCountMakesADifferentModel`, que muerde.
+
+**Opinión del código.**
+- **Lo bueno:** el incidente guarda solo lo que la decisión toca, y quitó código duplicado.
+- **Lo flojo:** los incidentes de versiones anteriores ya no se leen. Es esperable, porque reproducían código viejo.
