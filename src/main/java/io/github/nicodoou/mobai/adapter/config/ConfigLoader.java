@@ -98,7 +98,8 @@ public final class ConfigLoader {
         number(root, "attack.retreat-distance-blocks"),
         number(root, "attack.evasive-margin-blocks"),
         wholeNumber(root, "attack.evasive-safety-ticks"),
-        number(root, "attack.evasive-aim-margin-degrees"));
+        number(root, "attack.evasive-aim-margin-degrees"),
+        number(root, "attack.perch-spacing-blocks"));
   }
 
   private SpiderSettings spider(ConfigurationSection root) {

@@ -10,7 +10,8 @@ public record AttackSettings(
     double retreatDistanceBlocks,
     double evasiveMarginBlocks,
     long evasiveSafetyTicks,
-    double evasiveAimMarginDegrees) {
+    double evasiveAimMarginDegrees,
+    double perchSpacingBlocks) {
   public AttackSettings {
     SettingsChecks.requireAtLeast(
         "AttackSettings.projectileTimeoutTicks", projectileTimeoutTicks, 1);
@@ -26,6 +27,7 @@ public record AttackSettings(
     SettingsChecks.requireAtLeast("AttackSettings.evasiveSafetyTicks", evasiveSafetyTicks, 0);
     SettingsChecks.requireBetween(
         new NamedSetting("AttackSettings.evasiveAimMarginDegrees", evasiveAimMarginDegrees), 0, 90);
+    SettingsChecks.requireNonNegative("AttackSettings.perchSpacingBlocks", perchSpacingBlocks);
     SettingsChecks.requireNotAbove(
         new NamedSetting("AttackSettings.shootMinDistanceBlocks", shootMinDistanceBlocks),
         new NamedSetting("AttackSettings.shootMaxDistanceBlocks", shootMaxDistanceBlocks));
