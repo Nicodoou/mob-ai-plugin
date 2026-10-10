@@ -32,8 +32,8 @@ class SettingsValidationTest {
     new MemorySettings(1, 1.0, 1.0);
     new SelectionSettings(SelectionPolicyType.RANDOM, 1.0, 1.0, 0.0, 0);
     new SelectionSettings(SelectionPolicyType.RANDOM, 1.0, 1.0, 1.0, 0);
-    new AttackSettings(1, 1, 1, 8.0, 8.0, 0.0, 1.0, 0.0, 0, 0.0);
-    new AttackSettings(1, 1, 1, 8.0, 8.0, 0.0, 1.0, 0.0, 0, 90.0);
+    new AttackSettings(1, 1, 1, 8.0, 8.0, 0.0, 1.0, 0.0, 0, 0.0, 0.0);
+    new AttackSettings(1, 1, 1, 8.0, 8.0, 0.0, 1.0, 0.0, 0, 90.0, 0.0);
     new PlanSettings(1, 1.0, 1, 0.0, 1.0);
     new TargetSettings(1, 0.0, 1.0, 1.0, 1.0);
   }
@@ -99,19 +99,28 @@ class SettingsValidationTest {
             (Runnable) () -> new PlanSettings(600, 32.0, 200, 1.5, 0.5)),
         org.junit.jupiter.params.provider.Arguments.of(
             "AttackSettings.shootMinDistanceBlocks must not exceed AttackSettings.shootMaxDistanceBlocks, got 16.0 > 15.0",
-            (Runnable) () -> new AttackSettings(60, 60, 60, 16.0, 15.0, 1.0, 16.0, 0.5, 4, 15.0)),
+            (Runnable)
+                () -> new AttackSettings(60, 60, 60, 16.0, 15.0, 1.0, 16.0, 0.5, 4, 15.0, 3.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "AttackSettings.evasiveSafetyTicks must be at least 0, got -1",
-            (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, 0.5, -1, 15.0)),
+            (Runnable)
+                () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, 0.5, -1, 15.0, 3.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "AttackSettings.evasiveAimMarginDegrees must be between 0.0 and 90.0, got 91.0",
-            (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, 0.5, 4, 91.0)),
+            (Runnable)
+                () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, 0.5, 4, 91.0, 3.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "AttackSettings.evasiveMarginBlocks must be zero or positive, got -1.0",
-            (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, -1.0, 4, 15.0)),
+            (Runnable)
+                () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, -1.0, 4, 15.0, 3.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "AttackSettings.flankMarginBlocks must be zero or positive, got -1.0",
-            (Runnable) () -> new AttackSettings(60, 60, 60, 8.0, 15.0, -1.0, 16.0, 0.5, 4, 15.0)),
+            (Runnable)
+                () -> new AttackSettings(60, 60, 60, 8.0, 15.0, -1.0, 16.0, 0.5, 4, 15.0, 3.0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "AttackSettings.perchSpacingBlocks must be zero or positive, got -1.0",
+            (Runnable)
+                () -> new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, 0.5, 4, 15.0, -1.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "SpiderSettings.slownessLevel must be at least 1, got 0",
             (Runnable) () -> new SpiderSettings(60, 0)),
