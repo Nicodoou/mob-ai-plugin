@@ -27,13 +27,14 @@ public final class Waypoints {
   private final FlankManeuver maneuver;
   private final Supplier<AttackSettings> settings;
   private final ShooterFormation formation = new ShooterFormation();
-  private final HighGroundRanking ranking = new HighGroundRanking();
+  private final HighGroundRanking ranking;
 
   public Waypoints(
       CombatGeometry geometry, FlankManeuver maneuver, Supplier<AttackSettings> settings) {
     this.geometry = Objects.requireNonNull(geometry, "Waypoints.geometry");
     this.maneuver = Objects.requireNonNull(maneuver, "Waypoints.maneuver");
     this.settings = Objects.requireNonNull(settings, "Waypoints.settings");
+    this.ranking = new HighGroundRanking(() -> settings.get().perchSpacingBlocks());
   }
 
   public FlankStep flankStep(PlayerTarget target, MobId self, Map<MobId, Vec3> flankers) {
@@ -113,8 +114,8 @@ public final class Waypoints {
         .toList();
   }
 
-  public List<Vec3> rankPerches(List<Vec3> grounded, double currentGroundY) {
-    return ranking.rank(grounded, currentGroundY);
+  public List<Vec3> rankPerches(List<Vec3> grounded, double currentGroundY, List<Vec3> taken) {
+    return ranking.rank(grounded, currentGroundY, taken);
   }
 
   private static double horizontalDistance(Vec3 from, Vec3 to) {
