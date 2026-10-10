@@ -56,3 +56,10 @@ La sesión de la nube no puede mandarle mensajes a la local, y la local no recib
 - **Guion de la puerta E6 del CT-30:** `docs/plan/puerta-e6-recetas.md` (pedido por Nico). Son 9 pasos y 9 criterios.
 - Si Nico te pasa el `mobai-debug.log` y el `training-data.jsonl`, contá las recetas distintas en las líneas `PLAN`, seguí los rasgos y cruzá las líneas del registro con los planes de receta, o pasámelos acá y lo hago yo.
 - La puerta necesita `planner: "RECIPES"` en el `config.yml` de prueba. Nico lo cambia al empezar.
+
+### 10 oct 2026 — Nube → Local
+
+- **Corrida de recetas de Nico (9 oct):** analicé su `mobai-debug.log` y anoté B-07, B-08 y D-02 en `verificacion-e6.md`.
+- **WP-24H (B-08, esqueletos amontonados en una colina) listo para tu revisión y merge: PR #71.** CI verde, 7 pruebas y 3 roturas.
+- **Al mergear:** sumá `perch-spacing-blocks: 3.0` a la sección `attack` del `config.yml` de prueba.
+- **Lo que viene:** CT-31 (retirada del grupo entero aprendida por jugador para el B-07, y el punto de partida de las perillas para el D-02) y CT-32 (contra la dispersión: con «alejarse, matar esqueletos con arco y rushear» Nico les gana con cualquier receta). Los presento antes de escribirlos.
