@@ -12,7 +12,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 - Antes de cada push, rebase. `estado.md` lo edita la sesión que cambia el estado del WP.
 
 1. **Local (8 oct):** revisados y mergeados WP-25 (#55), WP-31 (#57), WP-32A (#58), WP-32B (#59), WP-33A (#60), WP-33B (#61) y WP-33C (#62). En #61 y #62 se resolvieron conflictos de `arquitectura.md` (filas nuevas en la misma tabla) con rebase.
-2. **Nube, ahora:** serie del CT-30 completa (WP-33A a WP-33K mergeados). Guion de la puerta E6: `docs/plan/puerta-e6-recetas.md`, pendiente de Nico en el juego. Coordinación entre sesiones en `docs/plan/buzon.md`.
+2. **Nube, ahora:** corrida de recetas del 9 oct con B-07, B-08 y D-02 (`verificacion-e6.md`). WP-24H (B-08) en curso. Después: CT-31 (retirada del grupo aprendida, punto de partida de las perillas) y lo que salga de la estrategia de dispersión de Nico. Coordinación en `docs/plan/buzon.md`.
 3. **Pendiente de Nico en el juego:** B-04 H2 (#56: ¿siguen los tiros a aliados?), el WP-25, la andanada (nunca salió `VOLLEY`) y la lanza.
 4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`, y que un mensaje faltante no deshabilite el plugin.
 5. **Preferencias:** después de cada compactación o al cambiar de sesión, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
@@ -68,6 +68,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-24E | Andanada: estrategia y fases en el cerebro | E6 | mergeado | Opus | [#45](https://github.com/Nicodoou/mob-ai-plugin/pull/45) | CT-23. Al mergear, sumar la sección `volley` al `config.yml` del server de prueba |
 | WP-24F | Andanada: los goals | E6 | mergeado | Sonnet | [#46](https://github.com/Nicodoou/mob-ai-plugin/pull/46) | CT-23. Después del 24E |
 | WP-24G | Tensar el arco | E6 | mergeado | Sonnet | [#49](https://github.com/Nicodoou/mob-ai-plugin/pull/49) | CT-26, B-06 |
+| WP-24H | Lugares altos reservados (B-08) | E6 | en curso | Sonnet | — | B-08. Aprobado por Nico el 10 oct. Al mergear: `perch-spacing-blocks: 3.0` en `attack` del `config.yml` de prueba |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30D | La supervivencia multiplica | E6 | mergeado | Sonnet | [#54](https://github.com/Nicodoou/mob-ai-plugin/pull/54) | D-01 del test fuerte, aprobado por Nico |
