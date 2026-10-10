@@ -164,3 +164,31 @@ El plan 3 sacó el mejor éxito (0,64) con casi nada de daño (1,4), porque cont
 ### Reagrupamiento sin reunión (observación de Nico)
 
 Al retirarse, cada mob se va por su lado, y después no se vuelven a juntar. **No es un bug del código:** el CT-07 define el reagrupamiento como "todos se retiran y se curan", sin punto de reunión. Es un comportamiento que falta. Va a Nico como CT nuevo: un punto de reunión lejos del jugador y un camino que lo evite.
+
+## Recetas (CT-30) — 9 oct 2026, corrida con `planner: "RECIPES"`
+
+**Qué vio Nico.**
+- Cuando queda un solo mob vivo, sigue atacando en vez de retirarse.
+- Los esqueletos se amontonan todos en una colina chica (terreno con desniveles leves).
+
+**Log (`mobai-debug.log`, 216 planes, 82 de receta).**
+- Cierres: 80 `GROUP_RETREATED`, 112 `TIMED_OUT`, 23 `TARGET_LOST`, 1 `TARGET_DIED`.
+- **Perillas en los extremos:** la demora de la reserva es 20 (el mínimo) en 63 planes y 400 (el máximo) en 14, y solo 5 caen en el medio. El umbral de retirada es menor que 0,10 en 31 de 82, y 0,00 en 24.
+- Planes con un solo zombie (`z1/0/0`) que se abren uno tras otro y cierran por `TIMED_OUT` con éxito 0 (grupo `3a391fba`, planes 43 a 45).
+- 13 recetas con todos los zombies en reserva y ninguno atacando (`z0/0/n`).
+
+### B-07 — El último mob vivo sigue atacando
+
+- **H1:** el cerebro abre un plan nuevo después de `GROUP_RETREATED` mirando solo la vida de los vivos: un sobreviviente sano abre un plan solo. Predicción: planes seguidos con un solo mob. **El log la apoya** (`z1/0/0` repetidos).
+- **H2:** la receta eligió `retreat` 0,00 y ese mob no se retira nunca. Predicción: líneas `PLAN` con `retreat=0.00`. **El log la apoya** (24 de 82).
+- **H3:** falta la regla de retirada del grupo entero.
+- **Diseño de Nico (9 oct):** cuando el grupo ya no tiene chance, se retira **todo junto**, no cada uno por su lado, hasta que se reincorporen. Y aprende de cada jugador cuándo conviene retirarse. Va como cambio técnico (CT-31).
+
+### B-08 — Los esqueletos se amontonan en una colina
+
+- **H1 (confirmada por lo que vio Nico):** cada esqueleto busca el lugar alto más alto cerca de su puesto (`HighGroundRanking`, el más alto primero), y nadie descarta el que eligió otro. Con una sola colina cerca, todos eligen la misma cima.
+- H2 (carril libre compartido) y H3 (anillo incompleto) quedan descartadas: no explican que se junten justo en la colina.
+
+### Hallazgo D-02 — Las perillas continuas se van a los extremos
+
+El pico de la demora y del umbral se calcula con los pesos sorteados (`UnitIntervalPeak`). Si el término cuadrático sale positivo, la curva no tiene máximo adentro y el pico cae en un borde. Con el punto de partida actual (media 0 en esos pesos), eso pasa más o menos la mitad de las veces, y explica la demora en 20 o 400 y el umbral en 0. No es un bug de código: es el punto de partida del modelo. Se propone en el CT-31.
