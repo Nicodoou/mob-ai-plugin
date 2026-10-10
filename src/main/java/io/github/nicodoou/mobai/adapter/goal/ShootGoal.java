@@ -84,6 +84,7 @@ public final class ShootGoal implements Goal<Mob> {
 
   @Override
   public void stop() {
+    dropPerch();
     lowerBow();
     mob.getPathfinder().stopPathfinding();
   }
@@ -134,7 +135,7 @@ public final class ShootGoal implements Goal<Mob> {
     if (mob.hasLineOfSight(target)) {
       walkToFiringSpot(target);
     } else {
-      perch = Optional.empty();
+      dropPerch();
       inPlace = false;
       mob.getPathfinder().moveTo(target, WALK_SPEED);
     }
@@ -163,14 +164,25 @@ public final class ShootGoal implements Goal<Mob> {
       return;
     }
     nextPerchSearchTick = now + PERCH_SEARCH_INTERVAL_TICKS;
-    perch = highGround.find(mob, target, new PerchRequest(spot, allyCenters(target)));
+    perch = highGround.find(mob, target, perchRequest(target, spot));
+    perch.ifPresentOrElse(found -> perches().claim(self(), found), this::dropPerch);
+  }
+
+  private PerchRequest perchRequest(Player target, Vec3 spot) {
+    return new PerchRequest(
+        spot, allyCenters(target), perches().takenBy(shooterIds(target), self()));
+  }
+
+  private void dropPerch() {
+    perch = Optional.empty();
+    perches().release(self());
   }
 
   private Optional<Vec3> currentPerch(Player target) {
     perch.ifPresent(
         spot -> {
           if (!CoverFinder.isSeenBy(target, mob, spot)) {
-            perch = Optional.empty();
+            dropPerch();
           }
         });
     return perch;
@@ -348,6 +360,10 @@ public final class ShootGoal implements Goal<Mob> {
 
   private MobId self() {
     return new MobId(mob.getUniqueId());
+  }
+
+  private PerchClaims perches() {
+    return context.tools().perches();
   }
 
   private Waypoints waypoints() {

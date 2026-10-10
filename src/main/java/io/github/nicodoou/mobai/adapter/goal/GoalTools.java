@@ -7,11 +7,16 @@ import java.util.Objects;
  * route.
  */
 public record GoalTools(
-    Weapons weapons, GoalTiming timing, Waypoints waypoints, RallyRoute rallyRoute) {
+    Weapons weapons,
+    GoalTiming timing,
+    Waypoints waypoints,
+    RallyRoute rallyRoute,
+    PerchClaims perches) {
   public GoalTools {
     Objects.requireNonNull(weapons, "GoalTools.weapons");
     Objects.requireNonNull(timing, "GoalTools.timing");
     Objects.requireNonNull(waypoints, "GoalTools.waypoints");
     Objects.requireNonNull(rallyRoute, "GoalTools.rallyRoute");
+    Objects.requireNonNull(perches, "GoalTools.perches");
   }
 }
