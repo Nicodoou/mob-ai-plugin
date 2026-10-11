@@ -6,16 +6,32 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 ## Próximo paso
 
-**Reparto entre sesiones (Nico, 8 oct 2026):**
-- **La sesión de la nube** especifica y lanza los WPs.
-- **La sesión local** hace el build completo, la revisión local de cada PR (roturas incluidas), el merge, el server de prueba y los logs de Nico.
-- Antes de cada push, rebase. `estado.md` lo edita la sesión que cambia el estado del WP.
+**Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Local (8 oct):** revisados y mergeados WP-25 (#55), WP-31 (#57), WP-32A (#58), WP-32B (#59), WP-33A (#60), WP-33B (#61) y WP-33C (#62). En #61 y #62 se resolvieron conflictos de `arquitectura.md` (filas nuevas en la misma tabla) con rebase.
-2. **Nube:** sin créditos desde el 11 oct; la orquestación pasa a la sesión local. Traspaso en `docs/plan/traspaso-nube.md` (CT-31, CT-32 y orden recomendado). Pendiente: merge del #71 (WP-24H).
-3. **Pendiente de Nico en el juego:** B-04 H2 (#56: ¿siguen los tiros a aliados?), el WP-25, la andanada (nunca salió `VOLLEY`) y la lanza.
-4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`, y que un mensaje faltante no deshabilite el plugin.
-5. **Preferencias:** después de cada compactación o al cambiar de sesión, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
+1. **Ahora:** presentarle a Nico el diseño del **WP-32A**: persecución en bloque y zombies que rodean (CT-32, borrador en `traspaso-nube.md`). Es lo que más cambia la dificultad contra su estilo:
+   - se aleja, mata esqueletos con el arco y esquiva zombies;
+   - mata a las arañas y a los zombies amontonados con el barrido;
+   - y después rushea a los esqueletos.
+
+   Hay que escribir primero el CT-32, presentado y aprobado.
+2. **Después:**
+   - **WP-31B:** umbral de retirada del grupo aprendido, modelos agrandados sin perder lo aprendido (recomendación A), arranque en el medio (D-02) y sin recetas con todos de reserva (B). Conviene sumar en la misma migración la perilla `chaseCommitment` del WP-32B.
+   - **WP-32C:** esquive de los esqueletos ante el arco.
+   - **Repetir la puerta E6** con `puerta-e6-recetas.md`.
+3. **Puerta E6 en curso por Nico:** con recetas, 51 planes en el log (26 de entrenamiento). Los pasos 1 a 4 están verificados: recetas variadas, reserva, y los rasgos de arco y escudo subiendo. Faltan los pasos 5 a 9.
+4. **Pendiente de Nico en el juego:**
+   - B-07 (#72): un sobreviviente solo no ataca;
+   - B-08 (#71): los esqueletos no se amontonan;
+   - B-04 H2 (#56);
+   - la andanada y la lanza.
+5. **Pendientes de limpieza** (ver «Decisiones abiertas» y `traspaso-nube.md`):
+   - ciclos de paquetes y `hasRetreated`;
+   - partir `ShootGoal` y las tácticas de `PressGoal`;
+   - que un mensaje faltante no deshabilite el plugin;
+   - los nits de los WP-33K y 24H;
+   - `training-data.jsonl` sin límite de tamaño.
+6. **Versión:** el README dice 1.0 MVP; el build dice `0.1.0-SNAPSHOT`. Le pregunté a Nico si pasar a 1.0.0 ya o después de la puerta E6, y no respondió.
+7. **Preferencias:** después de cada compactación, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto. Antes de lanzar cada WP, presentarlo con qué hace, arquitectura y decisiones, y esperar el sí. Al mergear, actualizar `config.yml`, `messages.yml` y `config-de-prueba.yml` de prueba con las claves nuevas.
 
 ## WPs
 
