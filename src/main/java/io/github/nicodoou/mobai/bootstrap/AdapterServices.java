@@ -31,6 +31,7 @@ import io.github.nicodoou.mobai.adapter.goal.GoalTiming;
 import io.github.nicodoou.mobai.adapter.goal.GoalTools;
 import io.github.nicodoou.mobai.adapter.goal.HitEffects;
 import io.github.nicodoou.mobai.adapter.goal.MeleeAttacker;
+import io.github.nicodoou.mobai.adapter.goal.PerchClaims;
 import io.github.nicodoou.mobai.adapter.goal.RallyRoute;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
 import io.github.nicodoou.mobai.adapter.goal.ShotAim;
@@ -229,7 +230,8 @@ public record AdapterServices(
         new RallyRoute(
             new RallyDetour(geometry),
             core.settings().section(MobAiSettings::attack),
-            core.settings().section(MobAiSettings::retreat)));
+            core.settings().section(MobAiSettings::retreat)),
+        new PerchClaims());
   }
 
   private static Waypoints waypoints(CoreServices core, CombatGeometry geometry) {

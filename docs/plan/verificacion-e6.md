@@ -188,6 +188,7 @@ Al retirarse, cada mob se va por su lado, y después no se vuelven a juntar. **N
 
 - **H1 (confirmada por lo que vio Nico):** cada esqueleto busca el lugar alto más alto cerca de su puesto (`HighGroundRanking`, el más alto primero), y nadie descarta el que eligió otro. Con una sola colina cerca, todos eligen la misma cima.
 - H2 (carril libre compartido) y H3 (anillo incompleto) quedan descartadas: no explican que se junten justo en la colina.
+- **Estado:** arreglado (WP-24H), falta verificar en el juego. Cada esqueleto reserva su lugar alto (`PerchClaims`) y los demás descartan los candidatos a menos de `attack.perch-spacing-blocks` (3 por defecto) de un lugar reservado por otro tirador del mismo objetivo.
 
 ### Hallazgo D-02 — Las perillas continuas se van a los extremos
 

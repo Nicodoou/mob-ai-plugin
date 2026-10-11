@@ -514,6 +514,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Base del server y entrenamiento por jugador (CT-30) | `RecipeBase`, `RecipeBaseCapture`, `RecipePlanner.anchor`, `RecipePlanner.teachBase`, `learning.base-weight-plans` | Dominio |
 | La base en disco y el comando de entrenamiento (CT-30) | `base.json`, `BaseFile`, `TrainPlayers`, `TrainingStatus`, `TrainCommand` (`/mobai train`) | Persistencia, aplicación y adaptadores |
 | Recetas estimadas en la memoria y registro de entrenamiento (CT-30) | `RecipeQuery`, `RecipeEstimate`, `RecipeSearch.ranked`, `RecipeAdvisor`, `RecipeAdvice`, `TrainingDataLog` (`training-data.jsonl`) | Dominio, aplicación y adaptadores |
+| Lugares altos reservados entre esqueletos (B-08) | `PerchClaims`, `attack.perch-spacing-blocks` | Adaptadores |
 
 «Escape» se reserva para el mob (RF-08: `MemberEscaped`, `RecordEscape`). Cuando el que se va es el jugador, el plan cierra con `TARGET_LOST`; nunca se lo llama escape en el código.
 

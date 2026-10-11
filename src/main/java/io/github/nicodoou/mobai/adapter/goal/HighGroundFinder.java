@@ -28,7 +28,8 @@ final class HighGroundFinder {
     List<Vec3> ranked =
         waypoints.rankPerches(
             grounded(shooter, waypoints.perchCandidates(request.spot(), targetPosition)),
-            groundYAt(shooter, request.spot()));
+            groundYAt(shooter, request.spot()),
+            request.taken());
     Aim aim = new Aim(target, request.allies());
     int paths = 0;
     for (Vec3 perch : ranked) {

@@ -61,6 +61,8 @@ attack:
   evasive-margin-blocks: 0.5
   evasive-safety-ticks: 4
   evasive-aim-margin-degrees: 15.0
+  # Distancia mínima entre los lugares altos de dos esqueletos (B-08), en bloques. Con 0 pueden compartir la misma colina.
+  perch-spacing-blocks: 3.0
 
 spider:
   # Lentitud I por 3 segundos.
