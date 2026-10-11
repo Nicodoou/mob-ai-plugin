@@ -873,3 +873,29 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 **Opinión del código.**
 - **Lo bueno:** simple, y sin limpieza manual gracias al filtro por tiradores actuales.
 - **Lo flojo:** el mapa de reservas guarda las de esqueletos muertos sin `stop()`. No afectan las decisiones, pero crecen; queda anotado para la limpieza.
+
+## WP-31A — Fuerza del grupo y retirada de todo el grupo (PR #72, Opus) — B-07
+
+**Qué hizo.**
+- **`GroupStrength`:**
+  - **durante el plan:** vida de los del inicio que siguen ÷ vida al inicio;
+  - **fuera del plan:** vida de los vivos ÷ (vida máxima de los vivos + vida perdida del último plan).
+- **`PlanEndDetector` y `RetreatRule`:** usan la fuerza contra `plan.group-retreat-strength` (0,4) en lugar de la regla de "más de la mitad".
+- **`PlanAftermath`:** saca de `PlanLifecycle` el estado del reagrupamiento (inicio, punto de reunión y vida perdida). `PlanLifecycle` queda en 20 métodos públicos.
+- **`PlanScoring`:** reusa `GroupStrength`.
+
+**Revisión.**
+- **Bug:** la prueba del B-07 (`aLoneSurvivorDoesNotOpenAPlan`) falló antes del arreglo, con el sobreviviente abriendo el plan 2, y pasa después.
+- **Roturas del WP:** las 3 mordieron.
+- **Mis roturas:**
+  - contar la vida perdida de todos → 3;
+  - el cerebro sin la vida perdida → 1.
+- Build y CI en verde.
+- **Desvío aceptado:** `regrouping()` pasó a `aftermath().regrouping()`.
+- **Duda del agente:** un grupo sin mobs cuenta como en retirada; si vence la ventana con la foto vacía, sigue reagrupándose. Aceptado: un grupo sin miembros se disuelve, y una foto vacía con miembros (chunks descargados) no debe planificar.
+- `config.yml` de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:** el bug se probó primero, y la fuerza es un cálculo puro compartido con el puntaje. La separación de `PlanAftermath` era la deuda que había anotado el WP-32A.
+- **Lo flojo:** la vida perdida no se guarda en disco. Varias pruebas viejas tuvieron que herir a todo el grupo para que cierre: la regla nueva es más exigente.
+- **Riesgo:** con 0,4 fijo, un grupo puede quedarse retirado para siempre si queda uno solo. Es intencional, y lo cubre `/mobai reinforce`.
