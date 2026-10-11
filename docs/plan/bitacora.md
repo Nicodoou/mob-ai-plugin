@@ -859,3 +859,17 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
   - las "mejores" se muestran sin exploración, que es lo correcto para leerlas.
 - **Lo flojo:** cada línea lleva 60 números (1 a 2 KB por plan) y el archivo no rota.
 - **Riesgo:** ninguno nuevo en el juego.
+
+## WP-24H — Lugares altos reservados (PR #71, Sonnet; especificado en la nube) — B-08
+
+**Qué hizo.** Cada esqueleto reserva el lugar alto que eligió (`PerchClaims`, en `GoalTools`). Al buscar, `HighGroundRanking` descarta los candidatos a menos de `attack.perch-spacing-blocks` (3) de la reserva de otro tirador del mismo objetivo. Solo cuentan los tiradores actuales, así que las reservas viejas no bloquean.
+
+**Revisión local.** Rebase sobre main; build y CI en verde. Mis roturas mordieron:
+- reservas que incluyen la propia → 1 en `PerchClaimsTest`;
+- sin filtro de distancia → 1 en `HighGroundRankingTest`.
+
+`config.yml` de prueba actualizado.
+
+**Opinión del código.**
+- **Lo bueno:** simple, y sin limpieza manual gracias al filtro por tiradores actuales.
+- **Lo flojo:** el mapa de reservas guarda las de esqueletos muertos sin `stop()`. No afectan las decisiones, pero crecen; queda anotado para la limpieza.
