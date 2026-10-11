@@ -44,7 +44,7 @@ import org.junit.jupiter.api.Test;
 class BrainObservingTest {
   private static final int FIRST_ZOMBIE = 0;
   private static final double LOW_HEALTH = 5;
-  private static final int HURT_MAJORITY = 5;
+  private static final int HURT_ALL = 9;
   private static final int HURT_HALF = 4;
   private static final long INITIAL_WINDOW_TICKS = 600;
   private static final Vec3 RALLY = new Vec3(5 + 6 * Math.sqrt(2), 64, 5 + 6 * Math.sqrt(2));
@@ -177,7 +177,7 @@ class BrainObservingTest {
   @Test
   void badlyHurtGroupRegroupsInsteadOfPlanning() {
     BrainFixture fixture = BrainFixture.choosingStrategy(0);
-    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_MAJORITY);
+    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_ALL);
 
     BrainResult result = fixture.decide(START_TICK, mobs, alice());
 
@@ -195,7 +195,7 @@ class BrainObservingTest {
               assertThat(order.suggestedAttack()).isEmpty();
             });
     assertThat(fixture.group().lifecycle().planSequence()).isZero();
-    assertThat(fixture.group().lifecycle().regrouping().map(Regrouping::startTick))
+    assertThat(fixture.group().lifecycle().aftermath().regrouping().map(Regrouping::startTick))
         .contains(START_TICK);
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
   }
@@ -203,7 +203,7 @@ class BrainObservingTest {
   @Test
   void holdingBackRalliesAwayFromTheNearestPlayer() {
     BrainFixture fixture = BrainFixture.choosingStrategy(0);
-    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_MAJORITY);
+    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_ALL);
 
     BrainResult result = fixture.decide(START_TICK, mobs, alice());
 

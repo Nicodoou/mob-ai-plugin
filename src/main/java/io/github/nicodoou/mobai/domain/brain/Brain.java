@@ -113,13 +113,18 @@ public final class Brain {
     if (target.isEmpty()) {
       return Outcome.idle();
     }
-    if (parts.retreatRule().isGroupRetreated(turn.snapshot())) {
+    if (isGroupRetreated(turn)) {
       return holdBack(turn);
     }
     turn.lifecycle().beginPlanning();
     openPlan(turn, target.get());
     retreatLowHealth(turn);
     return Outcome.withOrders(planOrders(turn));
+  }
+
+  private boolean isGroupRetreated(Turn turn) {
+    double lostHealth = turn.lifecycle().aftermath().lastPlanLostHealth();
+    return parts.retreatRule().isGroupRetreated(turn.snapshot(), lostHealth);
   }
 
   // CT-13: a plan opened now would close at once with GROUP_RETREATED and teach the memory a
@@ -365,8 +370,7 @@ public final class Brain {
     if (regroupEnd.isEmpty()) {
       return Outcome.withOrders(regroupOrders(turn));
     }
-    if (regroupEnd.get() == RegroupEndReason.WINDOW_EXPIRED
-        && parts.retreatRule().isGroupRetreated(turn.snapshot())) {
+    if (regroupEnd.get() == RegroupEndReason.WINDOW_EXPIRED && isGroupRetreated(turn)) {
       return keepRegrouping(turn);
     }
     endRegrouping(turn);
@@ -391,7 +395,7 @@ public final class Brain {
   }
 
   private Optional<RegroupEndReason> detectRegroupEnd(Turn turn) {
-    long regroupStartTick = turn.lifecycle().regrouping().orElseThrow().startTick();
+    long regroupStartTick = turn.lifecycle().aftermath().regrouping().orElseThrow().startTick();
     Optional<RegroupEndReason> regroupEnd =
         parts.regroupRule().detect(turn.snapshot(), regroupStartTick);
     regroupEnd.ifPresent(turn.draft()::regroupEnd);
@@ -414,7 +418,7 @@ public final class Brain {
         turn.lifecycle().committedTarget(),
         Optional.empty(),
         parts.retreatRule().canRecover(mob, turn.snapshot()),
-        turn.lifecycle().regrouping().flatMap(Regrouping::rallyPoint));
+        turn.lifecycle().aftermath().regrouping().flatMap(Regrouping::rallyPoint));
   }
 
   private RoleAssignment retreatOrder(Turn turn, MobSnapshot mob, Optional<PlayerId> awayFrom) {

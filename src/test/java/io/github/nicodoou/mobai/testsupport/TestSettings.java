@@ -36,7 +36,7 @@ public final class TestSettings {
         new MemorySettings(12_000, 0.7, 0.5),
         new SelectionSettings(SelectionPolicyType.THOMPSON_SAMPLING, 0.5, 1.5, 0.1, 10),
         new TargetSettings(600, 0.2, 1.0, 3.0, 0.5),
-        new PlanSettings(600, 32.0, 200, 0.3, 0.5),
+        new PlanSettings(600, 32.0, 200, 0.3, 0.5, 0.4),
         new AttackSettings(60, 60, 60, 8.0, 15.0, 1.0, 16.0, 0.5, 4, 15.0, 3.0),
         new SpiderSettings(60, 1),
         new PersistenceSettings(6_000),

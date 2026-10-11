@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class BrainRegroupingTest {
-  private static final int WOUNDED_MOBS = 5;
+  private static final int RECOVERED_MOBS = 5;
   private static final double LOW_HEALTH = 5;
   private static final double RECOVERED_HEALTH = 12;
   private static final double PARTLY_RECOVERED_HEALTH = 8;
@@ -42,7 +42,7 @@ class BrainRegroupingTest {
   void enterRegrouping() {
     mobs = fixture.catalogGroup();
     fixture.decide(START_TICK, mobs, alice());
-    wounded = healthFrom(mobs, 0, WOUNDED_MOBS, LOW_HEALTH);
+    wounded = healthFrom(mobs, 0, mobs.size(), LOW_HEALTH);
     fixture.decide(REGROUP_START_TICK, wounded, alice());
   }
 
@@ -79,8 +79,8 @@ class BrainRegroupingTest {
   void recoveredMajorityEndsRegroupingAndLengthensTheWindow() {
     List<MobSnapshot> recovered =
         healthFrom(
-            healthFrom(mobs, 0, WOUNDED_MOBS, RECOVERED_HEALTH),
-            WOUNDED_MOBS,
+            healthFrom(mobs, 0, RECOVERED_MOBS, RECOVERED_HEALTH),
+            RECOVERED_MOBS,
             mobs.size(),
             LOW_HEALTH);
 
@@ -90,7 +90,7 @@ class BrainRegroupingTest {
     assertThat(result.decision().state()).isEqualTo(GroupState.OBSERVING);
     assertThat(result.decision().assignments()).isEmpty();
     assertThat(result.decision().target()).isEmpty();
-    assertThat(fixture.group().lifecycle().regrouping()).isEmpty();
+    assertThat(fixture.group().lifecycle().aftermath().regrouping()).isEmpty();
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(LENGTHENED_WINDOW_TICKS);
   }
 
@@ -105,7 +105,7 @@ class BrainRegroupingTest {
     assertThat(result.decision().assignments())
         .hasSize(mobs.size())
         .allSatisfy(order -> assertThat(order.role()).isEqualTo(Role.RETREAT));
-    assertThat(fixture.group().lifecycle().regrouping().map(Regrouping::startTick))
+    assertThat(fixture.group().lifecycle().aftermath().regrouping().map(Regrouping::startTick))
         .contains(REGROUP_START_TICK + INITIAL_WINDOW_TICKS);
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
 
@@ -118,7 +118,7 @@ class BrainRegroupingTest {
 
   @Test
   void expiredWindowEndsRegroupingOnceTheGroupCanFight() {
-    List<MobSnapshot> canFight = withHealth(wounded, WOUNDED_MOBS - 1, PARTLY_RECOVERED_HEALTH);
+    List<MobSnapshot> canFight = healthFrom(wounded, 0, wounded.size(), PARTLY_RECOVERED_HEALTH);
 
     BrainResult result =
         fixture.decide(REGROUP_START_TICK + INITIAL_WINDOW_TICKS, canFight, alice());
@@ -137,7 +137,9 @@ class BrainRegroupingTest {
     assertThat(result.decision().assignments())
         .hasSize(mobs.size())
         .allSatisfy(order -> assertPoint(order.rallyPoint(), RALLY));
-    assertPoint(fixture.group().lifecycle().regrouping().flatMap(Regrouping::rallyPoint), RALLY);
+    assertPoint(
+        fixture.group().lifecycle().aftermath().regrouping().flatMap(Regrouping::rallyPoint),
+        RALLY);
   }
 
   @Test
@@ -162,7 +164,8 @@ class BrainRegroupingTest {
         .hasSize(mobs.size())
         .allSatisfy(order -> assertPoint(order.rallyPoint(), recomputed));
     assertPoint(
-        fixture.group().lifecycle().regrouping().flatMap(Regrouping::rallyPoint), recomputed);
+        fixture.group().lifecycle().aftermath().regrouping().flatMap(Regrouping::rallyPoint),
+        recomputed);
   }
 
   @Test

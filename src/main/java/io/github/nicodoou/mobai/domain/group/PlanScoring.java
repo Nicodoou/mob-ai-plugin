@@ -3,8 +3,6 @@ package io.github.nicodoou.mobai.domain.group;
 import io.github.nicodoou.mobai.domain.decision.PlanScores;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
-import io.github.nicodoou.mobai.domain.shared.MobId;
-import java.util.Map;
 import java.util.Objects;
 
 /** Scores a plan at its close (CT-27). */
@@ -58,11 +56,8 @@ public final class PlanScoring {
   // Healing during the plan offsets the loss, but never below zero.
   public double healthLostOf(Plan closing) {
     Objects.requireNonNull(closing, "PlanScoring.plan");
-    double lost = 0;
-    for (Map.Entry<MobId, Double> start : closing.startingHealth().entrySet()) {
-      lost += start.getValue() - healthAtClose(closing, start.getKey());
-    }
-    return Math.max(0, lost);
+    return Math.max(
+        0, GroupStrength.startingHealthOf(closing) - GroupStrength.currentHealthOf(closing));
   }
 
   private double damageScore(Plan closing, PlanEndReason reason) {
@@ -101,23 +96,8 @@ public final class PlanScoring {
     return (double) alive / closing.startingMembers();
   }
 
-  private double healthKeptShare(Plan closing) {
-    double initial = startingGroupHealth(closing);
-    if (initial <= 0) {
-      return 1;
-    }
-    return 1 - Math.min(1, healthLostOf(closing) / initial);
-  }
-
-  private static double startingGroupHealth(Plan closing) {
-    return closing.startingHealth().values().stream().mapToDouble(Double::doubleValue).sum();
-  }
-
-  // A mob that left the group (died or vanished) lost all its health.
-  private static double healthAtClose(Plan closing, MobId mob) {
-    if (!closing.roles().containsKey(mob)) {
-      return 0;
-    }
-    return closing.lastSeenHealth().getOrDefault(mob, 0.0);
+  // Healing during the plan never keeps more than the group started with.
+  private static double healthKeptShare(Plan closing) {
+    return Math.min(1, GroupStrength.ofPlan(closing));
   }
 }

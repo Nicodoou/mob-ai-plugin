@@ -64,23 +64,43 @@ class PlanEndDetectorTest {
   }
 
   @Test
-  void moreThanHalfRetreatingEndsThePlan() {
-    Plan seen = plan.withTargetSeenAt(150);
-    Plan twoRetreating = seen.withRole(M1, Role.RETREAT).withRole(M2, Role.RETREAT);
-    Plan threeRetreating = twoRetreating.withRole(M3, Role.RETREAT);
+  void weakGroupClosesAsRetreated() {
+    Plan weak = withHealth(plan.withTargetSeenAt(150), 7, 7, 7, 7);
 
-    assertThat(detector.detect(twoRetreating, 150)).isEmpty();
-    assertThat(detector.detect(threeRetreating, 150)).contains(PlanEndReason.GROUP_RETREATED);
+    assertThat(detector.detect(weak, 150)).contains(PlanEndReason.GROUP_RETREATED);
   }
 
   @Test
-  void deadMembersCountAsRetreated() {
-    Plan seen = plan.withTargetSeenAt(150);
-    Plan oneGoneOneRetreating = seen.withoutMember(M1).withRole(M2, Role.RETREAT);
-    Plan twoGoneOneRetreating = oneGoneOneRetreating.withoutMember(M3);
+  void strongEnoughGroupKeepsFighting() {
+    Plan strongEnough = withHealth(plan.withTargetSeenAt(150), 9, 9, 9, 9);
 
-    assertThat(detector.detect(oneGoneOneRetreating, 150)).isEmpty();
-    assertThat(detector.detect(twoGoneOneRetreating, 150)).contains(PlanEndReason.GROUP_RETREATED);
+    assertThat(detector.detect(strongEnough, 150)).isEmpty();
+  }
+
+  @Test
+  void groupAtTheRetreatStrengthKeepsFighting() {
+    Plan atThreshold = withHealth(plan.withTargetSeenAt(150), 8, 8, 8, 8);
+
+    assertThat(detector.detect(atThreshold, 150)).isEmpty();
+  }
+
+  @Test
+  void deadMembersCountAsLostStrength() {
+    Plan seen = withHealth(plan.withTargetSeenAt(150), 20, 20, 20, 20);
+    Plan twoGone = seen.withoutMember(M1).withoutMember(M2);
+    Plan threeGone = twoGone.withoutMember(M3);
+
+    assertThat(detector.detect(twoGone, 150)).isEmpty();
+    assertThat(detector.detect(threeGone, 150)).contains(PlanEndReason.GROUP_RETREATED);
+  }
+
+  @Test
+  void retreatingMembersAtFullHealthKeepThePlanGoing() {
+    Plan seen = withHealth(plan.withTargetSeenAt(150), 20, 20, 20, 20);
+    Plan threeRetreating =
+        seen.withRole(M1, Role.RETREAT).withRole(M2, Role.RETREAT).withRole(M3, Role.RETREAT);
+
+    assertThat(detector.detect(threeRetreating, 150)).isEmpty();
   }
 
   @Test
@@ -116,6 +136,12 @@ class PlanEndDetectorTest {
     GroupSnapshot withoutMobs = new GroupSnapshotBuilder().withPlayer(alice().build()).build();
 
     assertThat(detector.isTargetVisible(withoutMobs, ALICE)).isFalse();
+  }
+
+  private static Plan withHealth(Plan started, double... healths) {
+    Map<MobId, Double> start = Map.of(M1, 20.0, M2, 20.0, M3, 20.0, M4, 20.0);
+    Map<MobId, Double> now = Map.of(M1, healths[0], M2, healths[1], M3, healths[2], M4, healths[3]);
+    return started.withHealthSeen(start).withHealthSeen(now);
   }
 
   private static MobId mobId(int number) {

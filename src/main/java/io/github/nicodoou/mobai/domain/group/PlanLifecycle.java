@@ -14,8 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 
 public final class PlanLifecycle {
-  private static final long NO_REGROUP = -1;
-
   private final GroupId groupId;
   private final GroupRoster roster;
   private final PendingEvents events;
@@ -27,9 +25,7 @@ public final class PlanLifecycle {
   private long planSequence = 0;
   private PlanEndReason lastEndReason;
   private long lastEndTick;
-  private long regroupStartTick = NO_REGROUP;
-  // null outside REGROUPING or while no rally point was chosen; exposed only as Optional
-  private Vec3 rallyPoint;
+  private final PlanAftermath aftermath = new PlanAftermath();
 
   PlanLifecycle(GroupId groupId, GroupRoster roster, PendingEvents events) {
     this.groupId = Objects.requireNonNull(groupId, "PlanLifecycle.groupId");
@@ -66,9 +62,10 @@ public final class PlanLifecycle {
         committedTarget(),
         Optional.ofNullable(lastEndReason),
         lastEndTick,
-        regrouping().stream().mapToLong(Regrouping::startTick).findFirst(),
+        aftermath.regroupStartTick(),
         planSequence,
-        Optional.ofNullable(rallyPoint));
+        aftermath.rallyPoint(),
+        aftermath.lastPlanLostHealth());
   }
 
   public void restore(LifecycleCapture capture) {
@@ -80,16 +77,12 @@ public final class PlanLifecycle {
     committedTarget = capture.committedTarget().orElse(null);
     lastEndReason = capture.lastEndReason().orElse(null);
     lastEndTick = capture.lastEndTick();
-    regroupStartTick = capture.regroupStartTick().orElse(NO_REGROUP);
-    rallyPoint = capture.rallyPoint().orElse(null);
+    aftermath.restore(capture);
     planSequence = capture.planSequence();
   }
 
-  public Optional<Regrouping> regrouping() {
-    if (regroupStartTick == NO_REGROUP) {
-      return Optional.empty();
-    }
-    return Optional.of(new Regrouping(regroupStartTick, Optional.ofNullable(rallyPoint)));
+  public PlanAftermath aftermath() {
+    return aftermath;
   }
 
   public void beginPlanning() {
@@ -102,6 +95,7 @@ public final class PlanLifecycle {
     roster.requireMembers(start.roles().keySet());
     planSequence++;
     plan = Plan.start(new PlanId(groupId, planSequence), start);
+    aftermath.forgetLostHealth();
     state = GroupState.EXECUTING;
     return plan;
   }
@@ -135,6 +129,7 @@ public final class PlanLifecycle {
     requireState(GroupState.EXECUTING, "close a plan");
     ClosedPlan closed = closedPlan(reason, tick, scoring);
     committedTarget = plan.target();
+    aftermath.rememberLostHealth(GroupStrength.lostHealthOf(plan));
     lastEndReason = reason;
     lastEndTick = tick;
     state = GroupState.EVALUATING;
@@ -147,8 +142,7 @@ public final class PlanLifecycle {
     plan = null;
     if (lastEndReason == PlanEndReason.GROUP_RETREATED) {
       state = GroupState.REGROUPING;
-      regroupStartTick = lastEndTick;
-      rallyPoint = null;
+      aftermath.startRegroup(lastEndTick);
       return;
     }
     state = GroupState.OBSERVING;
@@ -157,8 +151,7 @@ public final class PlanLifecycle {
   public void finishRegrouping() {
     requireState(GroupState.REGROUPING, "finish regrouping");
     state = GroupState.OBSERVING;
-    regroupStartTick = NO_REGROUP;
-    rallyPoint = null;
+    aftermath.endRegroup();
   }
 
   // CT-13: a group too hurt to fight regroups without opening a plan.
@@ -166,19 +159,18 @@ public final class PlanLifecycle {
     requireState(GroupState.OBSERVING, "regroup without a plan");
     requireTick(tick);
     state = GroupState.REGROUPING;
-    regroupStartTick = tick;
-    rallyPoint = null;
+    aftermath.startRegroup(tick);
   }
 
   public void restartRegroupWindow(long tick) {
     requireState(GroupState.REGROUPING, "restart the regroup window");
     requireTick(tick);
-    regroupStartTick = tick;
+    aftermath.restartRegroupWindow(tick);
   }
 
   public void rallyAt(Vec3 point) {
     requireState(GroupState.REGROUPING, "set a rally point");
-    rallyPoint = Objects.requireNonNull(point, "PlanLifecycle.rallyPoint");
+    aftermath.rallyAt(Objects.requireNonNull(point, "PlanLifecycle.rallyPoint"));
   }
 
   private static void requireTick(long tick) {

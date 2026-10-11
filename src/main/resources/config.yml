@@ -45,6 +45,9 @@ plan:
   retreat-health-fraction: 0.3
   # Fracción de la vida del objetivo que hay que sacarle para un plan exitoso.
   full-success-damage-fraction: 0.5
+  # Fuerza del grupo (vida que conserva, contando a los muertos) por debajo de la cual se
+  # retira todo junto.
+  group-retreat-strength: 0.4
 
 attack:
   projectile-timeout-ticks: 60

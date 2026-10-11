@@ -2,6 +2,8 @@ package io.github.nicodoou.mobai.domain.brain;
 
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.ALICE;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.BOB;
+import static io.github.nicodoou.mobai.testsupport.BrainFixture.CATALOG_SKELETONS;
+import static io.github.nicodoou.mobai.testsupport.BrainFixture.CATALOG_ZOMBIES;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.GROUP_ID;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.START_TICK;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.alice;
@@ -254,14 +256,14 @@ class BrainExecutingTest {
   void groupRetreatStartsRegroupingWithRetreatOrders() {
     List<MobSnapshot> mobs = startPlan(fixture);
     List<MobSnapshot> wounded = mobs;
-    for (int index = 0; index < 5; index++) {
+    for (int index = 0; index < mobs.size(); index++) {
       wounded = withHealth(wounded, index, LOW_HEALTH);
     }
 
     BrainResult result = fixture.decide(START_TICK + 10, wounded, alice());
 
     assertThat(result.trace().endReason()).contains(PlanEndReason.GROUP_RETREATED);
-    assertThat(result.trace().newlyRetreating()).hasSize(5);
+    assertThat(result.trace().newlyRetreating()).hasSize(CATALOG_ZOMBIES + CATALOG_SKELETONS);
     assertThat(result.closedPlan().orElseThrow().reason()).isEqualTo(PlanEndReason.GROUP_RETREATED);
     assertThat(result.decision().state()).isEqualTo(GroupState.REGROUPING);
     assertThat(result.decision().plan()).isEmpty();

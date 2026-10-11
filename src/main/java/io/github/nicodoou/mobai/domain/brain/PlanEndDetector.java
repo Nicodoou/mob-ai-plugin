@@ -1,8 +1,8 @@
 package io.github.nicodoou.mobai.domain.brain;
 
+import io.github.nicodoou.mobai.domain.group.GroupStrength;
 import io.github.nicodoou.mobai.domain.group.Plan;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
-import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
@@ -27,7 +27,7 @@ public final class PlanEndDetector {
     if (isTimedOut(plan, tick, current)) {
       return Optional.of(PlanEndReason.TIMED_OUT);
     }
-    if (hasRetreated(plan)) {
+    if (hasRetreated(plan, current)) {
       return Optional.of(PlanEndReason.GROUP_RETREATED);
     }
     return Optional.empty();
@@ -49,13 +49,9 @@ public final class PlanEndDetector {
     return plan.ageTicks(tick) >= settings.maxPlanDurationTicks();
   }
 
-  private static boolean hasRetreated(Plan plan) {
-    int gone = plan.startingMembers() - plan.roles().size();
-    return 2L * (gone + retreatingCount(plan)) > plan.startingMembers();
-  }
-
-  private static long retreatingCount(Plan plan) {
-    return plan.roles().values().stream().filter(role -> role == Role.RETREAT).count();
+  // CT-31: the dead count as lost health, so a few healthy survivors do not keep a plan alive.
+  private static boolean hasRetreated(Plan plan, PlanSettings settings) {
+    return GroupStrength.ofPlan(plan) < settings.groupRetreatStrength();
   }
 
   private boolean isNearAnyMob(GroupSnapshot snapshot, PlayerSnapshot player) {
