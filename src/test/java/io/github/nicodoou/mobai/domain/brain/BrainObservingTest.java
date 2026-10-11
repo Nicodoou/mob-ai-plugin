@@ -17,6 +17,7 @@ import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.decision.StrategyCheck;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
+import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -233,6 +234,27 @@ class BrainObservingTest {
 
     assertThat(result.decision().state()).isEqualTo(GroupState.EXECUTING);
     assertThat(result.trace().stillRetreated()).isFalse();
+  }
+
+  @Test
+  void aLoneSurvivorDoesNotOpenAPlan() {
+    BrainFixture fixture = BrainFixture.choosingStrategy(0);
+    List<MobSnapshot> mobs = fixture.catalogGroup();
+    fixture.decide(START_TICK, mobs, alice());
+    mobs.subList(1, mobs.size())
+        .forEach(dead -> fixture.group().removeMember(dead.id(), START_TICK + 5));
+    List<MobSnapshot> survivor = mobs.subList(0, 1);
+    BrainResult closing = fixture.decide(START_TICK + 10, survivor, alice());
+    BrainResult regroupEnd = fixture.decide(START_TICK + 20, survivor, alice());
+
+    BrainResult result = fixture.decide(START_TICK + 30, survivor, alice());
+
+    assertThat(closing.closedPlan().orElseThrow().reason())
+        .isEqualTo(PlanEndReason.GROUP_RETREATED);
+    assertThat(regroupEnd.decision().state()).isEqualTo(GroupState.OBSERVING);
+    assertThat(result.decision().plan()).isEmpty();
+    assertThat(result.decision().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(fixture.group().lifecycle().planSequence()).isEqualTo(1);
   }
 
   private static void assertRally(Optional<Vec3> point) {
