@@ -33,6 +33,7 @@ Registro de los cambios de diseño hechos **después** de aprobar el plan maestr
 | [CT-28](#ct-28--retirada-aprendida) Retirada aprendida | 8 oct 2026 | Nico | WP-30C |
 | [CT-29](#ct-29--punto-de-reunión-al-reagruparse) Punto de reunión al reagruparse | 8 oct 2026 | Nico (diseño), Opus (detalle) | WP-32A y WP-32B |
 | [CT-30](#ct-30--planes-por-receta-modelo-bayesiano-y-modo-entrenamiento) Planes por receta, modelo bayesiano y modo entrenamiento | 8 oct 2026 | Nico (idea y decisiones), Opus (diseño) | Aprobado con cambios (8 oct). WP-33A a WP-33K |
+| [CT-31](#ct-31--retirada-del-grupo-aprendida) Retirada del grupo aprendida | 10 oct 2026 | Nico | WP-31A, WP-31B |
 | [CT-08](#ct-08--el-zombie-que-flanquea-usa-siempre-el-golpe-de-flanco) El zombie que flanquea usa siempre el golpe de flanco | 5 oct 2026 | Opus (WP-11), aprobado por Nico | En curso: WP-11 |
 
 ## CT-01 — Correcciones del spike al rastreador
@@ -601,3 +602,34 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 - **Tamaño:** es el cambio más grande desde el cerebro. Toca la memoria, el formato en disco y la simulación.
 
 **Decisiones para Nico:** respondidas el 8 oct (ver arriba).
+
+## CT-31 — Retirada del grupo aprendida
+
+**Estado:** aprobado por Nico el 10 oct 2026, punto por punto, con las recomendaciones A y B. Viene del borrador del traspaso de la nube (`traspaso-nube.md`).
+
+**Qué cambia.**
+
+1. **Fuerza del grupo:**
+   - durante un plan, vida de los mobs del inicio que siguen ÷ vida con la que arrancaron;
+   - fuera de un plan, vida de los vivos ÷ (vida máxima de los vivos + vida perdida del último plan).
+   - Los muertos cuentan como vida perdida.
+2. **Retirada de todo el grupo:**
+   - si la fuerza baja del umbral, el plan cierra con `GROUP_RETREATED` y se retiran todos juntos;
+   - no se abre un plan nuevo mientras la fuerza siga debajo.
+   - Reemplaza a la regla de "más de la mitad" (CT-07 y CT-13).
+3. **Reincorporarse:** cuando los vivos se curan y la fuerza supera el umbral, o cuando llega un refuerzo. Un sobreviviente solo y sin refuerzo se queda retirado.
+4. **La retirada individual para curarse se mantiene.**
+5. **Umbral aprendido** (WP-31B): perilla de la receta `groupRetreatStrength` en [0, 0,6], por jugador.
+6. **D-02** (WP-31B): el punto de partida del modelo prefiere valores intermedios en las perillas continuas (demora, retirada individual, retirada del grupo), con la recalibración del WP-33C sin aflojar la puerta.
+7. **Recomendación A** (WP-31B): los modelos guardados **se agrandan** con los parámetros nuevos sin saber nada, en lugar de reiniciarse. Se conserva lo aprendido y la base, y se hace copia de seguridad.
+8. **Recomendación B** (WP-31B): si hay zombies, al menos uno presiona; no hay recetas con todos de reserva.
+
+**Por qué.** B-07: un sobreviviente sano abría un plan y atacaba solo, porque la regla de grupo en retirada miraba solo a los vivos. Nico (9 oct): cuando el grupo ya no tiene chance, que se retire todo junto y aprenda de cada jugador cuándo conviene.
+
+**Impacto.**
+- WP-31A: `GroupStrength`, `PlanEndDetector`, `RetreatRule`, el estado del reagrupamiento (sale de `PlanLifecycle`, que estaba en 20 métodos) y la configuración `plan.group-retreat-strength`.
+- WP-31B: `RecipeFeatures` (de 15 a 17 rasgos; contextuales de 60 a 68), `RecipeSearch`, la migración de modelos y el punto de partida.
+
+**Riesgos.**
+- Un umbral alto hace que el grupo se retire demasiado pronto: 0,4 es un valor de arranque.
+- La vida perdida no se guarda en disco: después de un reinicio, un sobreviviente puede volver a atacar.
