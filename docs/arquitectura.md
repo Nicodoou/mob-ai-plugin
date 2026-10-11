@@ -421,7 +421,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Estados del grupo | `GroupState`: `OBSERVING`, `PLANNING`, `EXECUTING`, `EVALUATING`, `REGROUPING` | Dominio |
 | Miembros y líder de un grupo, ciclo del plan, eventos pendientes | `GroupRoster`, `PlanLifecycle`, `PendingEvents` | Dominio |
 | Ventana de reagrupamiento, regla de reagrupamiento, configuración de retirada | `RegroupWindow`, `RegroupRule`, `RetreatSettings` | Dominio |
-| Punto de reunión, reagrupamiento en curso | `RallyPointRule`, `Regrouping`, `PlanLifecycle.rallyAt`, `RoleAssignment.rallyPoint` | Dominio |
+| Punto de reunión, reagrupamiento en curso | `RallyPointRule`, `Regrouping`, `PlanAftermath.regrouping`, `PlanLifecycle.rallyAt`, `RoleAssignment.rallyPoint` | Dominio |
 | Camino al punto de reunión, tramo, rodeo | `RallyRoute`, `RallyLeg`, `RallyDetour`, `RetreatMove.RALLY` | Adaptador y dominio |
 | Roles | `Role`: `PRESS`, `FLANK`, `SHOOT`, `RETREAT` (MVP); `CUT_OFF`, `SUPPORT` (posteriores) | Dominio |
 | Resultado de ataque | `AttackOutcome` (interfaz `sealed`): `Hit`, `Partial`, `Miss`, `Neutral` | Dominio |
@@ -482,6 +482,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Rastreo de flechas | `ProjectileOpening`, `ProjectileHit`, `ProjectileClosure`, `TargetValidity`, `OpenProjectile`, `ProjectileListener`, `ProjectileResolver` | Adaptadores |
 | Esqueletos: distancia, ritmo, tiro oportuno, puntería y armas | `ShootGoal`, `RangeSituation`, `RangeMove`, `ShotRhythm`, `OpportunisticWait`, `OpportunisticMove`, `TargetFocus`, `ShotAim`, `ShotRequest`, `ShotParts`, `BowShooter`, `Weapons` | Adaptadores |
 | Grupo en retirada que no planifica (CT-13) | `RetreatRule.isGroupRetreated`, `PlanLifecycle.regroupWithoutPlan` y `restartRegroupWindow`, `DecisionTrace.stillRetreated` | Dominio |
+| Fuerza del grupo, vida perdida del último plan y estado del reagrupamiento (CT-31) | `GroupStrength.ofPlan` y `ofSnapshot`, `PlanAftermath.lastPlanLostHealth`, `PlanLifecycle.aftermath`, `LifecycleCapture.lastPlanLostHealth`, `PlanSettings.groupRetreatStrength` | Dominio |
 | Reparto de decisiones, decidir un grupo, muestreo de movimiento | `DecisionCadence`, `DecisionParts`, `GroupDecider`, `MovementSampler` | Adaptadores |
 | Comandos de administración y grupo de prueba | `MobAiCommand`, `Subcommand`, `SpawnGroupCommand`, `StatusCommand`, `ResetCommand`, `ReloadCommand`, `GroupSpawner`, `SpawnRing` | Adaptadores |
 | Incidentes en el server: testigo de cada decisión, caja negra, entrada única de trazas | `DecisionWitness`, `WitnessParts`, `Observation`, `FlightRecorder`, `TraceHub`, `TraceEvent`, `IncidentWriter`, `DebugGson` | Adaptadores |
