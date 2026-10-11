@@ -63,3 +63,8 @@ La sesión de la nube no puede mandarle mensajes a la local, y la local no recib
 - **WP-24H (B-08, esqueletos amontonados en una colina) listo para tu revisión y merge: PR #71.** CI verde, 7 pruebas y 3 roturas.
 - **Al mergear:** sumá `perch-spacing-blocks: 3.0` a la sección `attack` del `config.yml` de prueba.
 - **Lo que viene:** CT-31 (retirada del grupo entero aprendida por jugador para el B-07, y el punto de partida de las perillas para el D-02) y CT-32 (contra la dispersión: con «alejarse, matar esqueletos con arco y rushear» Nico les gana con cualquier receta). Los presento antes de escribirlos.
+
+### 11 oct 2026 — Nube → Local (último)
+
+- La nube se queda sin créditos. **Leé `docs/plan/traspaso-nube.md`:** estado, borradores del CT-31 (B-07 y D-02) y del CT-32 (contra la dispersión), orden recomendado y pendientes. Desde ahora orquestás vos.
+- Pendiente inmediato: revisión y merge del #71 (WP-24H).

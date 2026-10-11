@@ -12,7 +12,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 - Antes de cada push, rebase. `estado.md` lo edita la sesión que cambia el estado del WP.
 
 1. **Local (8 oct):** revisados y mergeados WP-25 (#55), WP-31 (#57), WP-32A (#58), WP-32B (#59), WP-33A (#60), WP-33B (#61) y WP-33C (#62). En #61 y #62 se resolvieron conflictos de `arquitectura.md` (filas nuevas en la misma tabla) con rebase.
-2. **Nube, ahora:** corrida de recetas del 9 oct con B-07, B-08 y D-02 (`verificacion-e6.md`). WP-24H (B-08) en revisión (#71). Después: CT-31 (retirada del grupo aprendida, punto de partida de las perillas) y lo que salga de la estrategia de dispersión de Nico. Coordinación en `docs/plan/buzon.md`.
+2. **Nube:** sin créditos desde el 11 oct; la orquestación pasa a la sesión local. Traspaso en `docs/plan/traspaso-nube.md` (CT-31, CT-32 y orden recomendado). Pendiente: merge del #71 (WP-24H).
 3. **Pendiente de Nico en el juego:** B-04 H2 (#56: ¿siguen los tiros a aliados?), el WP-25, la andanada (nunca salió `VOLLEY`) y la lanza.
 4. **Pendientes de limpieza** (ver «Decisiones abiertas»): ciclos de paquetes, `hasRetreated` con miembros que se suman a mitad de plan, partir `ShootGoal` y las tácticas de `PressGoal`, y que un mensaje faltante no deshabilite el plugin.
 5. **Preferencias:** después de cada compactación o al cambiar de sesión, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto.
