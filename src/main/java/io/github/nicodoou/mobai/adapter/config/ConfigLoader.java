@@ -84,7 +84,8 @@ public final class ConfigLoader {
         number(root, "plan.target-lost-distance-blocks"),
         wholeNumber(root, "plan.target-lost-ticks"),
         number(root, "plan.retreat-health-fraction"),
-        number(root, "plan.full-success-damage-fraction"));
+        number(root, "plan.full-success-damage-fraction"),
+        number(root, "plan.group-retreat-strength"));
   }
 
   private AttackSettings attack(ConfigurationSection root) {

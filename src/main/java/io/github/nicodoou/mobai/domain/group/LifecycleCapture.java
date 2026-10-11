@@ -14,7 +14,8 @@ public record LifecycleCapture(
     long lastEndTick,
     OptionalLong regroupStartTick,
     long planSequence,
-    Optional<Vec3> rallyPoint) {
+    Optional<Vec3> rallyPoint,
+    double lastPlanLostHealth) {
   public LifecycleCapture {
     Objects.requireNonNull(state, "LifecycleCapture.state");
     Objects.requireNonNull(plan, "LifecycleCapture.plan");
@@ -28,6 +29,7 @@ public record LifecycleCapture(
     requireRallyOnlyWhileRegrouping(state, rallyPoint);
     requireEndReasonWhileEvaluating(state, lastEndReason);
     requireCounters(lastEndTick, planSequence);
+    requireLostHealth(lastPlanLostHealth);
     plan.ifPresent(present -> requireSequenceMatches(present, planSequence));
   }
 
@@ -79,6 +81,14 @@ public record LifecycleCapture(
     if (planSequence < 0) {
       throw new IllegalArgumentException(
           "LifecycleCapture.planSequence must be zero or positive, got " + planSequence);
+    }
+  }
+
+  private static void requireLostHealth(double lastPlanLostHealth) {
+    if (!(lastPlanLostHealth >= 0) || !Double.isFinite(lastPlanLostHealth)) {
+      throw new IllegalArgumentException(
+          "LifecycleCapture.lastPlanLostHealth must be zero or positive, got "
+              + lastPlanLostHealth);
     }
   }
 

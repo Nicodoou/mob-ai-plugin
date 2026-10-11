@@ -34,7 +34,8 @@ class SettingsValidationTest {
     new SelectionSettings(SelectionPolicyType.RANDOM, 1.0, 1.0, 1.0, 0);
     new AttackSettings(1, 1, 1, 8.0, 8.0, 0.0, 1.0, 0.0, 0, 0.0, 0.0);
     new AttackSettings(1, 1, 1, 8.0, 8.0, 0.0, 1.0, 0.0, 0, 90.0, 0.0);
-    new PlanSettings(1, 1.0, 1, 0.0, 1.0);
+    new PlanSettings(1, 1.0, 1, 0.0, 1.0, 0.0);
+    new PlanSettings(1, 1.0, 1, 0.0, 1.0, 1.0);
     new TargetSettings(1, 0.0, 1.0, 1.0, 1.0);
   }
 
@@ -96,7 +97,10 @@ class SettingsValidationTest {
             (Runnable) () -> new TargetSettings(600, 0.2, 1.0, 3.0, 0.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "PlanSettings.retreatHealthFraction must be between 0.0 and 1.0, got 1.5",
-            (Runnable) () -> new PlanSettings(600, 32.0, 200, 1.5, 0.5)),
+            (Runnable) () -> new PlanSettings(600, 32.0, 200, 1.5, 0.5, 0.4)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "PlanSettings.groupRetreatStrength must be between 0.0 and 1.0, got 1.5",
+            (Runnable) () -> new PlanSettings(600, 32.0, 200, 0.3, 0.5, 1.5)),
         org.junit.jupiter.params.provider.Arguments.of(
             "AttackSettings.shootMinDistanceBlocks must not exceed AttackSettings.shootMaxDistanceBlocks, got 16.0 > 15.0",
             (Runnable)

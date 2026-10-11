@@ -2,6 +2,7 @@ package io.github.nicodoou.mobai.domain.group;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
@@ -37,7 +38,8 @@ class LifecycleCaptureTest {
                     0,
                     OptionalLong.empty(),
                     0,
-                    Optional.empty()))
+                    Optional.empty(),
+                    0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.state cannot be PLANNING");
   }
@@ -56,7 +58,8 @@ class LifecycleCaptureTest {
                     0,
                     OptionalLong.empty(),
                     1,
-                    Optional.empty()))
+                    Optional.empty(),
+                    0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "LifecycleCapture.plan must be present only while EXECUTING or EVALUATING,"
@@ -75,7 +78,8 @@ class LifecycleCaptureTest {
                     0,
                     OptionalLong.of(5),
                     0,
-                    Optional.empty()))
+                    Optional.empty(),
+                    0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "LifecycleCapture.regroupStartTick must be present only while REGROUPING,"
@@ -94,7 +98,8 @@ class LifecycleCaptureTest {
                     0,
                     OptionalLong.empty(),
                     0,
-                    Optional.of(RALLY_POINT)))
+                    Optional.of(RALLY_POINT),
+                    0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.rallyPoint must be absent outside REGROUPING, got OBSERVING");
   }
@@ -113,7 +118,8 @@ class LifecycleCaptureTest {
                     0,
                     OptionalLong.empty(),
                     2,
-                    Optional.empty()))
+                    Optional.empty(),
+                    0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.planSequence must match the plan, got 2 for plan 1");
   }
@@ -158,8 +164,41 @@ class LifecycleCaptureTest {
     restored.lifecycle().restore(capture);
 
     assertThat(capture.rallyPoint()).contains(RALLY_POINT);
-    assertThat(restored.lifecycle().regrouping())
+    assertThat(restored.lifecycle().aftermath().regrouping())
         .contains(new Regrouping(300, Optional.of(RALLY_POINT)));
+  }
+
+  @Test
+  void lostHealthSurvivesCaptureAndRestore() {
+    Group original = executingGroup(1);
+    original.lifecycle().recordGroupHealth(Map.of(mob(1), 20.0));
+    original.removeMember(mob(1), 150);
+    original.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, TestSettings.scoring());
+    original.lifecycle().finishEvaluation();
+    Group restored = newGroup(1);
+
+    restored.lifecycle().restore(original.lifecycle().capture());
+
+    assertThat(restored.lifecycle().capture().lastPlanLostHealth()).isCloseTo(20, within(1e-9));
+    assertThat(restored.lifecycle().aftermath().lastPlanLostHealth()).isCloseTo(20, within(1e-9));
+  }
+
+  @Test
+  void negativeLostHealthIsRejected() {
+    assertThatThrownBy(
+            () ->
+                new LifecycleCapture(
+                    GroupState.OBSERVING,
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    0,
+                    OptionalLong.empty(),
+                    0,
+                    Optional.empty(),
+                    -1))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("LifecycleCapture.lastPlanLostHealth must be zero or positive, got -1.0");
   }
 
   @Test

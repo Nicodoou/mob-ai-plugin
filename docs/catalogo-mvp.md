@@ -88,7 +88,7 @@ Gana la primera condición que se cumpla:
 1. El objetivo muere.
 2. El objetivo se pierde (`TARGET_LOST`): más lejos del grupo que la distancia de objetivo perdido o sin que ningún miembro lo vea durante el tiempo de objetivo perdido.
 3. El plan llega a su duración máxima: 30 s.
-4. Más de la mitad del grupo queda con rol `RETREAT` o muere. En ese caso el grupo entero se reagrupa (ver «Retirada táctica y reagrupamiento» en `arquitectura.md`).
+4. La fuerza del grupo baja de `plan.group-retreat-strength` (0,4): la vida que conservan los mobs con los que empezó el plan, contando a los muertos como vida perdida, dividida por la vida que tenían al empezar (CT-31). En ese caso el grupo entero se reagrupa (ver «Retirada táctica y reagrupamiento» en `arquitectura.md`). Fuera de un plan, la fuerza es la vida de los vivos dividida por su vida máxima más la vida perdida del último plan; mientras esté bajo el umbral, el grupo no abre planes, así un sobreviviente sano no ataca solo.
 
 Al terminar se llama a `ClosePlan` con el éxito calculado, y el grupo vuelve a observar.
 

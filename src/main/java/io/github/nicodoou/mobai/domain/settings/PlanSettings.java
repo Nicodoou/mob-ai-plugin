@@ -5,7 +5,8 @@ public record PlanSettings(
     double targetLostDistanceBlocks,
     long targetLostTicks,
     double retreatHealthFraction,
-    double fullSuccessDamageFraction) {
+    double fullSuccessDamageFraction,
+    double groupRetreatStrength) {
   public PlanSettings {
     SettingsChecks.requireAtLeast("PlanSettings.maxPlanDurationTicks", maxPlanDurationTicks, 1);
     SettingsChecks.requirePositive(
@@ -19,5 +20,7 @@ public record PlanSettings(
         new NamedSetting("PlanSettings.fullSuccessDamageFraction", fullSuccessDamageFraction),
         0,
         1);
+    SettingsChecks.requireBetween(
+        new NamedSetting("PlanSettings.groupRetreatStrength", groupRetreatStrength), 0, 1);
   }
 }

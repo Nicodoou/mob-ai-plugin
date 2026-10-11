@@ -217,13 +217,14 @@ class GroupLifecycleTest {
     group.lifecycle().finishEvaluation();
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
-    assertThat(group.lifecycle().regrouping().map(Regrouping::startTick)).contains(700L);
+    assertThat(group.lifecycle().aftermath().regrouping().map(Regrouping::startTick))
+        .contains(700L);
     assertThat(group.lifecycle().plan()).isEmpty();
 
     group.lifecycle().finishRegrouping();
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
-    assertThat(group.lifecycle().regrouping()).isEmpty();
+    assertThat(group.lifecycle().aftermath().regrouping()).isEmpty();
   }
 
   @Test
@@ -234,7 +235,7 @@ class GroupLifecycleTest {
     group.lifecycle().finishEvaluation();
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
-    assertThat(group.lifecycle().regrouping()).isEmpty();
+    assertThat(group.lifecycle().aftermath().regrouping()).isEmpty();
   }
 
   @Test
@@ -257,7 +258,8 @@ class GroupLifecycleTest {
     group.lifecycle().regroupWithoutPlan(500);
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
-    assertThat(group.lifecycle().regrouping().map(Regrouping::startTick)).contains(500L);
+    assertThat(group.lifecycle().aftermath().regrouping().map(Regrouping::startTick))
+        .contains(500L);
     assertThat(group.lifecycle().plan()).isEmpty();
     assertThat(group.lifecycle().planSequence()).isZero();
     assertThat(group.lifecycle().committedTarget()).isEmpty();
@@ -274,33 +276,36 @@ class GroupLifecycleTest {
     group.lifecycle().restartRegroupWindow(1100);
 
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.REGROUPING);
-    assertThat(group.lifecycle().regrouping().map(Regrouping::startTick)).contains(1100L);
+    assertThat(group.lifecycle().aftermath().regrouping().map(Regrouping::startTick))
+        .contains(1100L);
   }
 
   @Test
   void rallyPointLivesOnlyWhileRegrouping() {
     group.lifecycle().regroupWithoutPlan(500);
 
-    assertThat(group.lifecycle().regrouping()).contains(new Regrouping(500, Optional.empty()));
+    assertThat(group.lifecycle().aftermath().regrouping())
+        .contains(new Regrouping(500, Optional.empty()));
 
     group.lifecycle().rallyAt(RALLY_POINT);
 
-    assertThat(group.lifecycle().regrouping())
+    assertThat(group.lifecycle().aftermath().regrouping())
         .contains(new Regrouping(500, Optional.of(RALLY_POINT)));
 
     group.lifecycle().restartRegroupWindow(900);
 
-    assertThat(group.lifecycle().regrouping())
+    assertThat(group.lifecycle().aftermath().regrouping())
         .contains(new Regrouping(900, Optional.of(RALLY_POINT)));
 
     group.lifecycle().finishRegrouping();
 
-    assertThat(group.lifecycle().regrouping()).isEmpty();
+    assertThat(group.lifecycle().aftermath().regrouping()).isEmpty();
     assertThat(group.lifecycle().capture().rallyPoint()).isEmpty();
 
     group.lifecycle().regroupWithoutPlan(1200);
 
-    assertThat(group.lifecycle().regrouping()).contains(new Regrouping(1200, Optional.empty()));
+    assertThat(group.lifecycle().aftermath().regrouping())
+        .contains(new Regrouping(1200, Optional.empty()));
   }
 
   @Test
@@ -329,6 +334,59 @@ class GroupLifecycleTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("PlanLifecycle.tick must be zero or positive, got -1");
     assertThat(group.lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+  }
+
+  @Test
+  void closingRemembersTheLostHealth() {
+    enterExecutingWithBoth();
+    group.removeMember(MOB_2, 300);
+
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 400, TestSettings.scoring());
+
+    assertThat(group.lifecycle().aftermath().lastPlanLostHealth()).isCloseTo(16, within(1e-9));
+  }
+
+  @Test
+  void openingAPlanForgetsTheLostHealth() {
+    enterExecutingWithBoth();
+    group.removeMember(MOB_2, 300);
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 400, TestSettings.scoring());
+    group.lifecycle().finishEvaluation();
+
+    group.lifecycle().beginPlanning();
+    group.lifecycle().startPlan(start);
+
+    assertThat(group.lifecycle().aftermath().lastPlanLostHealth()).isZero();
+  }
+
+  @Test
+  void lostHealthStartsAtZeroAndOutlivesTheRegroup() {
+    assertThat(group.lifecycle().aftermath().lastPlanLostHealth()).isZero();
+
+    enterExecutingWithBoth();
+    group.removeMember(MOB_2, 300);
+    group.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 400, TestSettings.scoring());
+    group.lifecycle().finishEvaluation();
+    group.lifecycle().finishRegrouping();
+    group.lifecycle().regroupWithoutPlan(500);
+    group.lifecycle().finishRegrouping();
+
+    assertThat(group.lifecycle().aftermath().lastPlanLostHealth()).isCloseTo(16, within(1e-9));
+  }
+
+  private void enterExecutingWithBoth() {
+    group.lifecycle().beginPlanning();
+    group
+        .lifecycle()
+        .startPlan(
+            new PlanStart(
+                FLANK_STRATEGY,
+                ALICE,
+                Map.of(MOB_1, Role.PRESS, MOB_2, Role.PRESS),
+                20,
+                100,
+                Optional.empty()));
+    group.lifecycle().recordGroupHealth(Map.of(MOB_1, 20.0, MOB_2, 16.0));
   }
 
   @Test

@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 class RetreatRuleTest {
   private static final double ZOMBIE_MAX_HEALTH = 20.0;
   private static final double SPIDER_MAX_HEALTH = 16.0;
+  private static final double NO_LOSSES = 0;
+  private static final double EIGHT_ZOMBIES_LOST = 160;
 
   private final RetreatRule rule =
       new RetreatRule(
@@ -68,22 +70,31 @@ class RetreatRuleTest {
   }
 
   @Test
-  void groupIsRetreatedWhenMoreThanHalfAreLow() {
-    GroupSnapshot snapshot = zombiesWithHealth(6, 6, 20);
+  void groupIsRetreatedWhenItsStrengthIsLow() {
+    GroupSnapshot snapshot = zombiesWithHealth(6, 6, 6);
 
-    assertThat(rule.isGroupRetreated(snapshot)).isTrue();
+    assertThat(rule.isGroupRetreated(snapshot, NO_LOSSES)).isTrue();
   }
 
   @Test
-  void halfIsNotEnoughForAGroupRetreat() {
-    GroupSnapshot snapshot = zombiesWithHealth(6, 6, 20, 20);
+  void strengthAtTheThresholdIsNotAGroupRetreat() {
+    GroupSnapshot snapshot = zombiesWithHealth(8, 8, 8);
 
-    assertThat(rule.isGroupRetreated(snapshot)).isFalse();
+    assertThat(rule.isGroupRetreated(snapshot, NO_LOSSES)).isFalse();
   }
 
   @Test
-  void emptyGroupIsNotRetreated() {
-    assertThat(rule.isGroupRetreated(new GroupSnapshotBuilder().build())).isFalse();
+  void groupWithTheLastPlansLossesIsRetreated() {
+    GroupSnapshot loneSurvivor = zombiesWithHealth(20);
+    GroupSnapshot reinforced = zombiesWithHealth(20, 20, 20, 20, 20, 20, 20, 20, 20, 20);
+
+    assertThat(rule.isGroupRetreated(loneSurvivor, EIGHT_ZOMBIES_LOST)).isTrue();
+    assertThat(rule.isGroupRetreated(reinforced, EIGHT_ZOMBIES_LOST)).isFalse();
+  }
+
+  @Test
+  void emptyGroupIsRetreated() {
+    assertThat(rule.isGroupRetreated(new GroupSnapshotBuilder().build(), NO_LOSSES)).isTrue();
   }
 
   private static GroupSnapshot zombiesWithHealth(double... healths) {

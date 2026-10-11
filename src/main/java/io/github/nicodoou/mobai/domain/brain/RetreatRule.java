@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.domain.brain;
 
+import io.github.nicodoou.mobai.domain.group.GroupStrength;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
@@ -24,10 +25,11 @@ public final class RetreatRule {
     return mob.health() <= healthFraction * mob.maxHealth();
   }
 
-  // CT-13: a group in this state would close any new plan at once with GROUP_RETREATED.
-  public boolean isGroupRetreated(GroupSnapshot snapshot) {
-    long retreating = snapshot.mobs().stream().filter(this::shouldRetreat).count();
-    return 2 * retreating > snapshot.mobs().size();
+  // CT-13, CT-31: the last plan's dead still count, so a lone healthy survivor stays retreated
+  // until reinforcements make up for them.
+  public boolean isGroupRetreated(GroupSnapshot snapshot, double lastPlanLostHealth) {
+    return GroupStrength.ofSnapshot(snapshot, lastPlanLostHealth)
+        < plan.get().groupRetreatStrength();
   }
 
   public boolean shouldReturn(MobSnapshot mob) {

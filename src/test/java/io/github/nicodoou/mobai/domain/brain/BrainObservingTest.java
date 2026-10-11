@@ -17,6 +17,7 @@ import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.decision.StrategyCheck;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
+import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -43,7 +44,7 @@ import org.junit.jupiter.api.Test;
 class BrainObservingTest {
   private static final int FIRST_ZOMBIE = 0;
   private static final double LOW_HEALTH = 5;
-  private static final int HURT_MAJORITY = 5;
+  private static final int HURT_ALL = 9;
   private static final int HURT_HALF = 4;
   private static final long INITIAL_WINDOW_TICKS = 600;
   private static final Vec3 RALLY = new Vec3(5 + 6 * Math.sqrt(2), 64, 5 + 6 * Math.sqrt(2));
@@ -176,7 +177,7 @@ class BrainObservingTest {
   @Test
   void badlyHurtGroupRegroupsInsteadOfPlanning() {
     BrainFixture fixture = BrainFixture.choosingStrategy(0);
-    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_MAJORITY);
+    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_ALL);
 
     BrainResult result = fixture.decide(START_TICK, mobs, alice());
 
@@ -194,7 +195,7 @@ class BrainObservingTest {
               assertThat(order.suggestedAttack()).isEmpty();
             });
     assertThat(fixture.group().lifecycle().planSequence()).isZero();
-    assertThat(fixture.group().lifecycle().regrouping().map(Regrouping::startTick))
+    assertThat(fixture.group().lifecycle().aftermath().regrouping().map(Regrouping::startTick))
         .contains(START_TICK);
     assertThat(fixture.regroupWindow().currentTicks()).isEqualTo(INITIAL_WINDOW_TICKS);
   }
@@ -202,7 +203,7 @@ class BrainObservingTest {
   @Test
   void holdingBackRalliesAwayFromTheNearestPlayer() {
     BrainFixture fixture = BrainFixture.choosingStrategy(0);
-    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_MAJORITY);
+    List<MobSnapshot> mobs = hurt(fixture.catalogGroup(), HURT_ALL);
 
     BrainResult result = fixture.decide(START_TICK, mobs, alice());
 
@@ -233,6 +234,27 @@ class BrainObservingTest {
 
     assertThat(result.decision().state()).isEqualTo(GroupState.EXECUTING);
     assertThat(result.trace().stillRetreated()).isFalse();
+  }
+
+  @Test
+  void aLoneSurvivorDoesNotOpenAPlan() {
+    BrainFixture fixture = BrainFixture.choosingStrategy(0);
+    List<MobSnapshot> mobs = fixture.catalogGroup();
+    fixture.decide(START_TICK, mobs, alice());
+    mobs.subList(1, mobs.size())
+        .forEach(dead -> fixture.group().removeMember(dead.id(), START_TICK + 5));
+    List<MobSnapshot> survivor = mobs.subList(0, 1);
+    BrainResult closing = fixture.decide(START_TICK + 10, survivor, alice());
+    BrainResult regroupEnd = fixture.decide(START_TICK + 20, survivor, alice());
+
+    BrainResult result = fixture.decide(START_TICK + 30, survivor, alice());
+
+    assertThat(closing.closedPlan().orElseThrow().reason())
+        .isEqualTo(PlanEndReason.GROUP_RETREATED);
+    assertThat(regroupEnd.decision().state()).isEqualTo(GroupState.OBSERVING);
+    assertThat(result.decision().plan()).isEmpty();
+    assertThat(result.decision().state()).isEqualTo(GroupState.REGROUPING);
+    assertThat(fixture.group().lifecycle().planSequence()).isEqualTo(1);
   }
 
   private static void assertRally(Optional<Vec3> point) {
