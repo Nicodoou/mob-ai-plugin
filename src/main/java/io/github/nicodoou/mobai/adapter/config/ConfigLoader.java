@@ -7,6 +7,7 @@ import io.github.nicodoou.mobai.domain.settings.GroupSettings;
 import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.PlannerKind;
@@ -40,7 +41,8 @@ public final class ConfigLoader {
           retreat(root),
           volley(root),
           success(root),
-          learning(root));
+          learning(root),
+          pack(root));
     } catch (IllegalArgumentException exception) {
       throw new InvalidConfigException("config.yml: " + exception.getMessage(), exception);
     }
@@ -164,6 +166,11 @@ public final class ConfigLoader {
         number(root, "learning.max-retreat-health-fraction"),
         wholeNumber(root, "learning.traits-half-life-ticks"),
         wholeNumber(root, "learning.base-weight-plans"));
+  }
+
+  private PackSettings pack(ConfigurationSection root) {
+    return new PackSettings(
+        number(root, "pack.max-spread-blocks"), number(root, "pack.engaged-distance-blocks"));
   }
 
   private double number(ConfigurationSection root, String path) {

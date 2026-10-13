@@ -8,6 +8,7 @@ import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
@@ -357,7 +358,8 @@ class RecipePlannerTest {
             settings.retreat(),
             settings.volley(),
             settings.success(),
-            capped);
+            capped,
+            new PackSettings(8.0, 4.0));
     return new RecipePlanner(() -> cappedSettings, new ScriptedRandomSource(), base);
   }
 
