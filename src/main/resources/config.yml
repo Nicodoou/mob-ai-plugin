@@ -148,3 +148,8 @@ pack:
   max-spread-blocks: 8.0
   # A esta distancia del objetivo o menos ya está peleando y no espera a nadie.
   engaged-distance-blocks: 4.0
+  # Zombies que rodean (CT-32): margen sobre la separación que evita que el barrido de la espada
+  # alcance a dos.
+  surround-margin-blocks: 0.25
+  # Los zombies que esperan turno se quedan esto más allá del alcance del jugador.
+  wait-margin-blocks: 1.0

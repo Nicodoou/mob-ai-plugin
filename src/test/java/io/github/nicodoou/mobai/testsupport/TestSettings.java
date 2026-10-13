@@ -46,7 +46,7 @@ public final class TestSettings {
         new VolleySettings(60, 20, 30, 1.5),
         new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
         new LearningSettings(planner, 0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000, 600),
-        new PackSettings(8.0, 4.0));
+        new PackSettings(8.0, 4.0, 0.25, 1.0));
   }
 
   public static PlanScoring scoring() {
