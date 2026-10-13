@@ -8,7 +8,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Ahora:** especificar y presentar el **WP-34B** (zombies que rodean). El WP-34A (persecución en bloque) se mergeó el 13 oct (#73). CT-32 aprobado por Nico el 13 oct, con todas sus decisiones. Los WP del borrador de la nube se renumeraron en la serie 34, porque 32A y 32B ya son del punto de reunión.
+1. **Ahora:** WP-34B (zombies que rodean) en curso. El WP-34A (persecución en bloque) se mergeó el 13 oct (#73). CT-32 aprobado por Nico el 13 oct, con todas sus decisiones. Los WP del borrador de la nube se renumeraron en la serie 34, porque 32A y 32B ya son del punto de reunión.
 2. **Después:**
    - **WP-31B:** umbral de retirada del grupo aprendido, modelos agrandados sin perder lo aprendido (recomendación A), arranque en el medio (D-02) y sin recetas con todos de reserva (B). Conviene sumar en la misma migración la perilla `chaseCommitment` del WP-32B.
    - **WP-34D:** esquive de los esqueletos ante el arco.
@@ -84,7 +84,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-31A | Fuerza del grupo y retirada de todo el grupo | E6 | mergeado | Opus | [#72](https://github.com/Nicodoou/mob-ai-plugin/pull/72) | CT-31, B-07. Merge el 10 oct; `group-retreat-strength` en el `config.yml` de prueba |
 | WP-31B | Retirada del grupo aprendida, modelos agrandados y perillas en el medio | E6 | pendiente | Opus | — | CT-31, D-02 |
 | WP-34A | Persecución en bloque | E6 | mergeado | Opus | [#73](https://github.com/Nicodoou/mob-ai-plugin/pull/73) | CT-32. Merge el 13 oct; sección `pack` en el `config.yml` de prueba |
-| WP-34B | Zombies que rodean | E6 | especificado | Sonnet | — | CT-32. Esperando el sí de Nico. Al mergear: `surround-margin-blocks` y `wait-margin-blocks` en `pack` del `config.yml` de prueba |
+| WP-34B | Zombies que rodean | E6 | en curso | Sonnet | — | CT-32. Aprobado por Nico el 13 oct. Al mergear: `surround-margin-blocks` y `wait-margin-blocks` en `pack` del `config.yml` de prueba |
 | WP-34C | Perilla `chaseCommitment` | E6 | pendiente | Opus | — | CT-32. Junto con el WP-31B, en una sola migración |
 | WP-34D | Esqueletos contra el arco | E6 | pendiente | Sonnet | — | CT-32 |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
