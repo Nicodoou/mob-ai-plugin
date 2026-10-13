@@ -84,7 +84,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-31A | Fuerza del grupo y retirada de todo el grupo | E6 | mergeado | Opus | [#72](https://github.com/Nicodoou/mob-ai-plugin/pull/72) | CT-31, B-07. Merge el 10 oct; `group-retreat-strength` en el `config.yml` de prueba |
 | WP-31B | Retirada del grupo aprendida, modelos agrandados y perillas en el medio | E6 | pendiente | Opus | — | CT-31, D-02 |
 | WP-34A | Persecución en bloque | E6 | mergeado | Opus | [#73](https://github.com/Nicodoou/mob-ai-plugin/pull/73) | CT-32. Merge el 13 oct; sección `pack` en el `config.yml` de prueba |
-| WP-34B | Zombies que rodean | E6 | pendiente | Sonnet | — | CT-32. Después del 34A (comparten la sección `pack`) |
+| WP-34B | Zombies que rodean | E6 | especificado | Sonnet | — | CT-32. Esperando el sí de Nico. Al mergear: `surround-margin-blocks` y `wait-margin-blocks` en `pack` del `config.yml` de prueba |
 | WP-34C | Perilla `chaseCommitment` | E6 | pendiente | Opus | — | CT-32. Junto con el WP-31B, en una sola migración |
 | WP-34D | Esqueletos contra el arco | E6 | pendiente | Sonnet | — | CT-32 |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
