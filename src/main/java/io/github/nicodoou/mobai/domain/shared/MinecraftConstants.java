@@ -25,6 +25,8 @@ public final class MinecraftConstants {
   // A bow reaches full power after 20 ticks of drawing; vanilla skeletons release it then.
   public static final int BOW_FULL_DRAW_TICKS = 20;
   public static final double MELEE_REACH_BLOCKS = 2.0;
+  // A sword's sweep hits whatever touches the struck mob's hitbox grown by this much sideways.
+  public static final double SWEEP_REACH_BLOCKS = 1.0;
 
   // A survival player's reach with a plain weapon; spears reach farther (their own component).
   public static final double PLAYER_REACH_BLOCKS = 3.0;

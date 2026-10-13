@@ -196,10 +196,16 @@ class SettingsValidationTest {
             (Runnable) () -> withLearning(learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 6000))),
         org.junit.jupiter.params.provider.Arguments.of(
             "PackSettings.maxSpreadBlocks must be a positive number, got 0.0",
-            (Runnable) () -> new PackSettings(0.0, 4.0)),
+            (Runnable) () -> new PackSettings(0.0, 4.0, 0.25, 1.0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "PackSettings.engagedDistanceBlocks must be a positive number, got 0.0",
-            (Runnable) () -> new PackSettings(8.0, 0.0)));
+            (Runnable) () -> new PackSettings(8.0, 0.0, 0.25, 1.0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "PackSettings.surroundMarginBlocks must be zero or positive, got -0.1",
+            (Runnable) () -> new PackSettings(8.0, 4.0, -0.1, 1.0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "PackSettings.waitMarginBlocks must be zero or positive, got -0.1",
+            (Runnable) () -> new PackSettings(8.0, 4.0, 0.25, -0.1)));
   }
 
   private static MobAiSettings withLearning(LearningSettings learning) {
@@ -218,7 +224,7 @@ class SettingsValidationTest {
         defaults.volley(),
         defaults.success(),
         learning,
-        new PackSettings(8.0, 4.0));
+        new PackSettings(8.0, 4.0, 0.25, 1.0));
   }
 
   private static LearningSettings learning(
@@ -286,7 +292,7 @@ class SettingsValidationTest {
                     defaults.volley(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
-                    new PackSettings(8.0, 4.0)))
+                    new PackSettings(8.0, 4.0, 0.25, 1.0)))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("MobAiSettings.memory");
   }
@@ -311,7 +317,7 @@ class SettingsValidationTest {
                     defaults.volley(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
-                    new PackSettings(8.0, 4.0)))
+                    new PackSettings(8.0, 4.0, 0.25, 1.0)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got 0.3 <= 0.3");

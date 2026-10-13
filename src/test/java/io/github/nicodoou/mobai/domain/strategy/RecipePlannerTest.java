@@ -359,7 +359,7 @@ class RecipePlannerTest {
             settings.volley(),
             settings.success(),
             capped,
-            new PackSettings(8.0, 4.0));
+            new PackSettings(8.0, 4.0, 0.25, 1.0));
     return new RecipePlanner(() -> cappedSettings, new ScriptedRandomSource(), base);
   }
 

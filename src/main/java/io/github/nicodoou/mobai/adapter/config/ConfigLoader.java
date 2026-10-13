@@ -170,7 +170,10 @@ public final class ConfigLoader {
 
   private PackSettings pack(ConfigurationSection root) {
     return new PackSettings(
-        number(root, "pack.max-spread-blocks"), number(root, "pack.engaged-distance-blocks"));
+        number(root, "pack.max-spread-blocks"),
+        number(root, "pack.engaged-distance-blocks"),
+        number(root, "pack.surround-margin-blocks"),
+        number(root, "pack.wait-margin-blocks"));
   }
 
   private double number(ConfigurationSection root, String path) {

@@ -19,7 +19,7 @@ Tres estrategias alcanzan para que el grupo tenga decisiones distintas que apren
 
 | Rol (código) | Qué hace el mob |
 | --- | --- |
-| `PRESS` | Va al objetivo y lo ataca de frente o desde donde llegue primero |
+| `PRESS` | Va al objetivo y lo ataca de frente o desde donde llegue primero. Los zombies toman cada uno un lugar en un arco de 180° delante del grupo, separados para que el barrido no alcance a dos; los que no entran esperan su turno fuera del alcance del jugador (CT-32) |
 | `FLANK` | Se mueve hacia un punto al costado o detrás del objetivo antes de atacar |
 | `SHOOT` | Mantiene distancia de tiro (8 a 15 bloques) y dispara |
 | `RETREAT` | Se aleja del objetivo, se queda al margen y se cura; se asigna a cualquier mob con 30% de vida o menos, sobre cualquier estrategia, y vuelve a su rol con 60% o más |
