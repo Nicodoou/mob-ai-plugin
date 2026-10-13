@@ -15,7 +15,8 @@ public record MobAiSettings(
     RetreatSettings retreat,
     VolleySettings volley,
     SuccessSettings success,
-    LearningSettings learning) {
+    LearningSettings learning,
+    PackSettings pack) {
   public MobAiSettings {
     Objects.requireNonNull(group, "MobAiSettings.group");
     Objects.requireNonNull(memory, "MobAiSettings.memory");
@@ -30,6 +31,7 @@ public record MobAiSettings(
     Objects.requireNonNull(volley, "MobAiSettings.volley");
     Objects.requireNonNull(success, "MobAiSettings.success");
     Objects.requireNonNull(learning, "MobAiSettings.learning");
+    Objects.requireNonNull(pack, "MobAiSettings.pack");
     requireRecoveryAboveRetreat(plan, retreat);
     requireRecoveryAboveLearnedRetreat(learning, retreat);
   }

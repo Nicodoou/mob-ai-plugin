@@ -475,6 +475,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Flanqueo fuera de la vista (CT-16) | `FlankManeuver`, `FlankStep`, `CombatGeometry.isOutOfSight` | Dominio |
 | Curación en retirada | `RecoveryHealer`, `HealSchedule` | Adaptadores |
 | Andanada | `VolleyStrategy`, `VolleyCycle`, `VolleyPhase`, `VolleySettings` (dominio), `FallBackGoal`, `Waypoints.keepAwayPoint` (adaptadores); roles `FALL_BACK`, `HOLD_FIRE`, `VOLLEY` | Dominio y adaptadores |
+| Persecución en bloque | `PackCohesion`, `PackSettings` (dominio), `GatherGoal` (adaptadores); rol `GATHER` | Dominio y adaptadores |
 | Golpe esquivo | `EvasiveRules`, `EvasiveReading`, `EvasiveMove`, `EscapeTiming`, `Waypoints.evadePoint` y `sideStepPoint` | Adaptadores |
 | Golpe paciente y tiempos de los goals | `PatientWait`, `PatientMove`, `PlayerStance`, `GoalTiming` | Adaptadores |
 | Formación de tiradores y línea de tiro | `ShooterFormation`, `ShooterQuery`, `CombatGeometry.isLineOfFireClear`, `clearLane` | Dominio |

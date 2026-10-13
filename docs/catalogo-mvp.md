@@ -26,6 +26,7 @@ Tres estrategias alcanzan para que el grupo tenga decisiones distintas que apren
 | `FALL_BACK` | Se aleja hasta quedar fuera del alcance del jugador, sin pegar (andanada) |
 | `HOLD_FIRE` | El esqueleto se ubica pero no dispara (andanada) |
 | `VOLLEY` | El esqueleto dispara ya, junto con los demás (andanada) |
+| `GATHER` | Se adelantó más de 8 bloques al más atrasado del grupo: se queda quieto mirando al objetivo hasta que el resto se acerca, salvo que ya esté a 4 bloques o menos (CT-32) |
 
 El rol de cortar la retirada queda para después del MVP.
 

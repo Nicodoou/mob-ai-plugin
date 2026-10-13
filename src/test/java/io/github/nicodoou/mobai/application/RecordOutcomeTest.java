@@ -15,6 +15,7 @@ import io.github.nicodoou.mobai.domain.memory.RecordChange;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
@@ -70,7 +71,8 @@ class RecordOutcomeTest {
             defaults.retreat(),
             defaults.volley(),
             new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
-            defaults.learning()));
+            defaults.learning(),
+            new PackSettings(8.0, 4.0)));
 
     Optional<RecordChange> change =
         recordOutcome.execute(resolution(mob(1), player, new AttackOutcome.Partial(), 0.0));

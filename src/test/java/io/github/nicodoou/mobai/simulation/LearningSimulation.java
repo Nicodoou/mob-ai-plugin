@@ -27,6 +27,7 @@ import io.github.nicodoou.mobai.domain.selection.SelectionPolicyFactory;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobId;
@@ -155,7 +156,8 @@ final class LearningSimulation {
           base.retreat(),
           base.volley(),
           new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
-          base.learning());
+          base.learning(),
+          new PackSettings(8.0, 4.0));
     }
 
     private Group newGroup() {
