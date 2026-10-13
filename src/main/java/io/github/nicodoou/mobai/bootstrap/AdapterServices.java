@@ -221,11 +221,15 @@ public record AdapterServices(
         new Weapons(
             meleeAttacker(core, parts),
             bow,
-            new Bodies(parts.translator()::playerReach, parts.translator()::movementSpeed)),
+            new Bodies(
+                parts.translator()::playerReach,
+                parts.translator()::movementSpeed,
+                mob -> parts.translator().mobKindOf(mob.getType()))),
         new GoalTiming(
             core.clock(),
             core.settings().section(MobAiSettings::attack),
-            core.settings().section(MobAiSettings::volley)),
+            core.settings().section(MobAiSettings::volley),
+            core.settings().section(MobAiSettings::pack)),
         waypoints(core, geometry),
         new RallyRoute(
             new RallyDetour(geometry),
