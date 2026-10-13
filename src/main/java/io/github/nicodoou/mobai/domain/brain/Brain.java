@@ -53,11 +53,13 @@ public final class Brain {
   private final Supplier<MobAiSettings> settings;
   private final BrainParts parts;
   private final VolleyCycle volleyCycle;
+  private final PackCohesion packCohesion;
 
   public Brain(Supplier<MobAiSettings> settings, BrainParts parts) {
     this.settings = Objects.requireNonNull(settings, "Brain.settings");
     this.parts = Objects.requireNonNull(parts, "Brain.parts");
     this.volleyCycle = new VolleyCycle(() -> settings.get().volley());
+    this.packCohesion = new PackCohesion(() -> settings.get().pack());
   }
 
   public BrainResult decide(Group group, GroupSnapshot snapshot) {
@@ -433,7 +435,9 @@ public final class Brain {
 
   // Snapshot order fixes the order in which attacks draw randomness, so incidents can be replayed.
   private List<RoleAssignment> planOrders(Turn turn) {
-    return turn.snapshot().mobs().stream().map(mob -> orderFor(turn, mob)).toList();
+    List<RoleAssignment> orders =
+        turn.snapshot().mobs().stream().map(mob -> orderFor(turn, mob)).toList();
+    return packCohesion.closeRanks(orders, turn.snapshot(), currentPlan(turn).target());
   }
 
   private RoleAssignment orderFor(Turn turn, MobSnapshot mob) {
