@@ -928,3 +928,30 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Riesgos** (los del CT-32):
   - si el más atrasado queda trabado, los de adelante esperan hasta que vence el plan;
   - el grupo puede quedar "elástico", frenando y arrancando.
+
+## WP-34B — Zombies que rodean (PR #74, Sonnet) — CT-32
+
+**Qué hizo.**
+- **`SurroundFormation`** (dominio), con `SurroundRing`, `SurroundQuery` y `SurroundSpot`:
+  - la separación contra el barrido, `√2 × (ancho + 1) + margen`;
+  - los lugares que entran en un arco de 180° a 1,8 bloques (3 con zombies);
+  - quiénes golpean (los más cercanos) y quiénes esperan;
+  - el lugar de cada uno, ordenados de izquierda a derecha desde el centro del arco, que es el promedio de los que presionan.
+- **`SurroundApproach`** (adaptador): junta a los zombies que presionan contra el jugador (por `MobKinds`, a través del traductor) y arma el anillo con el alcance del jugador.
+- **`PressGoal.approach`:** el zombie que golpea y ya alcanza se queda quieto; si está a 1 bloque de su lugar sin alcanzar, da el último paso hacia el jugador; si no, camina a su lugar. Las arañas, como antes.
+- `SWEEP_REACH_BLOCKS` y dos claves más en `pack`.
+
+**Revisión.**
+- 12 pruebas nuevas y 2 casos de validación; ninguna existente cambió salvo por el constructor de `PackSettings`.
+- **Roturas del WP:** las 4 mordieron.
+- **Mis roturas:**
+  - esperar a la distancia de golpe → 2;
+  - centro del arco desde el propio zombie → 2;
+  - orden de izquierda a derecha invertido → 2.
+- Build, cobertura y CI en verde. Sin desvíos.
+- `config.yml` de prueba y `config-de-prueba.yml` actualizados.
+
+**Opinión del código.**
+- **Lo bueno:** la geometría es pura, se lee sola y las pruebas tienen números calculados a mano. `PressGoal` creció poco (una función `approach`), y el armado de Paper quedó afuera, en `SurroundApproach`.
+- **Lo flojo:** `SurroundApproach` y `PressGoal.approach` no tienen prueba unitaria, como el resto de los goals. `bearingOf` y `directionOf` quedan copiados de `ShooterFormation`: una pieza común de rumbos es candidata para la limpieza.
+- **Riesgo:** el camino va por bloques, así que los lugares son aproximados. El efecto real contra el barrido lo tiene que confirmar Nico en el juego.

@@ -2,13 +2,13 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 13 de octubre de 2026 (WP-34A mergeado; sigue el WP-34B).
+**Última actualización:** 13 de octubre de 2026 (WP-34A y 34B mergeados; sigue el 34C con el 31B).
 
 ## Próximo paso
 
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Ahora:** WP-34B (zombies que rodean) en curso. El WP-34A (persecución en bloque) se mergeó el 13 oct (#73). CT-32 aprobado por Nico el 13 oct, con todas sus decisiones. Los WP del borrador de la nube se renumeraron en la serie 34, porque 32A y 32B ya son del punto de reunión.
+1. **Ahora:** especificar y presentar el **WP-34C** (perilla `chaseCommitment`) junto con el **WP-31B**, en una sola migración del modelo. Los WP-34A (#73) y 34B (#74) se mergearon el 13 oct. El WP-34A (persecución en bloque) se mergeó el 13 oct (#73). CT-32 aprobado por Nico el 13 oct, con todas sus decisiones. Los WP del borrador de la nube se renumeraron en la serie 34, porque 32A y 32B ya son del punto de reunión.
 2. **Después:**
    - **WP-31B:** umbral de retirada del grupo aprendido, modelos agrandados sin perder lo aprendido (recomendación A), arranque en el medio (D-02) y sin recetas con todos de reserva (B). Conviene sumar en la misma migración la perilla `chaseCommitment` del WP-32B.
    - **WP-34D:** esquive de los esqueletos ante el arco.
@@ -17,6 +17,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 4. **Pendiente de Nico en el juego:**
    - B-07 (#72): un sobreviviente solo no ataca;
    - WP-34A (#73): las arañas esperan a los zombies cuando te alejás;
+   - WP-34B (#74): los zombies te rodean de a 3 y el barrido le pega a uno;
    - B-08 (#71): los esqueletos no se amontonan;
    - B-04 H2 (#56);
    - la andanada y la lanza.
@@ -25,6 +26,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
    - partir `ShootGoal` y las tácticas de `PressGoal`;
    - que un mensaje faltante no deshabilite el plugin;
    - los nits de los WP-33K y 24H;
+   - una pieza común de rumbos (`bearingOf`/`directionOf` repetidos en `ShooterFormation` y `SurroundFormation`);
    - `training-data.jsonl` sin límite de tamaño.
 6. **Versión:** el README dice 1.0 MVP; el build dice `0.1.0-SNAPSHOT`. Le pregunté a Nico si pasar a 1.0.0 ya o después de la puerta E6, y no respondió.
 7. **Preferencias:** después de cada compactación, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto. Antes de lanzar cada WP, presentarlo con qué hace, arquitectura y decisiones, y esperar el sí. Al mergear, actualizar `config.yml`, `messages.yml` y `config-de-prueba.yml` de prueba con las claves nuevas.
@@ -84,7 +86,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-31A | Fuerza del grupo y retirada de todo el grupo | E6 | mergeado | Opus | [#72](https://github.com/Nicodoou/mob-ai-plugin/pull/72) | CT-31, B-07. Merge el 10 oct; `group-retreat-strength` en el `config.yml` de prueba |
 | WP-31B | Retirada del grupo aprendida, modelos agrandados y perillas en el medio | E6 | pendiente | Opus | — | CT-31, D-02 |
 | WP-34A | Persecución en bloque | E6 | mergeado | Opus | [#73](https://github.com/Nicodoou/mob-ai-plugin/pull/73) | CT-32. Merge el 13 oct; sección `pack` en el `config.yml` de prueba |
-| WP-34B | Zombies que rodean | E6 | en curso | Sonnet | — | CT-32. Aprobado por Nico el 13 oct. Al mergear: `surround-margin-blocks` y `wait-margin-blocks` en `pack` del `config.yml` de prueba |
+| WP-34B | Zombies que rodean | E6 | mergeado | Sonnet | [#74](https://github.com/Nicodoou/mob-ai-plugin/pull/74) | CT-32. Merge el 13 oct; claves nuevas en `pack` del `config.yml` de prueba |
 | WP-34C | Perilla `chaseCommitment` | E6 | pendiente | Opus | — | CT-32. Junto con el WP-31B, en una sola migración |
 | WP-34D | Esqueletos contra el arco | E6 | pendiente | Sonnet | — | CT-32 |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
