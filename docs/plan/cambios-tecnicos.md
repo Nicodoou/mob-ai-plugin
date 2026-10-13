@@ -633,3 +633,49 @@ Se usa el éxito del plan, y no la curación sola, para poder comparar con no re
 **Riesgos.**
 - Un umbral alto hace que el grupo se retire demasiado pronto: 0,4 es un valor de arranque.
 - La vida perdida no se guarda en disco: después de un reinicio, un sobreviviente puede volver a atacar.
+
+## CT-32 — Contra la dispersión: persecución en bloque y zombies que rodean
+
+**Estado:** aprobado por Nico el 13 oct 2026, con todas las decisiones de abajo. Viene del borrador del traspaso de la nube (`traspaso-nube.md`). Los WP del borrador se renumeran en la serie 34, porque WP-32A y WP-32B ya son del punto de reunión (#58 y #59).
+
+**El problema (feedback de Nico, 10 oct).** Con cualquier receta, Nico gana así:
+1. se aleja y mata a los esqueletos con el arco;
+2. las arañas, más rápidas, llegan solas y las mata;
+3. los zombies llegan amontonados y caen juntos con el barrido de la espada;
+4. al final rushea a los esqueletos.
+
+Las recetas eligen cuántos hacen cada cosa, pero el movimiento es fijo: el modelo no tiene ninguna perilla para contrarrestar esto.
+
+**Qué cambia.**
+
+1. **Persecución en bloque** (WP-34A, cerebro).
+   - En cada decisión, el cerebro mide la distancia horizontal al objetivo del plan de cada mob con orden `PRESS` o `FLANK` contra ese objetivo (las arañas, solo si van contra el mismo jugador).
+   - Si un mob va más de `pack.max-spread-blocks` (8) por delante del más atrasado, recibe la orden **`GATHER`**: se queda quieto mirando al objetivo hasta que el resto se acerca.
+   - **El que ya pelea no espera:** a `pack.engaged-distance-blocks` (4) o menos del objetivo, sigue con su rol.
+   - No cuentan los de reserva de la receta ni los que retroceden en la andanada (`FALL_BACK`), ni los que se retiran.
+   - `GATHER` existe solo en las órdenes, como `FALL_BACK`. El plan no lo guarda, así que la retirada, la fuerza del grupo y el fin del plan no cambian.
+   - Sin memoria entre decisiones. Riesgo aceptado: si el más atrasado queda trabado, los de adelante esperan hasta que el plan vence (600 ticks).
+2. **Zombies que rodean** (WP-34B, geometría y `PressGoal`).
+   - Los zombies que presionan toman cada uno un lugar en un **arco de 180° delante del grupo**, centrado del lado del que viene el grupo, a 1,8 bloques del jugador.
+   - **La separación se calcula:** el barrido golpea a todo lo que toca la caja del golpeado agrandada 1 bloque. Para que no alcance a dos, la separación entre centros es `√2 × (ancho del mob + 1) + pack.surround-margin-blocks` (0,25). Con zombies da 2,5 bloques, y entran 3 a la vez (de frente y a unos 88° a cada lado).
+   - **Turnos:** los que no entran en el arco esperan justo fuera del alcance del jugador (su alcance según el arma + `pack.wait-margin-blocks`, 1). Entran cuando se libera un lugar.
+   - **No es círculo completo:** un zombie con orden `PRESS` detrás del jugador haría un flanqueo, y el aprendizaje le daría el crédito al golpe frontal.
+   - **Las arañas no entran al arco:** una araña mide 1,4 de ancho y necesitaría 3,6 bloques de separación, más de lo que entra a la distancia de golpe. Las protege la persecución en bloque.
+3. **Perilla aprendida `chaseCommitment`** en [0, 1] (WP-34C, con el WP-31B en una sola migración del modelo): cuánto persiguen cuando el jugador se aleja. Con 0 esperan agrupados cerca del punto de reunión; con 1 persiguen en bloque.
+4. **Esqueletos contra el arco** (WP-34D): cuando el jugador apunta con el arco a un esqueleto, ese esqueleto busca cubierta o se mueve de costado.
+
+**Por qué.** El patrón de Nico explota que los mobs llegan de a uno (las arañas primero) y que los zombies se amontonan. El bloque y el arco atacan esas dos causas sin tocar el aprendizaje. La perilla deja que el modelo aprenda por jugador cuánto perseguir.
+
+**Impacto.**
+- WP-34A: `PackCohesion` (dominio), rol `GATHER`, `GatherGoal`, `Brain.planOrders` y la sección de configuración `pack`.
+- WP-34B: `SurroundFormation` (dominio), `PressGoal` y dos claves más en `pack`.
+- WP-34C: `RecipeFeatures`, `RecipeSearch` y la migración de modelos, junto con el WP-31B.
+- WP-34D: `ShootGoal` (o una pieza nueva), `EvasiveRules` y `CoverFinder`.
+
+**Alternativas descartadas.**
+- **Círculo completo sin turnos** (todos pegan): más daño por segundo, pero el barrido vuelve a pegarles a varios y los frontales hacen de flanqueadores.
+- **Guardar desde cuándo espera cada mob:** evitaría la espera larga si el último queda trabado, pero suma estado al plan, a la copia y a los incidentes.
+
+**Riesgos.**
+- Con 8 bloques el grupo puede quedar "elástico": los de adelante frenan y arrancan cada medio segundo.
+- Si el jugador huye rápido, el bloque llega más tarde que hoy: el WP-34C deja que el modelo aprenda cuánto perseguir.

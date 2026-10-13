@@ -2,21 +2,16 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 8 de octubre de 2026 (regla de 3 parámetros mergeada, PR #53; test fuerte de Nico pendiente).
+**Última actualización:** 13 de octubre de 2026 (CT-32 aprobado; WP-34A en curso).
 
 ## Próximo paso
 
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Ahora:** presentarle a Nico el diseño del **WP-32A**: persecución en bloque y zombies que rodean (CT-32, borrador en `traspaso-nube.md`). Es lo que más cambia la dificultad contra su estilo:
-   - se aleja, mata esqueletos con el arco y esquiva zombies;
-   - mata a las arañas y a los zombies amontonados con el barrido;
-   - y después rushea a los esqueletos.
-
-   Hay que escribir primero el CT-32, presentado y aprobado.
+1. **Ahora:** WP-34A (persecución en bloque) en curso. CT-32 aprobado por Nico el 13 oct, con todas sus decisiones. Los WP del borrador de la nube se renumeraron en la serie 34, porque 32A y 32B ya son del punto de reunión. Después del 34A sigue el **WP-34B** (zombies que rodean en arco de 180°, con turnos).
 2. **Después:**
    - **WP-31B:** umbral de retirada del grupo aprendido, modelos agrandados sin perder lo aprendido (recomendación A), arranque en el medio (D-02) y sin recetas con todos de reserva (B). Conviene sumar en la misma migración la perilla `chaseCommitment` del WP-32B.
-   - **WP-32C:** esquive de los esqueletos ante el arco.
+   - **WP-34D:** esquive de los esqueletos ante el arco.
    - **Repetir la puerta E6** con `puerta-e6-recetas.md`.
 3. **Puerta E6 en curso por Nico:** con recetas, 51 planes en el log (26 de entrenamiento). Los pasos 1 a 4 están verificados: recetas variadas, reserva, y los rasgos de arco y escudo subiendo. Faltan los pasos 5 a 9.
 4. **Pendiente de Nico en el juego:**
@@ -87,6 +82,10 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-24H | Lugares altos reservados (B-08) | E6 | mergeado | Sonnet | [#71](https://github.com/Nicodoou/mob-ai-plugin/pull/71) | B-08. Aprobado por Nico el 10 oct. Revisado en la nube: fiel al WP, CI verde, 7 pruebas y 3 roturas con JDK 21; desvíos aceptados (`perchRequest` y `dropPerch` privados; la validación es un caso del `@MethodSource`, como las demás). Nit: las reservas de mobs muertos sin `stop()` quedan en el mapa (no molestan, porque `takenBy` filtra por los tiradores actuales). Al mergear: `perch-spacing-blocks: 3.0` en `attack` del `config.yml` de prueba | Revisión local y merge el 10 oct; `perch-spacing-blocks` en el `config.yml` de prueba.
 | WP-31A | Fuerza del grupo y retirada de todo el grupo | E6 | mergeado | Opus | [#72](https://github.com/Nicodoou/mob-ai-plugin/pull/72) | CT-31, B-07. Merge el 10 oct; `group-retreat-strength` en el `config.yml` de prueba |
 | WP-31B | Retirada del grupo aprendida, modelos agrandados y perillas en el medio | E6 | pendiente | Opus | — | CT-31, D-02 |
+| WP-34A | Persecución en bloque | E6 | en curso | Opus | — | CT-32. Aprobado por Nico el 13 oct. Al mergear: sección `pack` en el `config.yml` de prueba |
+| WP-34B | Zombies que rodean | E6 | pendiente | Sonnet | — | CT-32. Después del 34A (comparten la sección `pack`) |
+| WP-34C | Perilla `chaseCommitment` | E6 | pendiente | Opus | — | CT-32. Junto con el WP-31B, en una sola migración |
+| WP-34D | Esqueletos contra el arco | E6 | pendiente | Sonnet | — | CT-32 |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30D | La supervivencia multiplica | E6 | mergeado | Sonnet | [#54](https://github.com/Nicodoou/mob-ai-plugin/pull/54) | D-01 del test fuerte, aprobado por Nico |
