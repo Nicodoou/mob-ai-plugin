@@ -899,3 +899,32 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** el bug se probó primero, y la fuerza es un cálculo puro compartido con el puntaje. La separación de `PlanAftermath` era la deuda que había anotado el WP-32A.
 - **Lo flojo:** la vida perdida no se guarda en disco. Varias pruebas viejas tuvieron que herir a todo el grupo para que cierre: la regla nueva es más exigente.
 - **Riesgo:** con 0,4 fijo, un grupo puede quedarse retirado para siempre si queda uno solo. Es intencional, y lo cubre `/mobai reinforce`.
+
+## WP-34A — Persecución en bloque (PR #73, Opus) — CT-32
+
+**Qué hizo.**
+- **`PackCohesion`** (dominio): en cada decisión, toma a los mobs con orden `PRESS` o `FLANK` contra el objetivo del plan y mide su distancia horizontal al objetivo. El que va más de `pack.max-spread-blocks` (8) por delante del más atrasado, y está a más de `pack.engaged-distance-blocks` (4), recibe `GATHER`, sin ataque.
+- **`Brain.planOrders`** la aplica sobre las órdenes ya armadas: el sorteo de ataques no cambia y los incidentes se siguen reproduciendo.
+- **Rol `GATHER`:** solo en las órdenes, como `FALL_BACK`. El plan no lo guarda.
+- **`GatherGoal`:** se detiene y mira al objetivo.
+- **Configuración:** sección `pack`, con `PackSettings` como último componente de `MobAiSettings`.
+
+**Revisión.**
+- 13 pruebas nuevas y 2 casos de validación; ninguna prueba existente cambió (cerebro, invariantes, simulación e incidentes).
+- **Roturas del WP:** las 4 mordieron.
+- **Mis roturas:**
+  - ignorar el objetivo de la orden → 1;
+  - conservar el ataque en `GATHER` → 2;
+  - sacar a los flanqueadores del bloque → 1.
+- Build, cobertura y CI en verde.
+- **Desvíos aceptados:**
+  - fila propia de `GatherGoal` en `actualizar-paper.md`: el WP pedía copiar la de `FallBackGoal`, que no existe;
+  - dos records privados para respetar los 3 parámetros.
+- `config.yml` de prueba y `config-de-prueba.yml` actualizados con la sección `pack`.
+
+**Opinión del código.**
+- **Lo bueno:** regla pura y chica, fácil de leer; la integración en el cerebro es una línea; las pruebas cubren los dos bordes y la altura.
+- **Lo flojo:** cada distancia se calcula dos veces (para el más atrasado y para cada orden) y `snapshot.mob` es una búsqueda lineal. Con 12 mobs no importa.
+- **Riesgos** (los del CT-32):
+  - si el más atrasado queda trabado, los de adelante esperan hasta que vence el plan;
+  - el grupo puede quedar "elástico", frenando y arrancando.

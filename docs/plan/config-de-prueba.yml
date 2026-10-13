@@ -138,3 +138,10 @@ learning:
   traits-half-life-ticks: 6000
   # Cuánto pesa la base del server para un jugador nuevo, en planes (0: no se usa).
   base-weight-plans: 600
+
+pack:
+  # Persecución en bloque (CT-32): un mob cuerpo a cuerpo que va más de esto por delante del más
+  # atrasado espera al resto (orden GATHER).
+  max-spread-blocks: 8.0
+  # A esta distancia del objetivo o menos ya está peleando y no espera a nadie.
+  engaged-distance-blocks: 4.0
