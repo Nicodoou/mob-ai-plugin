@@ -679,3 +679,47 @@ Las recetas eligen cuántos hacen cada cosa, pero el movimiento es fijo: el mode
 **Riesgos.**
 - Con 8 bloques el grupo puede quedar "elástico": los de adelante frenan y arrancan cada medio segundo.
 - Si el jugador huye rápido, el bloque llega más tarde que hoy: el WP-34C deja que el modelo aprenda cuánto perseguir.
+
+## CT-33 — Perillas aprendidas de retirada del grupo y persecución
+
+**Estado:** aprobado por Nico el 14 oct 2026. Concreta los puntos 5 a 8 del CT-31 y el punto 3 del CT-32.
+
+**Qué cambia.**
+
+1. **Dos perillas continuas nuevas en la receta**, aprendidas por jugador como las demás (lineal y cuadrado; pico con `UnitIntervalPeak`):
+   - `groupRetreatStrength`, entre 0 y `learning.max-group-retreat-strength` (0,6): la fuerza por debajo de la cual se retira todo el grupo;
+   - `chaseCommitment`, entre 0 y 1: cuánto persiguen al jugador que se aleja.
+
+   El modelo pasa de 15 a 19 rasgos por receta y de 60 a 76 con los estilos del jugador. Los rasgos nuevos van al final de cada bloque. Las perillas no multiplican las recetas candidatas: cada una sale de su pico.
+2. **Arranque en el medio (D-02).**
+   - El punto de partida del modelo tiene, en el bloque base, peso lineal `+k` y cuadrado `−k` en las 4 perillas continuas (demora, retirada individual, retirada del grupo y persecución): la curva tiene su pico en 0,5.
+   - `k` (`learning.mid-knob-prior`) sale de la simulación, sin aflojar la puerta de calibración.
+3. **Sin recetas con todos de reserva (B):** si hay zombies, al menos uno pelea desde el arranque, presionando o flanqueando.
+4. **Agrandar lo aprendido (A).**
+   - Los modelos guardados de 60 parámetros (memorias y base) se agrandan a 76 en el dominio, al cargar.
+   - En forma de información es exacto: lo viejo queda en su lugar y los parámetros nuevos arrancan como en un modelo vacío.
+   - Lo aprendido antes cuenta como si las perillas nuevas hubieran valido 0.
+   - Esquema de memorias 4 y `base.json` versión 2, con copia de seguridad.
+5. **Retirada del grupo aprendida.**
+   - En un plan por receta, `GROUP_RETREATED` usa el umbral de la receta.
+   - El umbral del último plan se recuerda en `PlanAftermath` para decidir cuándo el grupo vuelve a planificar. Después de un reinicio vale el de la configuración.
+6. **Persecución aprendida (correa).**
+   - Al abrir el plan se guarda el centro del grupo (el terreno) en la receta jugada.
+   - Si el objetivo se aleja del terreno más de `L = pack.min-chase-blocks + chaseCommitment × (pack.max-chase-blocks − pack.min-chase-blocks)` (de 8 a 32), los cuerpo a cuerpo vuelven al terreno con `GATHER` y esperan, salvo los que ya pelean.
+   - Los esqueletos siguen tirando.
+
+**WPs.**
+- WP-31B (Opus): perillas, rasgos, búsqueda, arranque en el medio, regla B, simulación y recalibración.
+- WP-31C (Sonnet): agrandar los modelos guardados, esquema 4, `base.json` 2, log, `/mobai memory` y datos de entrenamiento.
+- WP-34C (Opus): umbral del grupo y correa en el cerebro y los goals.
+
+Se mergean los tres antes de que Nico pruebe. Entre el 31B y el 31C el server no carga los modelos viejos (la guarda bloquea el guardado: no se pierde nada).
+
+**Alternativas descartadas.**
+- **Reconstruir el 0,4 viejo en los datos pasados con la fila del sesgo:** más exacto en teoría, pero el olvido mezcla esa fila con el ancla y se vuelve frágil.
+- **Medir la correa desde el punto de reunión:** el punto de reunión es para reagruparse lejos del jugador; el terreno es donde el grupo eligió pelear.
+
+**Riesgos.**
+- Con 4 parámetros más por bloque, aprender cuesta un poco más; lo compensan el arranque en el medio y la recalibración.
+- Los incidentes grabados antes del cambio no se reproducen.
+- Con una correa corta, un jugador con arco puede tirarle a los cuerpo a cuerpo que esperan. El modelo lo aprende: si conviene, sube la perilla.
