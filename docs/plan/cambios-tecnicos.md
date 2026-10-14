@@ -723,3 +723,45 @@ Se mergean los tres antes de que Nico pruebe. Entre el 31B y el 31C el server no
 - Con 4 parámetros más por bloque, aprender cuesta un poco más; lo compensan el arranque en el medio y la recalibración.
 - Los incidentes grabados antes del cambio no se reproducen.
 - Con una correa corta, un jugador con arco puede tirarle a los cuerpo a cuerpo que esperan. El modelo lo aprende: si conviene, sube la perilla.
+
+## CT-34 — Movimiento impredecible: costados al azar, esquive del arco y golpe oportunista
+
+**Estado:** aprobado por Nico el 14 oct 2026, con estas palabras: «todos los mobs esquivan y se mueven random en costados haciéndolos impredecibles, solo mientras no están realizando un golpe o cargando el arco. El golpe oportunista está bien mantenerlo, pero si se activa fuera de los 180 grados pasa a ser flanqueo automático». Reemplaza al WP-34D del CT-32 (esquive de los esqueletos), que queda incluido acá.
+
+**El problema (B-09, 14 oct).** Los que esperan (reserva, andanada, `GATHER`, turno del arco) se quedan quietos fuera del alcance del jugador. No hacen nada y son fáciles de matar con el arco o corriéndolos.
+
+**Qué cambia.**
+
+1. **Costados al azar (todos los mobs).**
+   - Cuando un goal nuestro mueve al mob, el destino se corre de costado (perpendicular a la línea mob–jugador) una distancia que alterna al azar entre izquierda y derecha. Cada mob cambia de lado en su propio momento, cada 15 a 40 ticks.
+   - Valen para acercarse, esperar, ubicarse para tirar y retirarse.
+   - **No se mueve de costado:**
+     - el que está al alcance para golpear (el golpe manda);
+     - el esqueleto que está tensando el arco;
+     - el zombie esquivo mientras hace su propio movimiento (ya es un esquive calculado);
+     - el flanqueador mientras rodea fuera de la vista (su camino ya es lateral).
+2. **Mantener la distancia (los que esperan).** `GATHER` y los que esperan turno en el arco retroceden si el jugador se acerca, como ya lo hacen `FALL_BACK` y la reserva.
+3. **Esquive del arco (todos los mobs).**
+   - Si el jugador tiene el arco o la ballesta tensos y apunta al mob (dentro de su ancho más un margen), el mob da un paso al costado hasta salir de la mira.
+   - Vale salvo mientras golpea o tensa su propio arco. Usa `isHandRaised` y el ítem en uso; la verificación de la API va en el WP.
+4. **Golpe oportunista (los que esperan).**
+   - Si el jugador queda al alcance de un mob que espera (`FALL_BACK`, `GATHER` o el turno del arco) y el ritmo de golpe lo permite, le pega.
+   - **Fuera de los 180° de adelante del jugador** se registra como `zombie.flank_strike` (flanqueo automático). **Adentro**, como `zombie.front_strike`. Las arañas, como `spider.bite`.
+   - Así el crédito va al ataque que de verdad pasó, sin un ataque nuevo en el catálogo.
+5. **Configuración, sección nueva `movement`:**
+   - `strafe-blocks` (1,5): cuánto se corre de costado;
+   - `strafe-min-ticks` (15) y `strafe-max-ticks` (40): cada cuánto cambia de lado;
+   - `bow-dodge-margin-degrees` (10): margen de la mira del arco.
+
+**Azar.** El cambio de lado usa azar de los goals (adaptadores), no el del cerebro: no entra en la reproducción de incidentes. La pieza que calcula el corrimiento es pura y recibe el azar inyectado, para probarla con un azar falso.
+
+**WPs.**
+- **WP-34D (Sonnet):** costados al azar en todos los goals y mantener la distancia (puntos 1 y 2). Va después del WP-34C, porque los dos tocan `GatherGoal`.
+- **WP-34E (Sonnet):** esquive del arco y golpe oportunista (puntos 3 y 4).
+
+**Interpretación a confirmar con Nico:** el golpe oportunista adentro de los 180° se registra como golpe frontal, sin crear un ataque nuevo.
+
+**Riesgos.**
+- Corrimientos grandes hacen que tarden más en llegar. Por eso 1,5 bloques y nunca cuando están al alcance.
+- En la andanada, un costado puede cruzar la línea de tiro de un esqueleto. La revisión de la línea limpia (WP-24C) ya los espera.
+- Un esquive del arco mal calculado puede hacerlos temblar: hace falta un tiempo mínimo entre esquives.
