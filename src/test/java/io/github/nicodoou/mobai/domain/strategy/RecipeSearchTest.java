@@ -122,6 +122,16 @@ class RecipeSearchTest {
   }
 
   @Test
+  void aLoneZombieIsNeverHeldBack() {
+    double[] weights = new double[RecipeFeatures.DIMENSION];
+    weights[3] = 5;
+
+    var recipe = search.best(weights, new GroupComposition(1, 0, 0));
+
+    assertThat(recipe.zombies()).isEqualTo(new RoleSplit(1, 0, 0));
+  }
+
+  @Test
   void withoutZombiesTheEmptySplitStays() {
     double[] weights = new double[RecipeFeatures.DIMENSION];
 

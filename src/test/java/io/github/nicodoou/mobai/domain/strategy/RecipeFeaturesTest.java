@@ -68,6 +68,18 @@ class RecipeFeaturesTest {
   }
 
   @Test
+  void newKnobFeaturesKeepTheirOrder() {
+    var recipe = new PlanRecipe(new RoleSplit(1, 0, 0), NO_MOBS, false, 25, 0, 0.12, 0.9);
+
+    double[] features = RecipeFeatures.of(recipe, 0, BOUNDS);
+
+    assertThat(features[RecipeFeatures.GROUP_RETREAT_LINEAR]).isEqualTo(0.2, within(1e-9));
+    assertThat(features[RecipeFeatures.GROUP_RETREAT_SQUARE]).isEqualTo(0.04, within(1e-9));
+    assertThat(features[RecipeFeatures.CHASE_LINEAR]).isEqualTo(0.9, within(1e-9));
+    assertThat(features[RecipeFeatures.CHASE_SQUARE]).isEqualTo(0.81, within(1e-9));
+  }
+
+  @Test
   void groupRetreatAboveItsMaximumIsRejected() {
     var recipe = new PlanRecipe(new RoleSplit(1, 0, 0), NO_MOBS, false, 25, 0, 0.7, 0.5);
 
