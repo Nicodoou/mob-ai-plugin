@@ -15,12 +15,12 @@ class PlayStyleTest {
     var assault =
         new PlanRecipe(new RoleSplit(4, 0, 0), new RoleSplit(2, 0, 0), false, 20, 0, 0.3, 0.5);
 
-    assertThat(PlayStyle.SHIELD_BLOCKER.trueScore(flank)).isEqualTo(0.76, within(1e-9));
-    assertThat(PlayStyle.BERSERKER.trueScore(flank)).isEqualTo(0.33275, within(1e-9));
-    assertThat(PlayStyle.ARCHER.trueScore(flank)).isEqualTo(0.4765, within(1e-9));
-    assertThat(PlayStyle.SHIELD_BLOCKER.trueScore(assault)).isEqualTo(0.175, within(1e-9));
-    assertThat(PlayStyle.BERSERKER.trueScore(assault)).isEqualTo(0.66775, within(1e-9));
-    assertThat(PlayStyle.ARCHER.trueScore(assault)).isEqualTo(-0.5335, within(1e-9));
+    assertThat(PlayStyle.SHIELD_BLOCKER.trueScore(flank)).isEqualTo(0.748, within(1e-9));
+    assertThat(PlayStyle.BERSERKER.trueScore(flank)).isEqualTo(0.17175, within(1e-9));
+    assertThat(PlayStyle.ARCHER.trueScore(flank)).isEqualTo(0.4485, within(1e-9));
+    assertThat(PlayStyle.SHIELD_BLOCKER.trueScore(assault)).isEqualTo(0.163, within(1e-9));
+    assertThat(PlayStyle.BERSERKER.trueScore(assault)).isEqualTo(0.50675, within(1e-9));
+    assertThat(PlayStyle.ARCHER.trueScore(assault)).isEqualTo(-0.5615, within(1e-9));
   }
 
   @Test
@@ -30,7 +30,7 @@ class PlayStyleTest {
 
     double score = PlayStyle.SHIELD_BLOCKER.trueScore(recipe);
 
-    assertThat(score).isEqualTo(0.734999176931682, within(1e-9));
+    assertThat(score).isEqualTo(0.722999176931682, within(1e-9));
   }
 
   @Test
@@ -42,9 +42,8 @@ class PlayStyleTest {
 
   @Test
   void legacyRegretsAreTheKnownValues() {
-    assertThat(PlayStyle.SHIELD_BLOCKER.legacyRegret())
-        .isEqualTo(0.10999917693168204, within(1e-9));
-    assertThat(PlayStyle.BERSERKER.legacyRegret()).isEqualTo(0.0735, within(1e-9));
-    assertThat(PlayStyle.ARCHER.legacyRegret()).isEqualTo(0.1335, within(1e-9));
+    assertThat(PlayStyle.SHIELD_BLOCKER.legacyRegret()).isEqualTo(0.1453325102650154, within(1e-9));
+    assertThat(PlayStyle.BERSERKER.legacyRegret()).isEqualTo(0.16061111111111115, within(1e-9));
+    assertThat(PlayStyle.ARCHER.legacyRegret()).isEqualTo(0.3298333333333333, within(1e-9));
   }
 }

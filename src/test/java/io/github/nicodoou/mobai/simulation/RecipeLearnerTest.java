@@ -48,6 +48,20 @@ class RecipeLearnerTest {
   }
 
   @Test
+  void anEpisodeKeepsEachRecipe() {
+    var learner = new RecipeLearner(new SeededRandomSource(1));
+    var opponent = new Opponent(PlayStyle.BERSERKER, PlayStyle.BERSERKER.traits());
+
+    Episode episode =
+        learner.play(
+            RecipeLearner.prior(ModelKind.CONTEXTUAL),
+            opponent,
+            new Session(ModelKind.CONTEXTUAL, 3, PLAY_EXPLORATION, NO_JITTER));
+
+    assertThat(episode.recipes()).hasSize(3);
+  }
+
+  @Test
   void sameSeedGivesTheSameEpisode() {
     var opponent = new Opponent(PlayStyle.SHIELD_BLOCKER, PlayStyle.SHIELD_BLOCKER.traits());
     var session = new Session(ModelKind.CONTEXTUAL, 20, PLAY_EXPLORATION, TRAIT_JITTER);
