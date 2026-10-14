@@ -759,7 +759,7 @@ Se mergean los tres antes de que Nico pruebe. Entre el 31B y el 31C el server no
 - **WP-34D (Sonnet):** costados al azar en todos los goals y mantener la distancia (puntos 1 y 2). Va después del WP-34C, porque los dos tocan `GatherGoal`.
 - **WP-34E (Sonnet):** esquive del arco y golpe oportunista (puntos 3 y 4).
 
-**Interpretación a confirmar con Nico:** el golpe oportunista adentro de los 180° se registra como golpe frontal, sin crear un ataque nuevo.
+**Confirmado por Nico (14 oct):** el golpe oportunista adentro de los 180° se registra como golpe frontal, sin crear un ataque nuevo.
 
 **Riesgos.**
 - Corrimientos grandes hacen que tarden más en llegar. Por eso 1,5 bloques y nunca cuando están al alcance.
