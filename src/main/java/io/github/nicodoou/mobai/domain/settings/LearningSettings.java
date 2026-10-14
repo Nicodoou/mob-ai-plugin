@@ -14,7 +14,9 @@ public record LearningSettings(
     long maxReserveDelayTicks,
     double maxRetreatHealthFraction,
     long traitsHalfLifeTicks,
-    long baseWeightPlans) {
+    long baseWeightPlans,
+    double maxGroupRetreatStrength,
+    double midKnobPrior) {
   public LearningSettings {
     Objects.requireNonNull(planner, "LearningSettings.planner");
     SettingsChecks.requirePositive("LearningSettings.modelNoiseVariance", modelNoiseVariance);
@@ -25,9 +27,13 @@ public record LearningSettings(
     SettingsChecks.requirePositive(
         "LearningSettings.trainingExplorationScale", trainingExplorationScale);
     requireReserveDelayRange(minReserveDelayTicks, maxReserveDelayTicks);
-    requireRetreatFractionInsideUnit(maxRetreatHealthFraction);
+    requireStrictlyInsideUnit(
+        new NamedSetting("LearningSettings.maxRetreatHealthFraction", maxRetreatHealthFraction));
     SettingsChecks.requireAtLeast("LearningSettings.traitsHalfLifeTicks", traitsHalfLifeTicks, 1);
     SettingsChecks.requireAtLeast("LearningSettings.baseWeightPlans", baseWeightPlans, 0);
+    requireStrictlyInsideUnit(
+        new NamedSetting("LearningSettings.maxGroupRetreatStrength", maxGroupRetreatStrength));
+    SettingsChecks.requireNonNegative("LearningSettings.midKnobPrior", midKnobPrior);
   }
 
   private static void requireReserveDelayRange(long min, long max) {
@@ -44,13 +50,11 @@ public record LearningSettings(
     }
   }
 
-  private static void requireRetreatFractionInsideUnit(double fraction) {
-    SettingsChecks.requireBetween(
-        new NamedSetting("LearningSettings.maxRetreatHealthFraction", fraction), 0, 1);
-    if (fraction == 0 || fraction == 1) {
+  private static void requireStrictlyInsideUnit(NamedSetting setting) {
+    SettingsChecks.requireBetween(setting, 0, 1);
+    if (setting.value() == 0 || setting.value() == 1) {
       throw new IllegalArgumentException(
-          "LearningSettings.maxRetreatHealthFraction must be strictly between 0 and 1, got "
-              + fraction);
+          setting.field() + " must be strictly between 0 and 1, got " + setting.value());
     }
   }
 }

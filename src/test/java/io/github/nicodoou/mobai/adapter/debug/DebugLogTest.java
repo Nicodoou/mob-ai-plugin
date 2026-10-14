@@ -135,7 +135,7 @@ class DebugLogTest {
     Arrays.fill(features, 0.0);
     features[0] = 1.0;
     return new RecipePlay(
-        new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(1, 1, 0), true, 89, 0.15),
+        new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(1, 1, 0), true, 89, 0.15, 0.3, 0.5),
         new PlayerTraits(0.5, 0, 1),
         List.of(features),
         Map.of(),

@@ -36,7 +36,6 @@ public final class RecipePlanner {
   // The id recipe plans carry where a strategy id is expected (status, debug log).
   public static final StrategyId STRATEGY_ID = new StrategyId("RECIPE");
 
-  private static final int BIAS_INDEX = 0;
   private static final double HALF = 0.5;
 
   private final Supplier<MobAiSettings> settings;
@@ -58,9 +57,9 @@ public final class RecipePlanner {
 
   public LinearPosterior prior() {
     LearningSettings learning = learning();
-    double[] mean = new double[ContextualFeatures.DIMENSION];
-    mean[BIAS_INDEX] = learning.priorSuccess();
-    return LinearPosterior.prior(mean, learning.priorVariance());
+    return LinearPosterior.prior(
+        RecipePrior.contextualMean(learning.priorSuccess(), learning.midKnobPrior()),
+        learning.priorVariance());
   }
 
   // Where a player's model starts and what its forgetting pulls toward: the base, capped in weight.
@@ -240,7 +239,8 @@ public final class RecipePlanner {
     return new RecipeBounds(
         learning.minReserveDelayTicks(),
         learning.maxReserveDelayTicks(),
-        learning.maxRetreatHealthFraction());
+        learning.maxRetreatHealthFraction(),
+        learning.maxGroupRetreatStrength());
   }
 
   private LearningSettings learning() {

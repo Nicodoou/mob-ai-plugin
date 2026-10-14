@@ -2,6 +2,9 @@ package io.github.nicodoou.mobai.simulation;
 
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
+import io.github.nicodoou.mobai.domain.strategy.RecipeBounds;
+import io.github.nicodoou.mobai.simulation.RecipeLearner.Episode;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.ModelKind;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.Opponent;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.Session;
@@ -26,9 +29,9 @@ import org.junit.jupiter.api.Test;
 class RecipeCalibrationReport {
   private static final long FIRST_SEED = 1;
   private static final long LAST_SCRATCH_SEED = 20;
-  private static final long LAST_BASE_SEED = 10;
+  private static final long LAST_BASE_SEED = 40;
   private static final int SCRATCH_PLANS = 150;
-  private static final int TRAINING_PLANS = 600;
+  private static final int TRAINING_PLANS = 1000;
   private static final int TRAINING_SESSION_PLANS = 1;
   private static final int EVALUATION_PLANS = 40;
   private static final double TRAINING_EXPLORATION = 2;
@@ -39,6 +42,10 @@ class RecipeCalibrationReport {
   private static final double GATE_MAX_REGRET = 0.07;
   private static final int HALF = 2;
   private static final String NEVER = "nunca";
+  private static final double LOWER_EDGE = 0;
+  private static final double UPPER_EDGE = 1;
+  private static final double EDGE_TOLERANCE = 1e-9;
+  private static final double PERCENT = 100;
   private static final Path REPORT_PATH = Path.of("build", "reports", "simulation", "recipes.md");
 
   private enum Experiment {
@@ -76,13 +83,13 @@ class RecipeCalibrationReport {
       return new SeedRun(experiment, random, new RecipeLearner(random));
     }
 
-    List<Double> play(LinearPosterior start, PlayStyle style, int plans) {
+    Episode play(LinearPosterior start, PlayStyle style, int plans) {
       Opponent opponent = experiment.opponentFor(style, random);
-      return learner.play(start, opponent, experiment.playSession(plans)).trueScores();
+      return learner.play(start, opponent, experiment.playSession(plans));
     }
   }
 
-  private record Row(Experiment experiment, PlayStyle style, List<List<Double>> runs) {
+  private record Row(Experiment experiment, PlayStyle style, List<Episode> episodes) {
     double regretOfFirst() {
       return averageOver(scores -> EpisodeMetrics.regretOfFirst(scores, optimum(), FIRST_PLANS));
     }
@@ -92,9 +99,18 @@ class RecipeCalibrationReport {
     }
 
     List<OptionalInt> plansToCompetent() {
-      return runs.stream()
+      return runs().stream()
           .map(scores -> EpisodeMetrics.plansToCompetent(scores, optimum()))
           .toList();
+    }
+
+    double edgePercentOfFirst() {
+      List<PlanRecipe> firstRecipes =
+          episodes.stream()
+              .flatMap(episode -> episode.recipes().stream().limit(FIRST_PLANS))
+              .toList();
+      long onEdge = firstRecipes.stream().filter(RecipeCalibrationReport::hasKnobOnEdge).count();
+      return PERCENT * onEdge / firstRecipes.size();
     }
 
     boolean passesGate() {
@@ -106,7 +122,11 @@ class RecipeCalibrationReport {
     }
 
     private double averageOver(ToDoubleFunction<List<Double>> metric) {
-      return runs.stream().mapToDouble(metric).average().orElseThrow();
+      return runs().stream().mapToDouble(metric).average().orElseThrow();
+    }
+
+    private List<List<Double>> runs() {
+      return episodes.stream().map(Episode::trueScores).toList();
     }
   }
 
@@ -131,7 +151,7 @@ class RecipeCalibrationReport {
         .toList();
   }
 
-  private static List<List<Double>> scratchRuns(PlayStyle style) {
+  private static List<Episode> scratchRuns(PlayStyle style) {
     return LongStream.rangeClosed(FIRST_SEED, LAST_SCRATCH_SEED)
         .mapToObj(
             seed ->
@@ -141,7 +161,7 @@ class RecipeCalibrationReport {
   }
 
   private static List<Row> baseRows(Experiment experiment) {
-    Map<PlayStyle, List<List<Double>>> runsByStyle = new EnumMap<>(PlayStyle.class);
+    Map<PlayStyle, List<Episode>> runsByStyle = new EnumMap<>(PlayStyle.class);
     for (PlayStyle style : PlayStyle.values()) {
       runsByStyle.put(style, new ArrayList<>());
     }
@@ -170,7 +190,7 @@ class RecipeCalibrationReport {
   }
 
   private static String render(List<Row> rows) {
-    return header() + tableOf(rows) + gateOf(rows) + controlOf(rows);
+    return header() + tableOf(rows) + edgeTableOf(rows) + gateOf(rows) + controlOf(rows);
   }
 
   private static String header() {
@@ -181,7 +201,8 @@ class RecipeCalibrationReport {
             + " sobre las semillas. SCRATCH: semillas %d a %d, %d planes desde cero. Con base:"
             + " semillas %d a %d, %d planes de entrenamiento y %d planes por estilo. Competente:"
             + " primer bloque de %d planes con promedio ≥ óptimo − %.2f; la mediana es sobre las"
-            + " corridas que lo alcanzan.%n%n",
+            + " corridas que lo alcanzan.%n%n"
+            + "Arranque en el medio: k = %s%n%n",
         FIRST_SEED,
         LAST_SCRATCH_SEED,
         SCRATCH_PLANS,
@@ -190,7 +211,8 @@ class RecipeCalibrationReport {
         TRAINING_PLANS,
         EVALUATION_PLANS,
         EpisodeMetrics.WINDOW,
-        EpisodeMetrics.COMPETENCE_TOLERANCE);
+        EpisodeMetrics.COMPETENCE_TOLERANCE,
+        RecipeLearner.MID_KNOB_PRIOR);
   }
 
   private static String tableOf(List<Row> rows) {
@@ -215,6 +237,58 @@ class RecipeCalibrationReport {
         row.regretOfFirst(),
         row.regretOfLast(),
         medianOf(row.plansToCompetent()));
+  }
+
+  private static String edgeTableOf(List<Row> rows) {
+    StringBuilder table = new StringBuilder();
+    table.append("\n## Perillas en el borde (D-02)\n\n");
+    table.append(
+        String.format(
+            Locale.ROOT,
+            "Porcentaje de planes de SCRATCH, entre los primeros %d de cada semilla, en que alguna"
+                + " perilla continua (retirada, retirada del grupo, persecución y, con reserva,"
+                + " demora) cayó en un borde.%n%n",
+            FIRST_PLANS));
+    table.append("| Estilo | Planes con una perilla en el borde (%) |\n");
+    table.append("| --- | --- |\n");
+    rows.stream()
+        .filter(row -> row.experiment() == Experiment.SCRATCH)
+        .forEach(
+            row ->
+                table.append(
+                    String.format(
+                        Locale.ROOT, "| %s | %.1f |\n", row.style(), row.edgePercentOfFirst())));
+    return table.toString();
+  }
+
+  private static boolean hasKnobOnEdge(PlanRecipe recipe) {
+    return knobPositionsOf(recipe).stream().anyMatch(RecipeCalibrationReport::isOnEdge);
+  }
+
+  private static List<Double> knobPositionsOf(PlanRecipe recipe) {
+    RecipeBounds bounds = RecipeLearner.BOUNDS;
+    List<Double> positions =
+        new ArrayList<>(
+            List.of(
+                recipe.retreatHealthFraction() / bounds.maxRetreatHealthFraction(),
+                recipe.groupRetreatStrength() / bounds.maxGroupRetreatStrength(),
+                recipe.chaseCommitment()));
+    if (recipe.zombies().reserve() > 0) {
+      positions.add(delayPositionOf(recipe.reserveDelayTicks()));
+    }
+    return positions;
+  }
+
+  // Logarithmic, as in PlayStyle.Knobs.
+  private static double delayPositionOf(long delayTicks) {
+    RecipeBounds bounds = RecipeLearner.BOUNDS;
+    double minimum = bounds.minReserveDelayTicks();
+    return Math.log(delayTicks / minimum) / Math.log(bounds.maxReserveDelayTicks() / minimum);
+  }
+
+  private static boolean isOnEdge(double position) {
+    return Math.abs(position - LOWER_EDGE) <= EDGE_TOLERANCE
+        || Math.abs(position - UPPER_EDGE) <= EDGE_TOLERANCE;
   }
 
   private static String medianOf(List<OptionalInt> plans) {

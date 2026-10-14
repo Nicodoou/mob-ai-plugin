@@ -20,10 +20,10 @@ class ContextualFeaturesTest {
 
     assertThat(contextual).hasSize(ContextualFeatures.DIMENSION);
     assertThat(contextual[0]).isEqualTo(1, within(1e-9));
-    assertThat(contextual[15]).isEqualTo(0.5, within(1e-9));
-    assertThat(contextual[30]).isEqualTo(0.25, within(1e-9));
-    assertThat(contextual[45]).isEqualTo(1, within(1e-9));
-    assertThat(contextual[59]).isEqualTo(15, within(1e-9));
+    assertThat(contextual[19]).isEqualTo(0.5, within(1e-9));
+    assertThat(contextual[38]).isEqualTo(0.25, within(1e-9));
+    assertThat(contextual[57]).isEqualTo(1, within(1e-9));
+    assertThat(contextual[75]).isEqualTo(19, within(1e-9));
   }
 
   @Test
@@ -48,12 +48,12 @@ class ContextualFeaturesTest {
   void wrongLengthsAreRejected() {
     var traits = new PlayerTraits(0, 0, 0);
 
-    assertThatThrownBy(() -> ContextualFeatures.of(new double[14], traits))
+    assertThatThrownBy(() -> ContextualFeatures.of(new double[18], traits))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("ContextualFeatures.recipeFeatures must have 15 values, got 14");
-    assertThatThrownBy(() -> ContextualFeatures.weightsFor(new double[59], traits))
+        .hasMessage("ContextualFeatures.recipeFeatures must have 19 values, got 18");
+    assertThatThrownBy(() -> ContextualFeatures.weightsFor(new double[75], traits))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("ContextualFeatures.weights must have 60 values, got 59");
+        .hasMessage("ContextualFeatures.weights must have 76 values, got 75");
   }
 
   private static double dot(double[] left, double[] right) {

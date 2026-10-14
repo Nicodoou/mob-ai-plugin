@@ -43,23 +43,30 @@ class RecipePlannerTest {
   private static final MobId LEFT = mobId(4);
   private static final MobId SKELETON = mobId(5);
 
-  private static final RecipeBounds ESTIMATE_BOUNDS = new RecipeBounds(20, 400, 0.5);
+  private static final RecipeBounds ESTIMATE_BOUNDS = new RecipeBounds(20, 400, 0.5, 0.6);
   private static final GroupComposition FOUR_ZOMBIES_TWO_SPIDERS = new GroupComposition(4, 0, 2);
   private static final PlanRecipe WORKING_RECIPE =
-      new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(0, 2, 0), false, 20, 0);
+      new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(0, 2, 0), false, 20, 0, 0.3, 0.5);
   private static final PlanRecipe FAILED_RECIPE =
-      new PlanRecipe(new RoleSplit(4, 0, 0), new RoleSplit(2, 0, 0), false, 20, 0);
+      new PlanRecipe(new RoleSplit(4, 0, 0), new RoleSplit(2, 0, 0), false, 20, 0, 0.3, 0.5);
 
   private final MobAiSettings settings = TestSettings.defaults();
   private final RecipeBase base = new RecipeBase();
 
   @Test
-  void priorHasSixtyNumbersAndThePriorSuccess() {
+  void priorHasSeventySixNumbersAndThePriorSuccess() {
     LinearPosterior prior = plannerWithNeutralDraws(0).prior();
 
-    assertThat(prior.dimension()).isEqualTo(60);
+    assertThat(prior.dimension()).isEqualTo(76);
     assertThat(prior.mean()[0]).isCloseTo(0.5, within(TOLERANCE));
     assertThat(Arrays.stream(prior.mean()).skip(1)).allSatisfy(value -> assertThat(value).isZero());
+  }
+
+  @Test
+  void priorStartsAtTheConfiguredMiddle() {
+    LinearPosterior prior = plannerWithMidKnobPrior(1.0).prior();
+
+    assertThat(prior.mean()).containsExactly(RecipePrior.contextualMean(0.5, 1.0), within(1e-9));
   }
 
   @Test
@@ -234,7 +241,7 @@ class RecipePlannerTest {
 
   @Test
   void theTargetTraitsFoldTheWeights() {
-    LinearPosterior model = modelWith(Map.of(16, 2.0, 17, -2.0, 18, -1.0));
+    LinearPosterior model = modelWith(Map.of(20, 2.0, 21, -2.0, 22, -1.0));
     RecipePlanner planner = plannerWithNeutralDraws(2);
     GroupSnapshot snapshot = fourZombiesFlankRequest(NO_TRAITS).snapshot();
 
@@ -253,7 +260,7 @@ class RecipePlannerTest {
 
     double[] expected =
         ContextualFeatures.of(
-            RecipeFeatures.of(play.recipe(), 0, new RecipeBounds(20, 400, 0.5)), NO_TRAITS);
+            RecipeFeatures.of(play.recipe(), 0, new RecipeBounds(20, 400, 0.5, 0.6)), NO_TRAITS);
 
     assertThat(play.features()).containsExactlyElementsOf(boxed(expected));
   }
@@ -330,8 +337,16 @@ class RecipePlannerTest {
   }
 
   private RecipePlanner plannerWithCap(long baseWeightPlans) {
+    return plannerWithLearning(baseWeightPlans, 0.0);
+  }
+
+  private RecipePlanner plannerWithMidKnobPrior(double midKnobPrior) {
+    return plannerWithLearning(settings.learning().baseWeightPlans(), midKnobPrior);
+  }
+
+  private RecipePlanner plannerWithLearning(long baseWeightPlans, double midKnobPrior) {
     LearningSettings learning = settings.learning();
-    LearningSettings capped =
+    LearningSettings changed =
         new LearningSettings(
             learning.planner(),
             learning.modelNoiseVariance(),
@@ -343,8 +358,10 @@ class RecipePlannerTest {
             learning.maxReserveDelayTicks(),
             learning.maxRetreatHealthFraction(),
             learning.traitsHalfLifeTicks(),
-            baseWeightPlans);
-    MobAiSettings cappedSettings =
+            baseWeightPlans,
+            0.6,
+            midKnobPrior);
+    MobAiSettings changedSettings =
         new MobAiSettings(
             settings.group(),
             settings.memory(),
@@ -358,9 +375,9 @@ class RecipePlannerTest {
             settings.retreat(),
             settings.volley(),
             settings.success(),
-            capped,
+            changed,
             new PackSettings(8.0, 4.0, 0.25, 1.0));
-    return new RecipePlanner(() -> cappedSettings, new ScriptedRandomSource(), base);
+    return new RecipePlanner(() -> changedSettings, new ScriptedRandomSource(), base);
   }
 
   private static LinearPosterior observed(LinearPosterior start, int observations) {

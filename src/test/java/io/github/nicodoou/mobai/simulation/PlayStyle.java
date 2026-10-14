@@ -19,7 +19,9 @@ enum PlayStyle {
           new Penalty(0.4, 0.5),
           new Penalty(0.5, 0.5),
           0.06,
-          new Penalty(0.3, 0.5))),
+          new Penalty(0.3, 0.5),
+          new Penalty(0.3, 0.5),
+          new Penalty(0.3, 0.7))),
   BERSERKER(
       new PlayerTraits(0, 0, 0.5),
       new Coefficients(
@@ -29,7 +31,9 @@ enum PlayStyle {
           new Penalty(0.3, 0.25),
           new Penalty(0.6, 0.15),
           -0.05,
-          Penalty.NONE)),
+          Penalty.NONE,
+          new Penalty(0.4, 0.2),
+          new Penalty(0.5, 1.0))),
   ARCHER(
       new PlayerTraits(0, 1, 0.5),
       new Coefficients(
@@ -39,11 +43,17 @@ enum PlayStyle {
           new Penalty(1.0, 1),
           new Penalty(0.4, 0.7),
           0.08,
-          Penalty.NONE));
+          Penalty.NONE,
+          new Penalty(0.3, 0.7),
+          new Penalty(0.4, 0.3)));
 
   private static final int RETREAT_STEPS = 20;
   private static final int DELAY_STEPS = 10;
+  private static final int GROUP_RETREAT_STEPS = 10;
+  private static final int CHASE_STEPS = 10;
   private static final double LEGACY_RETREAT_HEALTH_FRACTION = 0.3;
+  private static final double LEGACY_GROUP_RETREAT_STRENGTH = 0.4;
+  private static final double LEGACY_CHASE_COMMITMENT = 1;
   private static final RoleSplit ALL_ZOMBIES_PRESS = new RoleSplit(4, 0, 0);
   private static final RoleSplit HALF_ZOMBIES_FLANK = new RoleSplit(2, 2, 0);
   private static final RoleSplit ALL_SPIDERS_PRESS = new RoleSplit(2, 0, 0);
@@ -102,25 +112,50 @@ enum PlayStyle {
 
   private static List<PlanRecipe> gridRecipes() {
     List<PlanRecipe> recipes = new ArrayList<>();
+    List<Tuning> tunings = tuningGrid();
     for (RoleSplit zombies : zombieSplits(RecipeLearner.GROUP.zombies())) {
       for (RoleSplit spiders : spiderSplits(RecipeLearner.GROUP.spiders())) {
-        recipes.addAll(tunedRecipes(zombies, spiders));
+        recipes.addAll(tunedRecipes(zombies, spiders, tunings));
       }
     }
     return recipes;
   }
 
-  private static List<PlanRecipe> tunedRecipes(RoleSplit zombies, RoleSplit spiders) {
+  private static List<PlanRecipe> tunedRecipes(
+      RoleSplit zombies, RoleSplit spiders, List<Tuning> tunings) {
     List<PlanRecipe> recipes = new ArrayList<>();
     for (boolean volley : List.of(false, true)) {
       for (long delayTicks : delaysFor(zombies)) {
-        for (int step = 0; step <= RETREAT_STEPS; step++) {
-          double retreat = retreatAt((double) step / RETREAT_STEPS);
-          recipes.add(new PlanRecipe(zombies, spiders, volley, delayTicks, retreat));
+        for (Tuning tuning : tunings) {
+          recipes.add(
+              new PlanRecipe(
+                  zombies,
+                  spiders,
+                  volley,
+                  delayTicks,
+                  tuning.retreat(),
+                  tuning.groupRetreat(),
+                  tuning.chase()));
         }
       }
     }
     return recipes;
+  }
+
+  private static List<Tuning> tuningGrid() {
+    List<Tuning> tunings = new ArrayList<>();
+    for (int retreatStep = 0; retreatStep <= RETREAT_STEPS; retreatStep++) {
+      for (int groupStep = 0; groupStep <= GROUP_RETREAT_STEPS; groupStep++) {
+        for (int chaseStep = 0; chaseStep <= CHASE_STEPS; chaseStep++) {
+          tunings.add(
+              new Tuning(
+                  retreatAt((double) retreatStep / RETREAT_STEPS),
+                  groupRetreatAt((double) groupStep / GROUP_RETREAT_STEPS),
+                  (double) chaseStep / CHASE_STEPS));
+        }
+      }
+    }
+    return tunings;
   }
 
   private static List<Long> delaysFor(RoleSplit zombies) {
@@ -145,10 +180,18 @@ enum PlayStyle {
     return position * RecipeLearner.BOUNDS.maxRetreatHealthFraction();
   }
 
+  private static double groupRetreatAt(double position) {
+    return position * RecipeLearner.BOUNDS.maxGroupRetreatStrength();
+  }
+
   private static List<RoleSplit> zombieSplits(int zombies) {
     List<RoleSplit> splits = new ArrayList<>();
     for (int flank = 0; flank <= zombies; flank++) {
       for (int reserve = 0; reserve <= zombies - flank; reserve++) {
+        // CT-33 (B): like the search, no recipe holds every zombie back.
+        if (zombies > 0 && reserve == zombies) {
+          continue;
+        }
         splits.add(new RoleSplit(zombies - flank - reserve, flank, reserve));
       }
     }
@@ -178,8 +221,12 @@ enum PlayStyle {
         spiders,
         volley,
         RecipeLearner.BOUNDS.minReserveDelayTicks(),
-        LEGACY_RETREAT_HEALTH_FRACTION);
+        LEGACY_RETREAT_HEALTH_FRACTION,
+        LEGACY_GROUP_RETREAT_STRENGTH,
+        LEGACY_CHASE_COMMITMENT);
   }
+
+  private record Tuning(double retreat, double groupRetreat, double chase) {}
 
   private record Penalty(double weight, double target) {
     static final Penalty NONE = new Penalty(0, 0);
@@ -197,7 +244,9 @@ enum PlayStyle {
       Penalty spiderFlank,
       Penalty retreat,
       double volleyBonus,
-      Penalty delay) {
+      Penalty delay,
+      Penalty groupRetreat,
+      Penalty chase) {
     double scoreOf(Knobs knobs) {
       return base
           - zombieFlank.of(knobs.zombieFlank())
@@ -205,7 +254,9 @@ enum PlayStyle {
           - spiderFlank.of(knobs.spiderFlank())
           - retreat.of(knobs.retreat())
           + volleyBonus * knobs.volley()
-          - delayPenaltyOf(knobs);
+          - delayPenaltyOf(knobs)
+          - groupRetreat.of(knobs.groupRetreat())
+          - chase.of(knobs.chase());
     }
 
     private double delayPenaltyOf(Knobs knobs) {
@@ -223,7 +274,9 @@ enum PlayStyle {
       double retreat,
       double volley,
       boolean hasReserve,
-      double delayPosition) {
+      double delayPosition,
+      double groupRetreat,
+      double chase) {
     static Knobs of(PlanRecipe recipe) {
       RoleSplit zombies = recipe.zombies();
       RoleSplit spiders = recipe.spiders();
@@ -234,7 +287,9 @@ enum PlayStyle {
           recipe.retreatHealthFraction() / RecipeLearner.BOUNDS.maxRetreatHealthFraction(),
           recipe.volley() ? PRESENT : ABSENT,
           zombies.reserve() > 0,
-          delayPositionOf(recipe.reserveDelayTicks()));
+          delayPositionOf(recipe.reserveDelayTicks()),
+          recipe.groupRetreatStrength() / RecipeLearner.BOUNDS.maxGroupRetreatStrength(),
+          recipe.chaseCommitment());
     }
 
     private static double delayPositionOf(long delayTicks) {

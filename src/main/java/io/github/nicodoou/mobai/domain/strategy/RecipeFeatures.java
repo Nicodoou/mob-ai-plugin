@@ -2,11 +2,15 @@ package io.github.nicodoou.mobai.domain.strategy;
 
 /** The numbers the recipe model weighs: each knob with its square, plus chosen interactions. */
 public final class RecipeFeatures {
-  public static final int DIMENSION = 15;
+  public static final int DIMENSION = 19;
   public static final int DELAY_LINEAR = 7;
   public static final int DELAY_SQUARE = 8;
   public static final int RETREAT_LINEAR = 9;
   public static final int RETREAT_SQUARE = 10;
+  public static final int GROUP_RETREAT_LINEAR = 15;
+  public static final int GROUP_RETREAT_SQUARE = 16;
+  public static final int CHASE_LINEAR = 17;
+  public static final int CHASE_SQUARE = 18;
   private static final double BIAS = 1;
   private static final double PRESENT = 1;
   private static final double ABSENT = 0;
@@ -17,6 +21,7 @@ public final class RecipeFeatures {
     validateCounts(recipe, skeletons);
     validateDelay(recipe, bounds);
     validateRetreat(recipe, bounds);
+    validateGroupRetreat(recipe, bounds);
     return vectorOf(knobsOf(recipe, skeletons, bounds));
   }
 
@@ -55,6 +60,16 @@ public final class RecipeFeatures {
     }
   }
 
+  private static void validateGroupRetreat(PlanRecipe recipe, RecipeBounds bounds) {
+    if (recipe.groupRetreatStrength() > bounds.maxGroupRetreatStrength()) {
+      throw new IllegalArgumentException(
+          "RecipeFeatures.groupRetreatStrength must not exceed "
+              + bounds.maxGroupRetreatStrength()
+              + ", got "
+              + recipe.groupRetreatStrength());
+    }
+  }
+
   private static Knobs knobsOf(PlanRecipe recipe, int skeletons, RecipeBounds bounds) {
     RoleSplit zombies = recipe.zombies();
     RoleSplit spiders = recipe.spiders();
@@ -66,7 +81,9 @@ public final class RecipeFeatures {
         recipe.retreatHealthFraction() / bounds.maxRetreatHealthFraction(),
         recipe.volley() ? PRESENT : ABSENT,
         fraction(skeletons, meleeOf(recipe) + skeletons),
-        fraction(zombies.flank() + spiders.flank(), meleeOf(recipe)));
+        fraction(zombies.flank() + spiders.flank(), meleeOf(recipe)),
+        recipe.groupRetreatStrength() / bounds.maxGroupRetreatStrength(),
+        recipe.chaseCommitment());
   }
 
   private static double[] vectorOf(Knobs knobs) {
@@ -85,7 +102,11 @@ public final class RecipeFeatures {
       knobs.volley(),
       knobs.zombieFlank() * knobs.zombieReserve(),
       knobs.volley() * knobs.skeletonShare(),
-      knobs.meleeFlank() * knobs.skeletonShare()
+      knobs.meleeFlank() * knobs.skeletonShare(),
+      knobs.groupRetreat(),
+      square(knobs.groupRetreat()),
+      knobs.chase(),
+      square(knobs.chase())
     };
   }
 
@@ -126,5 +147,7 @@ public final class RecipeFeatures {
       double retreat,
       double volley,
       double skeletonShare,
-      double meleeFlank) {}
+      double meleeFlank,
+      double groupRetreat,
+      double chase) {}
 }

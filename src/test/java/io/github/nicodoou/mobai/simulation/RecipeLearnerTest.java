@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
+import io.github.nicodoou.mobai.domain.strategy.RecipePrior;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.Episode;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.ModelKind;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.Opponent;
@@ -21,15 +22,16 @@ class RecipeLearnerTest {
     LinearPosterior flat = RecipeLearner.prior(ModelKind.FLAT);
     LinearPosterior contextual = RecipeLearner.prior(ModelKind.CONTEXTUAL);
 
-    assertThat(flat.dimension()).isEqualTo(15);
-    assertThat(contextual.dimension()).isEqualTo(60);
-    for (LinearPosterior prior : new LinearPosterior[] {flat, contextual}) {
-      double[] mean = prior.mean();
-      assertThat(mean[0]).isEqualTo(0.5, within(1e-9));
-      for (int i = 1; i < mean.length; i++) {
-        assertThat(mean[i]).as("mean %d", i).isEqualTo(0, within(1e-9));
-      }
-    }
+    assertThat(flat.dimension()).isEqualTo(19);
+    assertThat(contextual.dimension()).isEqualTo(76);
+    assertThat(flat.mean())
+        .containsExactly(
+            RecipePrior.recipeMean(RecipeLearner.PRIOR_SUCCESS, RecipeLearner.MID_KNOB_PRIOR),
+            within(1e-9));
+    assertThat(contextual.mean())
+        .containsExactly(
+            RecipePrior.contextualMean(RecipeLearner.PRIOR_SUCCESS, RecipeLearner.MID_KNOB_PRIOR),
+            within(1e-9));
   }
 
   @Test
@@ -45,6 +47,20 @@ class RecipeLearnerTest {
 
     assertThat(episode.trueScores()).hasSize(12);
     assertThat(episode.model().observations()).isEqualTo(12, within(1e-9));
+  }
+
+  @Test
+  void anEpisodeKeepsEachRecipe() {
+    var learner = new RecipeLearner(new SeededRandomSource(1));
+    var opponent = new Opponent(PlayStyle.BERSERKER, PlayStyle.BERSERKER.traits());
+
+    Episode episode =
+        learner.play(
+            RecipeLearner.prior(ModelKind.CONTEXTUAL),
+            opponent,
+            new Session(ModelKind.CONTEXTUAL, 3, PLAY_EXPLORATION, NO_JITTER));
+
+    assertThat(episode.recipes()).hasSize(3);
   }
 
   @Test
