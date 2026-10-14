@@ -955,3 +955,40 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** la geometría es pura, se lee sola y las pruebas tienen números calculados a mano. `PressGoal` creció poco (una función `approach`), y el armado de Paper quedó afuera, en `SurroundApproach`.
 - **Lo flojo:** `SurroundApproach` y `PressGoal.approach` no tienen prueba unitaria, como el resto de los goals. `bearingOf` y `directionOf` quedan copiados de `ShooterFormation`: una pieza común de rumbos es candidata para la limpieza.
 - **Riesgo:** el camino va por bloques, así que los lugares son aproximados. El efecto real contra el barrido lo tiene que confirmar Nico en el juego.
+
+## WP-31B — Perillas nuevas, arranque en el medio y recalibración (PR #75, Opus) — CT-33
+
+**Qué hizo.**
+- **`PlanRecipe`:** suma `groupRetreatStrength` y `chaseCommitment`.
+- **`RecipeFeatures`:** de 15 a 19 rasgos (de 60 a 76 con los rasgos del jugador).
+- **`RecipeSearch`:** saca las dos perillas de su pico y aplica la regla B (nunca todos de reserva).
+- **`RecipePrior`:** el arranque en el medio, con `k` en `learning.mid-knob-prior`.
+- **Simulación:** los estilos sintéticos ponderan las perillas nuevas, el reporte suma la tabla de perillas en el borde y se recalibró.
+
+**Revisión.**
+- **La puerta falló con 600 planes de entrenamiento y 10 semillas para cualquier `k`.** El agente frenó, como pedía el WP.
+- **Mi diagnóstico, con 40 semillas:**
+  - el `k` casi no mueve al berserker;
+  - tampoco que su óptimo esté en el borde;
+  - el costo es aprender 16 parámetros más con la misma base.
+- **Con 1000 planes de entrenamiento** pasan los tres estilos.
+- **Nico eligió la opción 1:** `k` = 2, puerta con 1000 planes y 40 semillas, mismo umbral 0,07.
+- **Resultado:** escudo 0,034, berserker 0,062 y arquero 0,037. Las perillas en el borde bajan de ~97 % a ~60 %.
+- **Roturas:** las 4 del WP mordieron. De las 2 mías, ninguna prueba las detectaba al principio:
+  - intercambiar retirada del grupo y persecución en los rasgos;
+  - la regla B con un solo zombie.
+
+  El agente sumó dos pruebas y las verifiqué.
+- **Ninguna prueba sembrada cambió.** Build, cobertura y CI en verde.
+- `config.yml` de prueba y `config-de-prueba.yml`: se sumaron `max-group-retreat-strength` y `mid-knob-prior`.
+
+**Opinión del código.**
+- **Lo bueno:**
+  - `RecipePrior` es chico y claro;
+  - la búsqueda no multiplica candidatas;
+  - el agente frenó bien en vez de aflojar la puerta;
+  - los desvíos están bien justificados (`-0.0`, índices del bloque del escudo).
+- **Lo flojo:** el WP traía una prueba de rasgos con valores simétricos (0,5 y 0,5) que no distinguía las perillas. Fue un error mío de especificación, y la revisión lo detectó.
+- **Riesgos:**
+  - la base del server necesita unos 1000 planes de entrenamiento para rendir como antes;
+  - hasta el WP-31C, un server con memorias viejas no puede planificar con recetas.
