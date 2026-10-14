@@ -193,3 +193,25 @@ Al retirarse, cada mob se va por su lado, y después no se vuelven a juntar. **N
 ### Hallazgo D-02 — Las perillas continuas se van a los extremos
 
 El pico de la demora y del umbral se calcula con los pesos sorteados (`UnitIntervalPeak`). Si el término cuadrático sale positivo, la curva no tiene máximo adentro y el pico cae en un borde. Con el punto de partida actual (media 0 en esos pesos), eso pasa más o menos la mitad de las veces, y explica la demora en 20 o 400 y el umbral en 0. No es un bug de código: es el punto de partida del modelo. Se propone en el CT-31.
+
+### B-09 (en análisis) — Mobs quietos "esperando a los esqueletos" (reporte de Nico, 14 oct)
+
+**Reporte:** los cuerpo a cuerpo parecen tomar a los esqueletos como parte del grupo y, como están lejos, se quedan quietos.
+
+**Traza del 14 oct (`trace-3138000.jsonl`):**
+- `GATHER` aparece **una sola vez** en toda la sesión. La regla del bloque (WP-34A) solo cuenta órdenes `PRESS` y `FLANK`, y los esqueletos siempre tienen `SHOOT`.
+- `FALL_BACK` aparece 86 veces en el plan 2 (`z0/2/2`, andanada, demora 400) y 19 en el plan 3 (`z0/1/1`, demora 400):
+  - la reserva espera 20 segundos fuera del alcance;
+  - en la andanada, los cuerpo a cuerpo se apartan mientras disparan los esqueletos.
+- El grupo `3a391fba` jugó `z0/0/1`: todos de reserva.
+
+**Hipótesis (sin aprobar; no se tocó código):**
+1. **Reserva con demora en el borde (D-02 y regla B).**
+   - **Predicción:** pasa en planes con reserva y demora alta.
+   - **Arreglo:** el WP-31B (arranque en el medio y sin recetas con todos de reserva).
+2. **Fase de apartarse de la andanada.**
+   - **Predicción:** los cuerpo a cuerpo se apartan 1 segundo cada 5, justo antes de que disparen todos los esqueletos.
+   - Es lo que más se parece a "esperar a los esqueletos". Es intencional (CT-23), pero puede verse raro.
+3. **Turnos del arco (WP-34B).**
+   - **Predicción:** con 4 zombies o más que presionan, el que sobra espera a ~4 bloques.
+   - Es intencional.
