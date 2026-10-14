@@ -63,6 +63,13 @@ class RecipePlannerTest {
   }
 
   @Test
+  void priorStartsAtTheConfiguredMiddle() {
+    LinearPosterior prior = plannerWithMidKnobPrior(1.0).prior();
+
+    assertThat(prior.mean()).containsExactly(RecipePrior.contextualMean(0.5, 1.0), within(1e-9));
+  }
+
+  @Test
   void withoutAStoredModelTheCurrentIsThePrior() {
     RecipePlanner planner = plannerWithNeutralDraws(0);
 
@@ -330,8 +337,16 @@ class RecipePlannerTest {
   }
 
   private RecipePlanner plannerWithCap(long baseWeightPlans) {
+    return plannerWithLearning(baseWeightPlans, 0.0);
+  }
+
+  private RecipePlanner plannerWithMidKnobPrior(double midKnobPrior) {
+    return plannerWithLearning(settings.learning().baseWeightPlans(), midKnobPrior);
+  }
+
+  private RecipePlanner plannerWithLearning(long baseWeightPlans, double midKnobPrior) {
     LearningSettings learning = settings.learning();
-    LearningSettings capped =
+    LearningSettings changed =
         new LearningSettings(
             learning.planner(),
             learning.modelNoiseVariance(),
@@ -345,8 +360,8 @@ class RecipePlannerTest {
             learning.traitsHalfLifeTicks(),
             baseWeightPlans,
             0.6,
-            0.0);
-    MobAiSettings cappedSettings =
+            midKnobPrior);
+    MobAiSettings changedSettings =
         new MobAiSettings(
             settings.group(),
             settings.memory(),
@@ -360,9 +375,9 @@ class RecipePlannerTest {
             settings.retreat(),
             settings.volley(),
             settings.success(),
-            capped,
+            changed,
             new PackSettings(8.0, 4.0, 0.25, 1.0));
-    return new RecipePlanner(() -> cappedSettings, new ScriptedRandomSource(), base);
+    return new RecipePlanner(() -> changedSettings, new ScriptedRandomSource(), base);
   }
 
   private static LinearPosterior observed(LinearPosterior start, int observations) {
