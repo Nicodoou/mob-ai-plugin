@@ -387,3 +387,27 @@ No hay verificación en el server: las perillas no cambian el juego hasta el WP-
 - [ ] Las 4 roturas mordieron.
 - [ ] Elección de `k` documentada, con PASS en la puerta.
 - [ ] Build, cobertura y CI en verde.
+
+## Enmienda (14 oct, decisión de Nico, opción 1)
+
+En la primera elección de `k`, ninguno pasó la puerta: el berserker quedó en 0,07 a 0,10. Opus lo midió con 40 semillas:
+- `k` casi no cambia el resultado;
+- tampoco cambia si el óptimo de persecución del berserker se aleja del borde;
+- el costo viene de aprender 16 parámetros más con la misma base.
+
+Con la base entrenada con **1000 planes** pasan los tres estilos. Cambios en la calibración:
+
+1. **`RecipeCalibrationReport`:**
+   - `TRAINING_PLANS = 1000`, en lugar de 600;
+   - `LAST_BASE_SEED = 40`, en lugar de 10: con 10 semillas la medición es demasiado ruidosa.
+
+   El criterio de la puerta no cambia (≤ 0,07 y menor que las 4 estrategias de hoy). El encabezado del reporte lo dice solo: lee las constantes.
+2. **`k` = 2.**
+   - Medición de Opus (primeros 20 planes de BASE_CONTEXTUAL_NOISY):
+     - escudo 0,034;
+     - berserker 0,062;
+     - arquero 0,037.
+   - Planes de SCRATCH con alguna perilla en el borde: 63 / 48 / 66 %, contra 95 / 97 / 97 % con `k` = 0.
+   - En la sección «Elección de k (CT-33)», la tabla de las corridas con 1000 planes y 40 semillas para `k` = 0, 1 y 2, y la de la primera corrida (600 planes, 10 semillas), para que quede el porqué.
+3. **`RecipeLearnerTest.priorsHaveTheirDimensions`:** con `k` > 0, la media ya no es 0 fuera del sesgo. Compará contra `RecipePrior.recipeMean(PRIOR_SUCCESS, MID_KNOB_PRIOR)` y `contextualMean(...)`.
+4. **Consecuencia para el juego** (va en `calibracion-recetas.md`): con las perillas nuevas, la base del server rinde como hoy recién después de unos 1000 planes de entrenamiento.
