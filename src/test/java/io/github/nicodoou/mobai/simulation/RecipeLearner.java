@@ -22,7 +22,7 @@ final class RecipeLearner {
   static final double PRIOR_VARIANCE = 1.0;
   static final double PRIOR_SUCCESS = 0.5;
   static final double REWARD_NOISE = 0.15;
-  static final double MID_KNOB_PRIOR = 0.0;
+  static final double MID_KNOB_PRIOR = 2.0;
 
   enum ModelKind {
     FLAT,

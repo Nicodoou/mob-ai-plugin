@@ -29,9 +29,9 @@ import org.junit.jupiter.api.Test;
 class RecipeCalibrationReport {
   private static final long FIRST_SEED = 1;
   private static final long LAST_SCRATCH_SEED = 20;
-  private static final long LAST_BASE_SEED = 10;
+  private static final long LAST_BASE_SEED = 40;
   private static final int SCRATCH_PLANS = 150;
-  private static final int TRAINING_PLANS = 600;
+  private static final int TRAINING_PLANS = 1000;
   private static final int TRAINING_SESSION_PLANS = 1;
   private static final int EVALUATION_PLANS = 40;
   private static final double TRAINING_EXPLORATION = 2;

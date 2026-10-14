@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
+import io.github.nicodoou.mobai.domain.strategy.RecipePrior;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.Episode;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.ModelKind;
 import io.github.nicodoou.mobai.simulation.RecipeLearner.Opponent;
@@ -23,13 +24,14 @@ class RecipeLearnerTest {
 
     assertThat(flat.dimension()).isEqualTo(19);
     assertThat(contextual.dimension()).isEqualTo(76);
-    for (LinearPosterior prior : new LinearPosterior[] {flat, contextual}) {
-      double[] mean = prior.mean();
-      assertThat(mean[0]).isEqualTo(0.5, within(1e-9));
-      for (int i = 1; i < mean.length; i++) {
-        assertThat(mean[i]).as("mean %d", i).isEqualTo(0, within(1e-9));
-      }
-    }
+    assertThat(flat.mean())
+        .containsExactly(
+            RecipePrior.recipeMean(RecipeLearner.PRIOR_SUCCESS, RecipeLearner.MID_KNOB_PRIOR),
+            within(1e-9));
+    assertThat(contextual.mean())
+        .containsExactly(
+            RecipePrior.contextualMean(RecipeLearner.PRIOR_SUCCESS, RecipeLearner.MID_KNOB_PRIOR),
+            within(1e-9));
   }
 
   @Test
