@@ -2,7 +2,10 @@ package io.github.nicodoou.mobai.domain.strategy;
 
 /** The ranges the recipe search explores (CT-30). */
 public record RecipeBounds(
-    long minReserveDelayTicks, long maxReserveDelayTicks, double maxRetreatHealthFraction) {
+    long minReserveDelayTicks,
+    long maxReserveDelayTicks,
+    double maxRetreatHealthFraction,
+    double maxGroupRetreatStrength) {
   public RecipeBounds {
     if (minReserveDelayTicks < 1) {
       throw new IllegalArgumentException(
@@ -19,6 +22,10 @@ public record RecipeBounds(
       throw new IllegalArgumentException(
           "RecipeBounds.maxRetreatHealthFraction must be in (0, 1), got "
               + maxRetreatHealthFraction);
+    }
+    if (!(maxGroupRetreatStrength > 0 && maxGroupRetreatStrength < 1)) {
+      throw new IllegalArgumentException(
+          "RecipeBounds.maxGroupRetreatStrength must be in (0, 1), got " + maxGroupRetreatStrength);
     }
   }
 }

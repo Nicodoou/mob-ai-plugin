@@ -44,6 +44,8 @@ enum PlayStyle {
   private static final int RETREAT_STEPS = 20;
   private static final int DELAY_STEPS = 10;
   private static final double LEGACY_RETREAT_HEALTH_FRACTION = 0.3;
+  private static final double LEGACY_GROUP_RETREAT_STRENGTH = 0.4;
+  private static final double LEGACY_CHASE_COMMITMENT = 1;
   private static final RoleSplit ALL_ZOMBIES_PRESS = new RoleSplit(4, 0, 0);
   private static final RoleSplit HALF_ZOMBIES_FLANK = new RoleSplit(2, 2, 0);
   private static final RoleSplit ALL_SPIDERS_PRESS = new RoleSplit(2, 0, 0);
@@ -116,7 +118,15 @@ enum PlayStyle {
       for (long delayTicks : delaysFor(zombies)) {
         for (int step = 0; step <= RETREAT_STEPS; step++) {
           double retreat = retreatAt((double) step / RETREAT_STEPS);
-          recipes.add(new PlanRecipe(zombies, spiders, volley, delayTicks, retreat));
+          recipes.add(
+              new PlanRecipe(
+                  zombies,
+                  spiders,
+                  volley,
+                  delayTicks,
+                  retreat,
+                  LEGACY_GROUP_RETREAT_STRENGTH,
+                  LEGACY_CHASE_COMMITMENT));
         }
       }
     }
@@ -178,7 +188,9 @@ enum PlayStyle {
         spiders,
         volley,
         RecipeLearner.BOUNDS.minReserveDelayTicks(),
-        LEGACY_RETREAT_HEALTH_FRACTION);
+        LEGACY_RETREAT_HEALTH_FRACTION,
+        LEGACY_GROUP_RETREAT_STRENGTH,
+        LEGACY_CHASE_COMMITMENT);
   }
 
   private record Penalty(double weight, double target) {

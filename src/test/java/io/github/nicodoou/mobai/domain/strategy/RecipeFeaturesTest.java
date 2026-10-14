@@ -7,12 +7,13 @@ import static org.assertj.core.api.Assertions.within;
 import org.junit.jupiter.api.Test;
 
 class RecipeFeaturesTest {
-  private static final RecipeBounds BOUNDS = new RecipeBounds(25, 400, 0.6);
+  private static final RecipeBounds BOUNDS = new RecipeBounds(25, 400, 0.6, 0.6);
   private static final RoleSplit NO_MOBS = new RoleSplit(0, 0, 0);
 
   @Test
   void knownRecipeGivesKnownFeatures() {
-    var recipe = new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(1, 1, 0), true, 100, 0.3);
+    var recipe =
+        new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(1, 1, 0), true, 100, 0.3, 0.3, 0.5);
 
     double[] features = RecipeFeatures.of(recipe, 3, BOUNDS);
 
@@ -20,14 +21,14 @@ class RecipeFeaturesTest {
         .containsExactly(
             new double[] {
               1, 0.25, 0.0625, 0.25, 0.0625, 0.5, 0.25, 0.5, 0.25, 0.5, 0.25, 1, 0.0625, 1.0 / 3,
-              1.0 / 9
+              1.0 / 9, 0.5, 0.25, 0.5, 0.25
             },
             within(1e-9));
   }
 
   @Test
   void withoutReserveTheDelayIsIgnored() {
-    var recipe = new PlanRecipe(new RoleSplit(4, 0, 0), NO_MOBS, false, 400, 0);
+    var recipe = new PlanRecipe(new RoleSplit(4, 0, 0), NO_MOBS, false, 400, 0, 0.3, 0.5);
 
     double[] features = RecipeFeatures.of(recipe, 0, BOUNDS);
 
@@ -37,7 +38,7 @@ class RecipeFeaturesTest {
 
   @Test
   void missingKindsGiveZeroFractions() {
-    var recipe = new PlanRecipe(NO_MOBS, NO_MOBS, false, 25, 0);
+    var recipe = new PlanRecipe(NO_MOBS, NO_MOBS, false, 25, 0, 0.3, 0.5);
 
     double[] features = RecipeFeatures.of(recipe, 3, BOUNDS);
 
@@ -48,9 +49,9 @@ class RecipeFeaturesTest {
 
   @Test
   void invalidInputsAreRejected() {
-    var noMobs = new PlanRecipe(NO_MOBS, NO_MOBS, false, 25, 0);
-    var lateReserve = new PlanRecipe(new RoleSplit(0, 0, 1), NO_MOBS, false, 401, 0);
-    var lateRetreat = new PlanRecipe(new RoleSplit(1, 0, 0), NO_MOBS, false, 25, 0.7);
+    var noMobs = new PlanRecipe(NO_MOBS, NO_MOBS, false, 25, 0, 0.3, 0.5);
+    var lateReserve = new PlanRecipe(new RoleSplit(0, 0, 1), NO_MOBS, false, 401, 0, 0.3, 0.5);
+    var lateRetreat = new PlanRecipe(new RoleSplit(1, 0, 0), NO_MOBS, false, 25, 0.7, 0.3, 0.5);
 
     assertThatThrownBy(() -> RecipeFeatures.of(noMobs, 0, BOUNDS))
         .isInstanceOf(IllegalArgumentException.class)
@@ -64,5 +65,14 @@ class RecipeFeaturesTest {
     assertThatThrownBy(() -> RecipeFeatures.of(lateRetreat, 0, BOUNDS))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("RecipeFeatures.retreatHealthFraction must not exceed 0.6, got 0.7");
+  }
+
+  @Test
+  void groupRetreatAboveItsMaximumIsRejected() {
+    var recipe = new PlanRecipe(new RoleSplit(1, 0, 0), NO_MOBS, false, 25, 0, 0.7, 0.5);
+
+    assertThatThrownBy(() -> RecipeFeatures.of(recipe, 0, BOUNDS))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("RecipeFeatures.groupRetreatStrength must not exceed 0.6, got 0.7");
   }
 }

@@ -165,7 +165,9 @@ public final class ConfigLoader {
         wholeNumber(root, "learning.max-reserve-delay-ticks"),
         number(root, "learning.max-retreat-health-fraction"),
         wholeNumber(root, "learning.traits-half-life-ticks"),
-        wholeNumber(root, "learning.base-weight-plans"));
+        wholeNumber(root, "learning.base-weight-plans"),
+        number(root, "learning.max-group-retreat-strength"),
+        number(root, "learning.mid-knob-prior"));
   }
 
   private PackSettings pack(ConfigurationSection root) {

@@ -54,16 +54,22 @@ public final class RecipeSearch {
   }
 
   private static Tuning tuningFor(double[] weights, RecipeBounds bounds) {
-    double retreatPosition =
-        UnitIntervalPeak.of(
-            weights[RecipeFeatures.RETREAT_LINEAR], weights[RecipeFeatures.RETREAT_SQUARE]);
     double delayPosition =
-        UnitIntervalPeak.of(
-            weights[RecipeFeatures.DELAY_LINEAR], weights[RecipeFeatures.DELAY_SQUARE]);
+        peakOf(weights, RecipeFeatures.DELAY_LINEAR, RecipeFeatures.DELAY_SQUARE);
+    double retreatPosition =
+        peakOf(weights, RecipeFeatures.RETREAT_LINEAR, RecipeFeatures.RETREAT_SQUARE);
+    double groupRetreatPosition =
+        peakOf(weights, RecipeFeatures.GROUP_RETREAT_LINEAR, RecipeFeatures.GROUP_RETREAT_SQUARE);
     return new Tuning(
         reserveDelayAt(delayPosition, bounds),
         bounds.minReserveDelayTicks(),
-        retreatPosition * bounds.maxRetreatHealthFraction());
+        retreatPosition * bounds.maxRetreatHealthFraction(),
+        groupRetreatPosition * bounds.maxGroupRetreatStrength(),
+        peakOf(weights, RecipeFeatures.CHASE_LINEAR, RecipeFeatures.CHASE_SQUARE));
+  }
+
+  private static double peakOf(double[] weights, int linearIndex, int squareIndex) {
+    return UnitIntervalPeak.of(weights[linearIndex], weights[squareIndex]);
   }
 
   // The inverse of the logarithmic delay feature, so the search lands on the delay the model chose.
@@ -78,7 +84,14 @@ public final class RecipeSearch {
       for (RoleSplit spiders : spiderSplits(composition.spiders())) {
         for (boolean volley : volleyOptions(composition)) {
           candidates.add(
-              new PlanRecipe(zombies, spiders, volley, tuning.delayFor(zombies), tuning.retreat()));
+              new PlanRecipe(
+                  zombies,
+                  spiders,
+                  volley,
+                  tuning.delayFor(zombies),
+                  tuning.retreat(),
+                  tuning.groupRetreat(),
+                  tuning.chase()));
         }
       }
     }
@@ -89,6 +102,10 @@ public final class RecipeSearch {
     List<RoleSplit> splits = new ArrayList<>();
     for (int flank = 0; flank <= zombies; flank++) {
       for (int reserve = 0; reserve <= zombies - flank; reserve++) {
+        // CT-33 (B): a recipe that holds every zombie back sends nobody in, so at least one fights.
+        if (zombies > 0 && reserve == zombies) {
+          continue;
+        }
         splits.add(new RoleSplit(zombies - flank - reserve, flank, reserve));
       }
     }
@@ -132,7 +149,12 @@ public final class RecipeSearch {
     return score;
   }
 
-  private record Tuning(long delayWithReserve, long delayWithoutReserve, double retreat) {
+  private record Tuning(
+      long delayWithReserve,
+      long delayWithoutReserve,
+      double retreat,
+      double groupRetreat,
+      double chase) {
     long delayFor(RoleSplit zombies) {
       if (zombies.reserve() > 0) {
         return delayWithReserve;

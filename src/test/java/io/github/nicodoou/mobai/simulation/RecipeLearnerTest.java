@@ -21,8 +21,8 @@ class RecipeLearnerTest {
     LinearPosterior flat = RecipeLearner.prior(ModelKind.FLAT);
     LinearPosterior contextual = RecipeLearner.prior(ModelKind.CONTEXTUAL);
 
-    assertThat(flat.dimension()).isEqualTo(15);
-    assertThat(contextual.dimension()).isEqualTo(60);
+    assertThat(flat.dimension()).isEqualTo(19);
+    assertThat(contextual.dimension()).isEqualTo(76);
     for (LinearPosterior prior : new LinearPosterior[] {flat, contextual}) {
       double[] mean = prior.mean();
       assertThat(mean[0]).isEqualTo(0.5, within(1e-9));

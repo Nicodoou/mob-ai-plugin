@@ -141,6 +141,11 @@ learning:
   traits-half-life-ticks: 6000
   # Cuánto pesa la base del server para un jugador nuevo, en planes (0: no se usa).
   base-weight-plans: 600
+  # Umbral máximo de retirada de todo el grupo que se prueba (CT-33).
+  max-group-retreat-strength: 0.6
+  # Arranque en el medio (D-02): cuánto prefiere el modelo, antes de aprender, el medio de las
+  # perillas continuas. Calibrado con la simulación (docs/plan/calibracion-recetas.md).
+  mid-knob-prior: 0.0
 
 pack:
   # Persecución en bloque (CT-32): un mob cuerpo a cuerpo que va más de esto por delante del más

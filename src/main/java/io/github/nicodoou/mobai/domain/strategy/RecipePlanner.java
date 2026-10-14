@@ -240,7 +240,8 @@ public final class RecipePlanner {
     return new RecipeBounds(
         learning.minReserveDelayTicks(),
         learning.maxReserveDelayTicks(),
-        learning.maxRetreatHealthFraction());
+        learning.maxRetreatHealthFraction(),
+        learning.maxGroupRetreatStrength());
   }
 
   private LearningSettings learning() {

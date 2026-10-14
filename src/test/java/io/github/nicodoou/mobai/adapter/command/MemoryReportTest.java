@@ -158,7 +158,7 @@ class MemoryReportTest {
   }
 
   private static PlanRecipe recipe(RoleSplit zombies, boolean volley) {
-    return new PlanRecipe(zombies, new RoleSplit(0, 2, 0), volley, 20, 0.3);
+    return new PlanRecipe(zombies, new RoleSplit(0, 2, 0), volley, 20, 0.3, 0.3, 0.5);
   }
 
   private PlayerMemoryView view(

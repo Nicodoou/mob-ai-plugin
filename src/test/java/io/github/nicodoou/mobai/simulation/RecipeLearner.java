@@ -16,7 +16,7 @@ import java.util.Objects;
 /** Plays recipes against a synthetic opponent with the real model and search. */
 final class RecipeLearner {
   static final GroupComposition GROUP = new GroupComposition(4, 3, 2);
-  static final RecipeBounds BOUNDS = new RecipeBounds(20, 400, 0.6);
+  static final RecipeBounds BOUNDS = new RecipeBounds(20, 400, 0.6, 0.6);
   static final double MODEL_NOISE_VARIANCE = 0.01;
   static final double PRIOR_VARIANCE = 1.0;
   static final double PRIOR_SUCCESS = 0.5;

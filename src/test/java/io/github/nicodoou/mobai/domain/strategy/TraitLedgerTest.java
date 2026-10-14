@@ -85,7 +85,9 @@ class TraitLedgerTest {
             base.maxReserveDelayTicks(),
             base.maxRetreatHealthFraction(),
             3000,
-            base.baseWeightPlans());
+            base.baseWeightPlans(),
+            0.6,
+            0.0);
     TraitLedger shortLedger = new TraitLedger(() -> shortMemory);
     shortLedger.observe(snapshotAt(1000, alice().withBlocking(true)));
     shortLedger.observe(snapshotAt(7000, alice().withBlocking(false)));

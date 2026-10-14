@@ -10,8 +10,10 @@ import org.junit.jupiter.api.Test;
 class PlayStyleTest {
   @Test
   void trueScoresOfKnownRecipes() {
-    var flank = new PlanRecipe(new RoleSplit(2, 2, 0), new RoleSplit(1, 1, 0), true, 20, 0.3);
-    var assault = new PlanRecipe(new RoleSplit(4, 0, 0), new RoleSplit(2, 0, 0), false, 20, 0);
+    var flank =
+        new PlanRecipe(new RoleSplit(2, 2, 0), new RoleSplit(1, 1, 0), true, 20, 0.3, 0.3, 0.5);
+    var assault =
+        new PlanRecipe(new RoleSplit(4, 0, 0), new RoleSplit(2, 0, 0), false, 20, 0, 0.3, 0.5);
 
     assertThat(PlayStyle.SHIELD_BLOCKER.trueScore(flank)).isEqualTo(0.76, within(1e-9));
     assertThat(PlayStyle.BERSERKER.trueScore(flank)).isEqualTo(0.33275, within(1e-9));
@@ -23,7 +25,8 @@ class PlayStyleTest {
 
   @Test
   void aReserveAddsTheDelayTerm() {
-    var recipe = new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(1, 1, 0), true, 89, 0.3);
+    var recipe =
+        new PlanRecipe(new RoleSplit(2, 1, 1), new RoleSplit(1, 1, 0), true, 89, 0.3, 0.3, 0.5);
 
     double score = PlayStyle.SHIELD_BLOCKER.trueScore(recipe);
 

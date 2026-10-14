@@ -195,6 +195,12 @@ class SettingsValidationTest {
             "LearningSettings.maxRetreatHealthFraction must be below RetreatSettings.recoveryHealthFraction, got 0.6 >= 0.6",
             (Runnable) () -> withLearning(learning(0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.6, 6000))),
         org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.maxGroupRetreatStrength must be strictly between 0 and 1, got 1.0",
+            (Runnable) () -> learningWithKnobs(1.0, 0.0)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "LearningSettings.midKnobPrior must be zero or positive, got -1.0",
+            (Runnable) () -> learningWithKnobs(0.6, -1.0)),
+        org.junit.jupiter.params.provider.Arguments.of(
             "PackSettings.maxSpreadBlocks must be a positive number, got 0.0",
             (Runnable) () -> new PackSettings(0.0, 4.0, 0.25, 1.0)),
         org.junit.jupiter.params.provider.Arguments.of(
@@ -248,7 +254,28 @@ class SettingsValidationTest {
         maxReserveDelayTicks,
         maxRetreatHealthFraction,
         traitsHalfLifeTicks,
-        BASE_WEIGHT_PLANS);
+        BASE_WEIGHT_PLANS,
+        0.6,
+        0.0);
+  }
+
+  private static LearningSettings learningWithKnobs(
+      double maxGroupRetreatStrength, double midKnobPrior) {
+    LearningSettings base = TestSettings.defaults().learning();
+    return new LearningSettings(
+        base.planner(),
+        base.modelNoiseVariance(),
+        base.priorVariance(),
+        base.priorSuccess(),
+        base.explorationScale(),
+        base.trainingExplorationScale(),
+        base.minReserveDelayTicks(),
+        base.maxReserveDelayTicks(),
+        base.maxRetreatHealthFraction(),
+        base.traitsHalfLifeTicks(),
+        base.baseWeightPlans(),
+        maxGroupRetreatStrength,
+        midKnobPrior);
   }
 
   @Test
@@ -268,7 +295,9 @@ class SettingsValidationTest {
                     base.maxReserveDelayTicks(),
                     base.maxRetreatHealthFraction(),
                     base.traitsHalfLifeTicks(),
-                    -1))
+                    -1,
+                    0.6,
+                    0.0))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LearningSettings.baseWeightPlans must be at least 0, got -1");
   }

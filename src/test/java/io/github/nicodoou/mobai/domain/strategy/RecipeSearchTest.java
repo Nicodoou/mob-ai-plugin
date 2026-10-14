@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class RecipeSearchTest {
-  private final RecipeSearch search = new RecipeSearch(() -> new RecipeBounds(25, 400, 0.6));
+  private final RecipeSearch search = new RecipeSearch(() -> new RecipeBounds(25, 400, 0.6, 0.6));
 
   @Test
   void allZeroWeightsKeepTheFirstCandidate() {
@@ -22,6 +22,8 @@ class RecipeSearchTest {
     assertThat(recipe.volley()).isFalse();
     assertThat(recipe.reserveDelayTicks()).isEqualTo(25);
     assertThat(recipe.retreatHealthFraction()).isEqualTo(0, within(1e-9));
+    assertThat(recipe.groupRetreatStrength()).isEqualTo(0, within(1e-9));
+    assertThat(recipe.chaseCommitment()).isEqualTo(0, within(1e-9));
   }
 
   @Test
@@ -59,7 +61,7 @@ class RecipeSearchTest {
 
     var recipe = search.best(weights, new GroupComposition(4, 0, 0));
 
-    assertThat(recipe.zombies()).isEqualTo(new RoleSplit(0, 0, 4));
+    assertThat(recipe.zombies()).isEqualTo(new RoleSplit(1, 0, 3));
     assertThat(recipe.reserveDelayTicks()).isEqualTo(100);
   }
 
@@ -85,6 +87,47 @@ class RecipeSearchTest {
     var recipe = search.best(weights, new GroupComposition(4, 0, 0));
 
     assertThat(recipe.retreatHealthFraction()).isEqualTo(0.18, within(1e-9));
+  }
+
+  @Test
+  void groupRetreatFollowsItsPeak() {
+    double[] weights = new double[RecipeFeatures.DIMENSION];
+    weights[15] = 0.6;
+    weights[16] = -1;
+
+    var recipe = search.best(weights, new GroupComposition(4, 0, 0));
+
+    assertThat(recipe.groupRetreatStrength()).isEqualTo(0.18, within(1e-9));
+  }
+
+  @Test
+  void chaseFollowsItsPeak() {
+    double[] weights = new double[RecipeFeatures.DIMENSION];
+    weights[17] = 0.6;
+    weights[18] = -1;
+
+    var recipe = search.best(weights, new GroupComposition(4, 0, 0));
+
+    assertThat(recipe.chaseCommitment()).isEqualTo(0.3, within(1e-9));
+  }
+
+  @Test
+  void aReserveNeverTakesEveryZombie() {
+    double[] weights = new double[RecipeFeatures.DIMENSION];
+    weights[3] = 5;
+
+    var recipe = search.best(weights, new GroupComposition(4, 0, 0));
+
+    assertThat(recipe.zombies()).isEqualTo(new RoleSplit(1, 0, 3));
+  }
+
+  @Test
+  void withoutZombiesTheEmptySplitStays() {
+    double[] weights = new double[RecipeFeatures.DIMENSION];
+
+    var recipe = search.best(weights, new GroupComposition(0, 3, 0));
+
+    assertThat(recipe.zombies()).isEqualTo(new RoleSplit(0, 0, 0));
   }
 
   @Test
@@ -149,7 +192,7 @@ class RecipeSearchTest {
   }
 
   private static double scoreOf(double[] weights, PlanRecipe recipe) {
-    double[] features = RecipeFeatures.of(recipe, 0, new RecipeBounds(25, 400, 0.6));
+    double[] features = RecipeFeatures.of(recipe, 0, new RecipeBounds(25, 400, 0.6, 0.6));
     double score = 0;
     for (int index = 0; index < weights.length; index++) {
       score += weights[index] * features[index];
@@ -159,10 +202,10 @@ class RecipeSearchTest {
 
   @Test
   void wrongWeightCountIsRejected() {
-    double[] weights = new double[14];
+    double[] weights = new double[18];
 
     assertThatThrownBy(() -> search.best(weights, new GroupComposition(4, 0, 0)))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("RecipeSearch.weights must have 15 values, got 14");
+        .hasMessage("RecipeSearch.weights must have 19 values, got 18");
   }
 }
