@@ -16,11 +16,11 @@ class SchemaMigratorTest {
 
   @Test
   void currentVersionPassesUnchanged() {
-    var file = json("{\"schemaVersion\": 3, \"x\": 2}");
+    var file = json("{\"schemaVersion\": 4, \"x\": 2}");
 
     var migrated = migrator.migrate(file, "a.json");
 
-    assertThat(migrated).isEqualTo(json("{\"schemaVersion\": 3, \"x\": 2}"));
+    assertThat(migrated).isEqualTo(json("{\"schemaVersion\": 4, \"x\": 2}"));
   }
 
   @Test
@@ -34,10 +34,10 @@ class SchemaMigratorTest {
     assertThat(migratedGroup)
         .isEqualTo(
             json(
-                "{\"schemaVersion\": 3, \"members\": [], \"strategyRecords\": [],"
+                "{\"schemaVersion\": 4, \"members\": [], \"strategyRecords\": [],"
                     + " \"dangerRecords\": [], \"recipeModels\": []}"));
     assertThat(migratedState)
-        .isEqualTo(json("{\"schemaVersion\": 3, \"serverTick\": 5, \"traits\": []}"));
+        .isEqualTo(json("{\"schemaVersion\": 4, \"serverTick\": 5, \"traits\": []}"));
   }
 
   @Test
@@ -51,11 +51,11 @@ class SchemaMigratorTest {
 
   @Test
   void newerVersionIsRejected() {
-    var file = json("{\"schemaVersion\": 4}");
+    var file = json("{\"schemaVersion\": 5}");
 
     assertThatThrownBy(() -> migrator.migrate(file, "a.json"))
         .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Memory file a.json has schema version 4, newer than the supported 3");
+        .hasMessage("Memory file a.json has schema version 5, newer than the supported 4");
   }
 
   @Test
@@ -70,7 +70,7 @@ class SchemaMigratorTest {
     assertThat(migrated)
         .isEqualTo(
             json(
-                "{\"schemaVersion\": 3, \"members\": [], \"strategyRecords\": [],"
+                "{\"schemaVersion\": 4, \"members\": [], \"strategyRecords\": [],"
                     + " \"dangerRecords\": [], \"recipeModels\": []}"));
   }
 
@@ -81,7 +81,23 @@ class SchemaMigratorTest {
     var migrated = migrator.migrate(stateFile, "state.json");
 
     assertThat(migrated)
-        .isEqualTo(json("{\"schemaVersion\": 3, \"serverTick\": 5, \"traits\": []}"));
+        .isEqualTo(json("{\"schemaVersion\": 4, \"serverTick\": 5, \"traits\": []}"));
+  }
+
+  @Test
+  void versionThreeOnlyGetsTheNewNumber() {
+    var groupFile =
+        json(
+            "{\"schemaVersion\": 3, \"members\": [], \"strategyRecords\": [],"
+                + " \"dangerRecords\": [], \"recipeModels\": []}");
+
+    var migrated = migrator.migrate(groupFile, "g.json");
+
+    assertThat(migrated)
+        .isEqualTo(
+            json(
+                "{\"schemaVersion\": 4, \"members\": [], \"strategyRecords\": [],"
+                    + " \"dangerRecords\": [], \"recipeModels\": []}"));
   }
 
   @Test
@@ -92,6 +108,6 @@ class SchemaMigratorTest {
 
     assertThat(migrated.getAsJsonArray("dangerRecords")).isEmpty();
     assertThat(migrated.getAsJsonArray("recipeModels")).isEmpty();
-    assertThat(migrated.get("schemaVersion").getAsInt()).isEqualTo(3);
+    assertThat(migrated.get("schemaVersion").getAsInt()).isEqualTo(4);
   }
 }

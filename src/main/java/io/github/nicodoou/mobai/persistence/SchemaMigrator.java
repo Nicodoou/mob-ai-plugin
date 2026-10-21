@@ -5,10 +5,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 final class SchemaMigrator {
-  static final int CURRENT_VERSION = 3;
+  static final int CURRENT_VERSION = 4;
   private static final String VERSION_FIELD = "schemaVersion";
   private static final int VERSION_TWO = 2;
   private static final int VERSION_THREE = 3;
+  private static final int VERSION_FOUR = 4;
   private static final String MEMBERS_FIELD = "members";
   private static final String DANGER_RECORDS_FIELD = "dangerRecords";
   private static final String RECIPE_MODELS_FIELD = "recipeModels";
@@ -33,6 +34,9 @@ final class SchemaMigrator {
     if (version < VERSION_THREE) {
       fromVersionTwo(file);
     }
+    if (version < VERSION_FOUR) {
+      fromVersionThree(file);
+    }
     return file;
   }
 
@@ -53,6 +57,12 @@ final class SchemaMigrator {
       file.add(TRAITS_FIELD, new JsonArray());
     }
     file.addProperty(VERSION_FIELD, VERSION_THREE);
+  }
+
+  // Nothing in the files changes: recipe models grow from 60 to 76 numbers when the domain reads
+  // them (CT-33). The new number only makes the first load back the version 3 files up.
+  private static void fromVersionThree(JsonObject file) {
+    file.addProperty(VERSION_FIELD, VERSION_FOUR);
   }
 
   private static int versionOf(JsonObject file, String fileName) {

@@ -216,7 +216,7 @@ class JsonMemoryRepositoryTest {
 
     JsonObject json = readJson(groupFile(1));
 
-    assertThat(json.get("schemaVersion").getAsInt()).isEqualTo(3);
+    assertThat(json.get("schemaVersion").getAsInt()).isEqualTo(4);
     assertThat(json.get("groupId").getAsString()).isEqualTo("00000000-0000-0000-0000-000000000001");
     assertThat(json.get("policy").getAsString()).isEqualTo("THOMPSON_SAMPLING");
     assertThat(json.get("lastPlanSequence").getAsLong()).isEqualTo(3);
@@ -291,7 +291,7 @@ class JsonMemoryRepositoryTest {
   void loadRejectsANewerSchemaVersionAndKeepsTheFile() throws IOException {
     repository().save(memoriesOf(sampleGroup(1)));
     JsonObject json = readJson(groupFile(1));
-    json.addProperty("schemaVersion", 4);
+    json.addProperty("schemaVersion", 5);
     String newer = json.toString();
     Files.writeString(groupFile(1), newer);
 
@@ -389,6 +389,20 @@ class JsonMemoryRepositoryTest {
     assertThat(load.quarantinedFiles()).isEmpty();
     assertThat(load.groups()).hasSize(1);
     assertThat(Files.readString(backupOfGroup(1))).isEqualTo(versionTwoGroupText(1));
+  }
+
+  @Test
+  void backupIncludesTheBase() throws IOException {
+    repository().save(new StoredMemories(stateWithBase(), List.of(sampleGroup(1))));
+    JsonObject group = readJson(groupFile(1));
+    group.addProperty("schemaVersion", 3);
+    Files.writeString(groupFile(1), group.toString());
+    String baseText = Files.readString(root.resolve("base.json"));
+
+    repository().load();
+
+    Path backedUpBase = root.resolve("backups").resolve("schema-v3").resolve("base.json");
+    assertThat(Files.readString(backedUpBase)).isEqualTo(baseText);
   }
 
   @Test
