@@ -171,6 +171,20 @@ class RecipePlannerTest {
   }
 
   @Test
+  void aLegacyBaseLearnsAfterTheUpgrade() {
+    RecipePlanner planner = plannerWithNeutralDraws(1);
+    RecipeOutcome outcome = outcomeOf(planner);
+    base.replace(legacyModel());
+    base.startTraining(ALICE);
+
+    planner.teachBase(ALICE, outcome);
+
+    LinearPosterior taught = base.model().orElseThrow();
+    assertThat(taught.dimension()).isEqualTo(ContextualFeatures.DIMENSION);
+    assertThat(taught.observations()).isCloseTo(3, within(TOLERANCE));
+  }
+
+  @Test
   void trainingExploresMore() {
     RecipePlanner planner = plannerWithNeutralDraws(0);
     base.startTraining(ALICE);
