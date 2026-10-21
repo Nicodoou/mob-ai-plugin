@@ -992,3 +992,27 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Riesgos:**
   - la base del server necesita unos 1000 planes de entrenamiento para rendir como antes;
   - hasta el WP-31C, un server con memorias viejas no puede planificar con recetas.
+
+## WP-31C — Agrandar lo aprendido sin perderlo (PR #76, Sonnet) — CT-33
+
+**Qué hizo.**
+- **`RecipeModelUpgrade`** (dominio): agranda un modelo de 60 parámetros a 76, en forma de información.
+  - Lo viejo queda en su lugar.
+  - Los parámetros nuevos arrancan como el punto de partida.
+  - Los cruces quedan en 0.
+- **`RecipePlanner`** lo aplica donde lee modelos guardados: `current`, `anchor` y `teachBase`.
+- **Esquema de memorias 4:** el paso de 3 a 4 solo cambia el número, para que la primera carga haga copia de seguridad. La copia ahora incluye `base.json`.
+- **Perillas visibles:** las nuevas se muestran en la línea `PLAN`, en `/mobai memory` y en `training-data.jsonl` (formato 2).
+
+**Revisión.**
+- **Cuenta:** índice por índice, igual al WP.
+- **Roturas:** las 4 del WP mordieron. De mis dos roturas, la de sacar el agrandado de `anchor` mordió; la de sacarlo de `teachBase` no.
+  - Ese camino es el de la base vieja con `/mobai train`.
+  - El agente sumó `aLegacyBaseLearnsAfterTheUpgrade` y verifiqué que muerde.
+- **Build, cobertura y CI:** en verde (1130 pruebas).
+- **Archivos de prueba:** se actualizó `messages.yml` de prueba (`memory-recipe*`).
+
+**Opinión del código.**
+- **Lo bueno:** el agrandado es corto, exacto y probado con la predicción invariante; se aplica en un solo lugar del dominio; la persistencia casi no cambia.
+- **Lo flojo:** los modelos que no se tocan siguen con 60 en el disco y se agrandan en cada lectura. Es barato, pero queda una forma vieja dando vueltas hasta que aprenden.
+- **Riesgo:** los incidentes grabados antes del CT-33 no se reproducen.
