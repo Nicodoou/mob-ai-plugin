@@ -136,6 +136,8 @@ class MemoryReportTest {
         .containsEntry("spiders", "0/2")
         .containsEntry("delay", "20")
         .containsEntry("retreat", "30")
+        .containsEntry("group", "30")
+        .containsEntry("chase", "50")
         .containsEntry("rate", "100");
     assertThat(lines.get(3).values())
         .containsEntry("rank", "2")

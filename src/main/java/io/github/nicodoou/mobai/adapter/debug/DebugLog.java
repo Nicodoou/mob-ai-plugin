@@ -61,7 +61,8 @@ public final class DebugLog {
     PlayerTraits traits = play.traits();
     return String.format(
         Locale.ROOT,
-        " recipe=z%d/%d/%d s%d/%d volley=%s delay=%d retreat=%.2f traits=%.2f/%.2f/%.2f",
+        " recipe=z%d/%d/%d s%d/%d volley=%s delay=%d retreat=%.2f group=%.2f chase=%.2f"
+            + " traits=%.2f/%.2f/%.2f",
         recipe.zombies().press(),
         recipe.zombies().flank(),
         recipe.zombies().reserve(),
@@ -70,6 +71,8 @@ public final class DebugLog {
         recipe.volley(),
         recipe.reserveDelayTicks(),
         recipe.retreatHealthFraction(),
+        recipe.groupRetreatStrength(),
+        recipe.chaseCommitment(),
         traits.shield(),
         traits.ranged(),
         traits.armor());

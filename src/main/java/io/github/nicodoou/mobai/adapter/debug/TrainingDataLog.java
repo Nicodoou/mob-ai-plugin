@@ -15,7 +15,7 @@ import java.util.Objects;
  * with the debug writers to reuse their writer thread and Gson setup.
  */
 public final class TrainingDataLog {
-  private static final int FORMAT_VERSION = 1;
+  private static final int FORMAT_VERSION = 2;
 
   private final LineFileWriter lines;
   private final RecipeBase base;

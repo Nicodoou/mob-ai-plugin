@@ -90,7 +90,8 @@ class DebugLogTest {
     String line = DebugLog.planLine(new TraceEvent.PlanEvent(groupId(1), TICK, plan));
 
     assertThat(line)
-        .endsWith(" recipe=z2/1/1 s1/1 volley=true delay=89 retreat=0.15 traits=0.50/0.00/1.00");
+        .endsWith(
+            " recipe=z2/1/1 s1/1 volley=true delay=89 retreat=0.15 group=0.30 chase=0.50 traits=0.50/0.00/1.00");
   }
 
   @Test

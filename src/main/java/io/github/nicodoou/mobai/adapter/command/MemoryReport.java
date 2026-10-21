@@ -85,6 +85,8 @@ final class MemoryReport {
             "spiders", recipe.spiders().press() + "/" + recipe.spiders().flank(),
             "delay", String.valueOf(recipe.reserveDelayTicks()),
             "retreat", String.valueOf(Math.round(recipe.retreatHealthFraction() * PERCENT)),
+            "group", String.valueOf(Math.round(recipe.groupRetreatStrength() * PERCENT)),
+            "chase", String.valueOf(Math.round(recipe.chaseCommitment() * PERCENT)),
             "rate", String.valueOf(clampedPercent(estimate.predictedSuccess()))));
   }
 
