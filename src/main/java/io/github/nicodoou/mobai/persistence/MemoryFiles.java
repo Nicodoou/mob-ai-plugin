@@ -68,6 +68,9 @@ final class MemoryFiles {
       if (Files.exists(stateFile())) {
         Files.copy(stateFile(), folder.resolve(STATE_FILE_NAME));
       }
+      if (Files.exists(baseFile())) {
+        Files.copy(baseFile(), folder.resolve(BASE_FILE_NAME));
+      }
       for (Path file : groupFiles()) {
         Files.copy(file, folder.resolve(GROUPS_FOLDER_NAME).resolve(file.getFileName()));
       }

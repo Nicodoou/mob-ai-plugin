@@ -515,6 +515,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Identidad de los planes de recetas, receta del plan, planificador y rasgos que usa el cerebro (CT-30) | `RecipePlanner.STRATEGY_ID` (`"RECIPE"`), `PlanStart.recipe`, `Plan.recipe`, `ClosedPlan.recipe`, `BrainParts.recipePlanner`, `BrainParts.traitLedger` | Dominio |
 | Modelo de recetas y rasgos guardados, sus entradas en disco, copia de seguridad al migrar (CT-30) | `StoredRecipeModel`, `StoredTraits`, `RecipeModelEntry`, `TraitEntry`, `MemoryFiles.backupOnce` | Puerto y persistencia |
 | Rasgos del jugador en los incidentes, antes y después de la decisión (CT-30) | `TraitCaptureMapper`, `IncidentReport.traitsBefore`, `IncidentReport.traitsAfter` | Aplicación |
+| Agrandar un modelo de recetas guardado (60 parámetros) a los rasgos actuales sin perder lo aprendido (CT-33) | `RecipeModelUpgrade` | Dominio |
 | Base del server y entrenamiento por jugador (CT-30) | `RecipeBase`, `RecipeBaseCapture`, `RecipePlanner.anchor`, `RecipePlanner.teachBase`, `learning.base-weight-plans` | Dominio |
 | La base en disco y el comando de entrenamiento (CT-30) | `base.json`, `BaseFile`, `TrainPlayers`, `TrainingStatus`, `TrainCommand` (`/mobai train`) | Persistencia, aplicación y adaptadores |
 | Recetas estimadas en la memoria y registro de entrenamiento (CT-30) | `RecipeQuery`, `RecipeEstimate`, `RecipeSearch.ranked`, `RecipeAdvisor`, `RecipeAdvice`, `TrainingDataLog` (`training-data.jsonl`) | Dominio, aplicación y adaptadores |

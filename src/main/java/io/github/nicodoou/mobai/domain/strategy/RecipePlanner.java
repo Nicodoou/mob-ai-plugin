@@ -68,7 +68,7 @@ public final class RecipePlanner {
     if (base.model().isEmpty() || weightCapPlans == 0) {
       return prior();
     }
-    LinearPosterior model = base.model().get();
+    LinearPosterior model = upgraded(base.model().get());
     if (model.observations() <= weightCapPlans) {
       return model;
     }
@@ -81,7 +81,7 @@ public final class RecipePlanner {
       return anchor();
     }
     RecipeModelRecord record = stored.get();
-    return record.model().shrunkToward(anchor(), keepAfter(record.lastTick(), tick));
+    return upgraded(record.model()).shrunkToward(anchor(), keepAfter(record.lastTick(), tick));
   }
 
   public double explorationScaleFor(PlayerId target) {
@@ -135,7 +135,11 @@ public final class RecipePlanner {
     if (!base.isTraining(target)) {
       return;
     }
-    base.replace(observed(base.model().orElseGet(this::prior), outcome));
+    base.replace(observed(base.model().map(this::upgraded).orElseGet(this::prior), outcome));
+  }
+
+  private LinearPosterior upgraded(LinearPosterior model) {
+    return RecipeModelUpgrade.toCurrent(model, prior());
   }
 
   private LinearPosterior observed(LinearPosterior model, RecipeOutcome outcome) {

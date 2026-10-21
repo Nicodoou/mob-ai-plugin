@@ -149,6 +149,42 @@ class RecipePlannerTest {
   }
 
   @Test
+  void aLegacyPlayerModelIsUpgradedWhenRead() {
+    RecipePlanner planner = plannerWithNeutralDraws(0);
+
+    LinearPosterior current =
+        planner.current(Optional.of(new RecipeModelRecord(legacyModel(), 5000)), 5000);
+
+    assertThat(current.dimension()).isEqualTo(ContextualFeatures.DIMENSION);
+  }
+
+  @Test
+  void aLegacyBaseIsUpgradedAsTheAnchor() {
+    RecipePlanner planner = plannerWithCap(5);
+    LinearPosterior legacy = legacyModel();
+    base.replace(legacy);
+
+    LinearPosterior anchor = planner.anchor();
+
+    assertThat(anchor.dimension()).isEqualTo(ContextualFeatures.DIMENSION);
+    assertThat(anchor.observations()).isCloseTo(legacy.observations(), within(TOLERANCE));
+  }
+
+  @Test
+  void aLegacyBaseLearnsAfterTheUpgrade() {
+    RecipePlanner planner = plannerWithNeutralDraws(1);
+    RecipeOutcome outcome = outcomeOf(planner);
+    base.replace(legacyModel());
+    base.startTraining(ALICE);
+
+    planner.teachBase(ALICE, outcome);
+
+    LinearPosterior taught = base.model().orElseThrow();
+    assertThat(taught.dimension()).isEqualTo(ContextualFeatures.DIMENSION);
+    assertThat(taught.observations()).isCloseTo(3, within(TOLERANCE));
+  }
+
+  @Test
   void trainingExploresMore() {
     RecipePlanner planner = plannerWithNeutralDraws(0);
     base.startTraining(ALICE);
@@ -313,6 +349,10 @@ class RecipePlannerTest {
             ContextualFeatures.of(
                 RecipeFeatures.of(FAILED_RECIPE, 0, ESTIMATE_BOUNDS), SHIELD_USER));
     assertThat(estimates.getFirst().predictedSuccess()).isGreaterThan(failed);
+  }
+
+  private static LinearPosterior legacyModel() {
+    return RecipeModelUpgradeTest.legacyModel();
   }
 
   private LinearPosterior trainedModel(RecipePlanner planner, PlayerTraits traits) {

@@ -52,7 +52,7 @@ class TrainingDataLogTest {
     List<String> lines = Files.readAllLines(file);
     assertThat(lines).hasSize(1);
     JsonObject line = JsonParser.parseString(lines.getFirst()).getAsJsonObject();
-    assertThat(line.get("version").getAsInt()).isEqualTo(1);
+    assertThat(line.get("version").getAsInt()).isEqualTo(2);
     assertThat(line.get("player").getAsString()).isEqualTo(ALICE.value().toString());
     assertThat(line.get("training").getAsBoolean()).isTrue();
     assertThat(line.get("success").getAsDouble()).isEqualTo(0.6);
