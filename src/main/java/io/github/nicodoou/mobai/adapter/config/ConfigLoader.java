@@ -175,7 +175,9 @@ public final class ConfigLoader {
         number(root, "pack.max-spread-blocks"),
         number(root, "pack.engaged-distance-blocks"),
         number(root, "pack.surround-margin-blocks"),
-        number(root, "pack.wait-margin-blocks"));
+        number(root, "pack.wait-margin-blocks"),
+        number(root, "pack.min-chase-blocks"),
+        number(root, "pack.max-chase-blocks"));
   }
 
   private double number(ConfigurationSection root, String path) {
