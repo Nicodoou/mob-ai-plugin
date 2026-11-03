@@ -13,11 +13,20 @@ import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import io.github.nicodoou.mobai.domain.strategy.ChaseAnchor;
+import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
+import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
+import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +48,8 @@ class LifecycleCaptureTest {
                     OptionalLong.empty(),
                     0,
                     Optional.empty(),
-                    0))
+                    0,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.state cannot be PLANNING");
   }
@@ -59,7 +69,8 @@ class LifecycleCaptureTest {
                     OptionalLong.empty(),
                     1,
                     Optional.empty(),
-                    0))
+                    0,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "LifecycleCapture.plan must be present only while EXECUTING or EVALUATING,"
@@ -79,7 +90,8 @@ class LifecycleCaptureTest {
                     OptionalLong.of(5),
                     0,
                     Optional.empty(),
-                    0))
+                    0,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "LifecycleCapture.regroupStartTick must be present only while REGROUPING,"
@@ -99,7 +111,8 @@ class LifecycleCaptureTest {
                     OptionalLong.empty(),
                     0,
                     Optional.of(RALLY_POINT),
-                    0))
+                    0,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.rallyPoint must be absent outside REGROUPING, got OBSERVING");
   }
@@ -119,7 +132,8 @@ class LifecycleCaptureTest {
                     OptionalLong.empty(),
                     2,
                     Optional.empty(),
-                    0))
+                    0,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.planSequence must match the plan, got 2 for plan 1");
   }
@@ -184,6 +198,21 @@ class LifecycleCaptureTest {
   }
 
   @Test
+  void retreatStrengthSurvivesCaptureAndRestore() {
+    Group original = groupWithMobOne(1);
+    original.lifecycle().beginPlanning();
+    original.lifecycle().startPlan(recipeStart());
+    original.lifecycle().closePlan(PlanEndReason.GROUP_RETREATED, 200, TestSettings.scoring());
+    original.lifecycle().finishEvaluation();
+    Group restored = newGroup(1);
+
+    restored.lifecycle().restore(original.lifecycle().capture());
+
+    assertThat(restored.lifecycle().capture().lastPlanGroupRetreatStrength()).contains(0.3);
+    assertThat(restored.lifecycle().aftermath().lastPlanGroupRetreatStrength()).contains(0.3);
+  }
+
+  @Test
   void negativeLostHealthIsRejected() {
     assertThatThrownBy(
             () ->
@@ -196,7 +225,8 @@ class LifecycleCaptureTest {
                     OptionalLong.empty(),
                     0,
                     Optional.empty(),
-                    -1))
+                    -1,
+                    Optional.empty()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LifecycleCapture.lastPlanLostHealth must be zero or positive, got -1.0");
   }
@@ -258,6 +288,19 @@ class LifecycleCaptureTest {
         20,
         100,
         Optional.empty());
+  }
+
+  private PlanStart recipeStart() {
+    Map<MobId, Role> roles = Map.of(mob(1), Role.PRESS);
+    RecipePlay play =
+        new RecipePlay(
+            new PlanRecipe(new RoleSplit(1, 0, 0), new RoleSplit(0, 0, 0), false, 25, 0, 0.3, 0.5),
+            new PlayerTraits(0, 0, 0),
+            Collections.nCopies(ContextualFeatures.DIMENSION, 0.0),
+            roles,
+            Set.of(),
+            new ChaseAnchor(Vec3.ZERO, 0));
+    return new PlanStart(RecipePlanner.STRATEGY_ID, player, roles, 20, 100, Optional.of(play));
   }
 
   private static MobId mob(long n) {

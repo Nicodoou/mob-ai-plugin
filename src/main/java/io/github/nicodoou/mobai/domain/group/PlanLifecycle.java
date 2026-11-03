@@ -65,7 +65,8 @@ public final class PlanLifecycle {
         aftermath.regroupStartTick(),
         planSequence,
         aftermath.rallyPoint(),
-        aftermath.lastPlanLostHealth());
+        aftermath.lastPlanLostHealth(),
+        aftermath.lastPlanGroupRetreatStrength());
   }
 
   public void restore(LifecycleCapture capture) {
@@ -96,6 +97,7 @@ public final class PlanLifecycle {
     planSequence++;
     plan = Plan.start(new PlanId(groupId, planSequence), start);
     aftermath.forgetLostHealth();
+    aftermath.forgetGroupRetreatStrength();
     state = GroupState.EXECUTING;
     return plan;
   }
@@ -130,6 +132,8 @@ public final class PlanLifecycle {
     ClosedPlan closed = closedPlan(reason, tick, scoring);
     committedTarget = plan.target();
     aftermath.rememberLostHealth(GroupStrength.lostHealthOf(plan));
+    aftermath.rememberGroupRetreatStrength(
+        plan.recipe().map(play -> play.recipe().groupRetreatStrength()));
     lastEndReason = reason;
     lastEndTick = tick;
     state = GroupState.EVALUATING;

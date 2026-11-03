@@ -14,13 +14,22 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
+import io.github.nicodoou.mobai.domain.strategy.ChaseAnchor;
+import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
+import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
+import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
 import io.github.nicodoou.mobai.testsupport.GroupSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.MobSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -136,6 +145,46 @@ class PlanEndDetectorTest {
     GroupSnapshot withoutMobs = new GroupSnapshotBuilder().withPlayer(alice().build()).build();
 
     assertThat(detector.isTargetVisible(withoutMobs, ALICE)).isFalse();
+  }
+
+  @Test
+  void aLowRecipeStrengthKeepsTheGroupFighting() {
+    Plan recipePlan = withHealth(recipePlanWith(0.18, M1, M2, M3, M4), 6, 6, 6, 6);
+
+    assertThat(detector.detect(recipePlan.withTargetSeenAt(150), 150)).isEmpty();
+  }
+
+  @Test
+  void aHighRecipeStrengthRetreatsEarlier() {
+    Plan recipePlan = withHealth(recipePlanWith(0.5, M1, M2, M3, M4), 9, 9, 9, 9);
+
+    assertThat(detector.detect(recipePlan.withTargetSeenAt(150), 150))
+        .contains(PlanEndReason.GROUP_RETREATED);
+  }
+
+  private static Plan recipePlanWith(double groupRetreatStrength, MobId... mobs) {
+    Map<MobId, Role> roles = new LinkedHashMap<>();
+    for (MobId mob : mobs) {
+      roles.put(mob, Role.PRESS);
+    }
+    RecipePlay play =
+        new RecipePlay(
+            new PlanRecipe(
+                new RoleSplit(mobs.length, 0, 0),
+                new RoleSplit(0, 0, 0),
+                false,
+                25,
+                0,
+                groupRetreatStrength,
+                0.5),
+            new PlayerTraits(0, 0, 0),
+            Collections.nCopies(ContextualFeatures.DIMENSION, 0.0),
+            roles,
+            Set.of(),
+            new ChaseAnchor(Vec3.ZERO, 0));
+    PlanId id = new PlanId(new GroupId(new UUID(0, 3)), 1);
+    return Plan.start(
+        id, new PlanStart(RecipePlanner.STRATEGY_ID, ALICE, roles, 20, 100, Optional.of(play)));
   }
 
   private static Plan withHealth(Plan started, double... healths) {

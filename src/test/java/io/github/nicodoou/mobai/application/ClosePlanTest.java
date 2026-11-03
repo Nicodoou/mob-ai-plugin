@@ -19,6 +19,8 @@ import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
+import io.github.nicodoou.mobai.domain.strategy.ChaseAnchor;
 import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
 import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
@@ -147,7 +149,8 @@ class ClosePlanTest {
         new PlayerTraits(0, 0, 0),
         List.of(features),
         Map.of(),
-        Set.of());
+        Set.of(),
+        new ChaseAnchor(Vec3.ZERO, 0));
   }
 
   private PlanClosed closedEvent() {

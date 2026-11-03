@@ -9,12 +9,17 @@ import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
+import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
+import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
@@ -22,6 +27,7 @@ import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -43,6 +49,13 @@ class BrainRecipesTest {
   private static final long AFTER_THE_DELAY_TICKS = 90;
   private static final double WOUNDED_HEALTH = 4;
   private static final double WOUNDED_FRACTION = 0.2;
+  // The peak is -linear / (2 * quadratic), and the group retreat knob scales it by 0.6.
+  private static final Map<Integer, Double> LOW_GROUP_RETREAT = Map.of(15, 0.6, 16, -1.0);
+  private static final Map<Integer, Double> HIGH_GROUP_RETREAT = Map.of(15, 1.0, 16, -0.6);
+  private static final Map<Integer, Double> NO_CHASE = Map.of(17, -1.0);
+  private static final List<Integer> SPIDERS = List.of(7, 8);
+  private static final double GROUND_Y = 64;
+  private static final double ORIGIN_Z = 0;
 
   private final BrainFixture fixture = BrainFixture.seededWithRecipes(SEED);
   private final List<MobSnapshot> mobs = fixture.catalogGroup();
@@ -134,6 +147,127 @@ class BrainRecipesTest {
     Plan plan = strategies.group().lifecycle().plan().orElseThrow();
     assertThat(plan.recipe()).isEmpty();
     assertThat(plan.strategy()).isNotEqualTo(RecipePlanner.STRATEGY_ID);
+  }
+
+  @Test
+  void aLowRecipeStrengthFightsBelowTheConfiguredOne() {
+    storeModel(LOW_GROUP_RETREAT);
+    fixture.decide(START_TICK, mobs, alice());
+    assertThat(currentRecipe().groupRetreatStrength()).isCloseTo(0.18, within(0.01));
+
+    BrainResult result = fixture.decide(START_TICK + 10, atHealthFraction(mobs, 0.3), alice());
+
+    assertThat(result.closedPlan()).isEmpty();
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.EXECUTING);
+  }
+
+  @Test
+  void aHighRecipeStrengthRetreatsAboveTheConfiguredOne() {
+    BrainResult result = retreatAtHighStrength();
+
+    assertThat(result.closedPlan().orElseThrow().reason()).isEqualTo(PlanEndReason.GROUP_RETREATED);
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.REGROUPING);
+  }
+
+  @Test
+  void theGroupStaysRetreatedByItsLastPlanStrength() {
+    retreatAtHighStrength();
+
+    fixture.decide(
+        START_TICK + 10 + fixture.regroupWindow().currentTicks(),
+        atHealthFraction(mobs, 0.45),
+        alice());
+
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.REGROUPING);
+  }
+
+  @Test
+  void theGroupRejoinsByItsLastPlanStrength() {
+    storeModel(LOW_GROUP_RETREAT);
+    fixture.decide(START_TICK, mobs, alice());
+    assertThat(currentRecipe().groupRetreatStrength()).isCloseTo(0.18, within(0.01));
+    BrainResult closed = fixture.decide(START_TICK + 10, atHealthFraction(mobs, 0.1), alice());
+    assertThat(closed.closedPlan().orElseThrow().reason()).isEqualTo(PlanEndReason.GROUP_RETREATED);
+
+    fixture.decide(
+        START_TICK + 10 + fixture.regroupWindow().currentTicks(),
+        atHealthFraction(mobs, 0.3),
+        alice());
+
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+  }
+
+  @Test
+  void theLeashCallsFightersBackAndTheyReturnWhenTheTargetComesBack() {
+    storeModel(NO_CHASE);
+    fixture.decide(START_TICK, placed(ORIGIN_Z), aliceAtZ(10));
+    RecipePlay play = currentPlan().recipe().orElseThrow();
+    assertThat(play.recipe().chaseCommitment()).isCloseTo(0, within(0.01));
+    assertThat(play.chaseAnchor().ground().x()).isCloseTo(0, within(1e-9));
+    assertThat(play.chaseAnchor().ground().z()).isCloseTo(0, within(1e-9));
+    assertThat(play.chaseAnchor().openingDistanceBlocks()).isCloseTo(10, within(1e-9));
+
+    List<RoleAssignment> leashed =
+        fixture.decide(START_TICK + 10, placed(14), aliceAtZ(19)).decision().assignments();
+    List<RoleAssignment> back =
+        fixture.decide(START_TICK + 20, placed(12), aliceAtZ(18)).decision().assignments();
+
+    for (RoleAssignment order : fightersOf(leashed)) {
+      assertThat(order.role()).isEqualTo(Role.GATHER);
+      assertThat(order.rallyPoint()).contains(play.chaseAnchor().ground());
+    }
+    for (int index : SKELETONS) {
+      assertThat(leashed.get(index).role()).isEqualTo(Role.SHOOT);
+    }
+    assertThat(zombieRoles(back)).containsOnly(Role.PRESS);
+    for (int index : SPIDERS) {
+      assertThat(back.get(index).role()).isEqualTo(Role.GATHER);
+      assertThat(back.get(index).rallyPoint()).isEmpty();
+    }
+  }
+
+  private static List<RoleAssignment> fightersOf(List<RoleAssignment> orders) {
+    List<RoleAssignment> fighters =
+        new ArrayList<>(orders.subList(FIRST_ZOMBIE, FOURTH_ZOMBIE + 1));
+    SPIDERS.forEach(index -> fighters.add(orders.get(index)));
+    return fighters;
+  }
+
+  private List<MobSnapshot> placed(double spiderZ) {
+    List<MobSnapshot> placed = mobs;
+    for (int index = 0; index < mobs.size(); index++) {
+      double z = SPIDERS.contains(index) ? spiderZ : ORIGIN_Z;
+      placed = BrainFixture.withPosition(placed, index, new Vec3(0, GROUND_Y, z));
+    }
+    return placed;
+  }
+
+  private static PlayerSnapshot aliceAtZ(double z) {
+    return new PlayerSnapshotBuilder().withId(ALICE).withPosition(new Vec3(0, GROUND_Y, z)).build();
+  }
+
+  private BrainResult retreatAtHighStrength() {
+    storeModel(HIGH_GROUP_RETREAT);
+    fixture.decide(START_TICK, mobs, alice());
+    assertThat(currentRecipe().groupRetreatStrength()).isCloseTo(0.5, within(0.01));
+    return fixture.decide(START_TICK + 10, atHealthFraction(mobs, 0.45), alice());
+  }
+
+  private PlanRecipe currentRecipe() {
+    return currentPlan().recipe().orElseThrow().recipe();
+  }
+
+  private static List<MobSnapshot> atHealthFraction(List<MobSnapshot> mobs, double fraction) {
+    return mobs.stream()
+        .map(
+            mob ->
+                new MobSnapshot(
+                    mob.id(),
+                    mob.kind(),
+                    mob.position(),
+                    mob.maxHealth() * fraction,
+                    mob.maxHealth()))
+        .toList();
   }
 
   private void assertHeldBack(List<RoleAssignment> orders) {

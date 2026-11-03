@@ -10,6 +10,7 @@ import io.github.nicodoou.mobai.domain.group.DangerLevel;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
+import io.github.nicodoou.mobai.domain.group.PlanAftermath;
 import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.PlanLifecycle;
 import io.github.nicodoou.mobai.domain.group.PlanScoring;
@@ -54,12 +55,14 @@ public final class Brain {
   private final BrainParts parts;
   private final VolleyCycle volleyCycle;
   private final PackCohesion packCohesion;
+  private final ChaseLeash chaseLeash;
 
   public Brain(Supplier<MobAiSettings> settings, BrainParts parts) {
     this.settings = Objects.requireNonNull(settings, "Brain.settings");
     this.parts = Objects.requireNonNull(parts, "Brain.parts");
     this.volleyCycle = new VolleyCycle(() -> settings.get().volley());
     this.packCohesion = new PackCohesion(() -> settings.get().pack());
+    this.chaseLeash = new ChaseLeash(() -> settings.get().pack());
   }
 
   public BrainResult decide(Group group, GroupSnapshot snapshot) {
@@ -124,9 +127,16 @@ public final class Brain {
     return Outcome.withOrders(planOrders(turn));
   }
 
+  // CT-33: the group comes back by the same threshold its last plan retreated with.
   private boolean isGroupRetreated(Turn turn) {
-    double lostHealth = turn.lifecycle().aftermath().lastPlanLostHealth();
-    return parts.retreatRule().isGroupRetreated(turn.snapshot(), lostHealth);
+    PlanAftermath aftermath = turn.lifecycle().aftermath();
+    double lostHealth = aftermath.lastPlanLostHealth();
+    return aftermath
+        .lastPlanGroupRetreatStrength()
+        .map(
+            strength ->
+                parts.retreatRule().isGroupRetreatedAt(turn.snapshot(), lostHealth, strength))
+        .orElseGet(() -> parts.retreatRule().isGroupRetreated(turn.snapshot(), lostHealth));
   }
 
   // CT-13: a plan opened now would close at once with GROUP_RETREATED and teach the memory a
@@ -247,7 +257,7 @@ public final class Brain {
     }
   }
 
-  // CT-30: a recipe plan brings its own retreat threshold; the group retreat (CT-13) stays fixed.
+  // CT-30: a recipe plan brings its own retreat threshold.
   private boolean shouldRetreat(Turn turn, MobSnapshot mob) {
     Optional<RecipePlay> recipe = currentPlan(turn).recipe();
     if (recipe.isPresent()) {
@@ -437,7 +447,9 @@ public final class Brain {
   private List<RoleAssignment> planOrders(Turn turn) {
     List<RoleAssignment> orders =
         turn.snapshot().mobs().stream().map(mob -> orderFor(turn, mob)).toList();
-    return packCohesion.closeRanks(orders, turn.snapshot(), currentPlan(turn).target());
+    Plan plan = currentPlan(turn);
+    List<RoleAssignment> leashed = chaseLeash.reinIn(orders, turn.snapshot(), plan);
+    return packCohesion.closeRanks(leashed, turn.snapshot(), plan.target());
   }
 
   private RoleAssignment orderFor(Turn turn, MobSnapshot mob) {

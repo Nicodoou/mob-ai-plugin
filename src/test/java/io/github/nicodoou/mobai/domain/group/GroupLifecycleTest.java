@@ -17,10 +17,19 @@ import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import io.github.nicodoou.mobai.domain.strategy.ChaseAnchor;
+import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
+import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
+import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
+import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -387,6 +396,55 @@ class GroupLifecycleTest {
                 100,
                 Optional.empty()));
     group.lifecycle().recordGroupHealth(Map.of(MOB_1, 20.0, MOB_2, 16.0));
+  }
+
+  @Test
+  void closingARecipePlanRemembersItsRetreatStrength() {
+    group.lifecycle().beginPlanning();
+    group.lifecycle().startPlan(recipeStart());
+
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 400, TestSettings.scoring());
+
+    assertThat(group.lifecycle().aftermath().lastPlanGroupRetreatStrength()).contains(0.3);
+  }
+
+  @Test
+  void closingAStrategyPlanRemembersNoRetreatStrength() {
+    group.lifecycle().beginPlanning();
+    group.lifecycle().startPlan(recipeStart());
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 400, TestSettings.scoring());
+    group.lifecycle().finishEvaluation();
+    enterExecuting();
+
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 800, TestSettings.scoring());
+
+    assertThat(group.lifecycle().aftermath().lastPlanGroupRetreatStrength()).isEmpty();
+  }
+
+  @Test
+  void openingAPlanForgetsTheRetreatStrength() {
+    group.lifecycle().beginPlanning();
+    group.lifecycle().startPlan(recipeStart());
+    group.lifecycle().closePlan(PlanEndReason.TIMED_OUT, 400, TestSettings.scoring());
+    group.lifecycle().finishEvaluation();
+
+    group.lifecycle().beginPlanning();
+    group.lifecycle().startPlan(start);
+
+    assertThat(group.lifecycle().aftermath().lastPlanGroupRetreatStrength()).isEmpty();
+  }
+
+  private static PlanStart recipeStart() {
+    Map<MobId, Role> roles = Map.of(MOB_1, Role.PRESS);
+    RecipePlay play =
+        new RecipePlay(
+            new PlanRecipe(new RoleSplit(1, 0, 0), new RoleSplit(0, 0, 0), false, 25, 0, 0.3, 0.5),
+            new PlayerTraits(0, 0, 0),
+            Collections.nCopies(ContextualFeatures.DIMENSION, 0.0),
+            roles,
+            Set.of(),
+            new ChaseAnchor(Vec3.ZERO, 0));
+    return new PlanStart(RecipePlanner.STRATEGY_ID, ALICE, roles, 20, 100, Optional.of(play));
   }
 
   @Test

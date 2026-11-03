@@ -18,13 +18,15 @@ public record RecipePlay(
     PlayerTraits traits,
     List<Double> features,
     Map<MobId, Role> roles,
-    Set<MobId> reserve) {
+    Set<MobId> reserve,
+    ChaseAnchor chaseAnchor) {
   public RecipePlay {
     Objects.requireNonNull(recipe, "RecipePlay.recipe");
     Objects.requireNonNull(traits, "RecipePlay.traits");
     Objects.requireNonNull(features, "RecipePlay.features");
     Objects.requireNonNull(roles, "RecipePlay.roles");
     Objects.requireNonNull(reserve, "RecipePlay.reserve");
+    Objects.requireNonNull(chaseAnchor, "RecipePlay.chaseAnchor");
     if (features.size() != ContextualFeatures.DIMENSION) {
       throw new IllegalArgumentException(
           "RecipePlay.features must have "

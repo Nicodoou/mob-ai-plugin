@@ -25,11 +25,15 @@ public final class RetreatRule {
     return mob.health() <= healthFraction * mob.maxHealth();
   }
 
+  public boolean isGroupRetreated(GroupSnapshot snapshot, double lastPlanLostHealth) {
+    return isGroupRetreatedAt(snapshot, lastPlanLostHealth, plan.get().groupRetreatStrength());
+  }
+
   // CT-13, CT-31: the last plan's dead still count, so a lone healthy survivor stays retreated
   // until reinforcements make up for them.
-  public boolean isGroupRetreated(GroupSnapshot snapshot, double lastPlanLostHealth) {
-    return GroupStrength.ofSnapshot(snapshot, lastPlanLostHealth)
-        < plan.get().groupRetreatStrength();
+  public boolean isGroupRetreatedAt(
+      GroupSnapshot snapshot, double lastPlanLostHealth, double strength) {
+    return GroupStrength.ofSnapshot(snapshot, lastPlanLostHealth) < strength;
   }
 
   public boolean shouldReturn(MobSnapshot mob) {
