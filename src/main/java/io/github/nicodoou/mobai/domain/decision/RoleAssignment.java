@@ -12,7 +12,8 @@ import java.util.Optional;
  * What one mob does until the next decision.
  *
  * @param recovering the plugin heals this mob until the next decision
- * @param rallyPoint where a regrouping mob meets the rest of its group (CT-29)
+ * @param rallyPoint where a regrouping mob meets the rest of its group (CT-29), or the ground a
+ *     leashed fighter walks back to (CT-33)
  */
 public record RoleAssignment(
     MobId mob,

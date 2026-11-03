@@ -56,7 +56,7 @@ public final class PackCohesion {
     return gatherOrder(order);
   }
 
-  private static boolean isInPack(RoleAssignment order, PlayerId target) {
+  static boolean isInPack(RoleAssignment order, PlayerId target) {
     boolean isFighter = order.role() == Role.PRESS || order.role() == Role.FLANK;
     return isFighter && order.target().filter(target::equals).isPresent();
   }

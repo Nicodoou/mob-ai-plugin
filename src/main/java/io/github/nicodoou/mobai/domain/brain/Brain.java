@@ -55,12 +55,14 @@ public final class Brain {
   private final BrainParts parts;
   private final VolleyCycle volleyCycle;
   private final PackCohesion packCohesion;
+  private final ChaseLeash chaseLeash;
 
   public Brain(Supplier<MobAiSettings> settings, BrainParts parts) {
     this.settings = Objects.requireNonNull(settings, "Brain.settings");
     this.parts = Objects.requireNonNull(parts, "Brain.parts");
     this.volleyCycle = new VolleyCycle(() -> settings.get().volley());
     this.packCohesion = new PackCohesion(() -> settings.get().pack());
+    this.chaseLeash = new ChaseLeash(() -> settings.get().pack());
   }
 
   public BrainResult decide(Group group, GroupSnapshot snapshot) {
@@ -445,7 +447,9 @@ public final class Brain {
   private List<RoleAssignment> planOrders(Turn turn) {
     List<RoleAssignment> orders =
         turn.snapshot().mobs().stream().map(mob -> orderFor(turn, mob)).toList();
-    return packCohesion.closeRanks(orders, turn.snapshot(), currentPlan(turn).target());
+    Plan plan = currentPlan(turn);
+    List<RoleAssignment> leashed = chaseLeash.reinIn(orders, turn.snapshot(), plan);
+    return packCohesion.closeRanks(leashed, turn.snapshot(), plan.target());
   }
 
   private RoleAssignment orderFor(Turn turn, MobSnapshot mob) {

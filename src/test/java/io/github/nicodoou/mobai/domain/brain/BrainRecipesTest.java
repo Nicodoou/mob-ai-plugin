@@ -15,7 +15,9 @@ import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
+import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
 import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
@@ -25,6 +27,7 @@ import io.github.nicodoou.mobai.domain.strategy.RoleSplit;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
 import io.github.nicodoou.mobai.testsupport.PlayerSnapshotBuilder;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -49,6 +52,10 @@ class BrainRecipesTest {
   // The peak is -linear / (2 * quadratic), and the group retreat knob scales it by 0.6.
   private static final Map<Integer, Double> LOW_GROUP_RETREAT = Map.of(15, 0.6, 16, -1.0);
   private static final Map<Integer, Double> HIGH_GROUP_RETREAT = Map.of(15, 1.0, 16, -0.6);
+  private static final Map<Integer, Double> NO_CHASE = Map.of(17, -1.0);
+  private static final List<Integer> SPIDERS = List.of(7, 8);
+  private static final double GROUND_Y = 64;
+  private static final double ORIGIN_Z = 0;
 
   private final BrainFixture fixture = BrainFixture.seededWithRecipes(SEED);
   private final List<MobSnapshot> mobs = fixture.catalogGroup();
@@ -188,6 +195,55 @@ class BrainRecipesTest {
         alice());
 
     assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+  }
+
+  @Test
+  void theLeashCallsFightersBackAndTheyReturnWhenTheTargetComesBack() {
+    storeModel(NO_CHASE);
+    fixture.decide(START_TICK, placed(ORIGIN_Z), aliceAtZ(10));
+    RecipePlay play = currentPlan().recipe().orElseThrow();
+    assertThat(play.recipe().chaseCommitment()).isCloseTo(0, within(0.01));
+    assertThat(play.chaseAnchor().ground().x()).isCloseTo(0, within(1e-9));
+    assertThat(play.chaseAnchor().ground().z()).isCloseTo(0, within(1e-9));
+    assertThat(play.chaseAnchor().openingDistanceBlocks()).isCloseTo(10, within(1e-9));
+
+    List<RoleAssignment> leashed =
+        fixture.decide(START_TICK + 10, placed(14), aliceAtZ(19)).decision().assignments();
+    List<RoleAssignment> back =
+        fixture.decide(START_TICK + 20, placed(12), aliceAtZ(18)).decision().assignments();
+
+    for (RoleAssignment order : fightersOf(leashed)) {
+      assertThat(order.role()).isEqualTo(Role.GATHER);
+      assertThat(order.rallyPoint()).contains(play.chaseAnchor().ground());
+    }
+    for (int index : SKELETONS) {
+      assertThat(leashed.get(index).role()).isEqualTo(Role.SHOOT);
+    }
+    assertThat(zombieRoles(back)).containsOnly(Role.PRESS);
+    for (int index : SPIDERS) {
+      assertThat(back.get(index).role()).isEqualTo(Role.GATHER);
+      assertThat(back.get(index).rallyPoint()).isEmpty();
+    }
+  }
+
+  private static List<RoleAssignment> fightersOf(List<RoleAssignment> orders) {
+    List<RoleAssignment> fighters =
+        new ArrayList<>(orders.subList(FIRST_ZOMBIE, FOURTH_ZOMBIE + 1));
+    SPIDERS.forEach(index -> fighters.add(orders.get(index)));
+    return fighters;
+  }
+
+  private List<MobSnapshot> placed(double spiderZ) {
+    List<MobSnapshot> placed = mobs;
+    for (int index = 0; index < mobs.size(); index++) {
+      double z = SPIDERS.contains(index) ? spiderZ : ORIGIN_Z;
+      placed = BrainFixture.withPosition(placed, index, new Vec3(0, GROUND_Y, z));
+    }
+    return placed;
+  }
+
+  private static PlayerSnapshot aliceAtZ(double z) {
+    return new PlayerSnapshotBuilder().withId(ALICE).withPosition(new Vec3(0, GROUND_Y, z)).build();
   }
 
   private BrainResult retreatAtHighStrength() {
