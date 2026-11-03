@@ -155,3 +155,8 @@ pack:
   surround-margin-blocks: 0.25
   # Los zombies que esperan turno se quedan esto más allá del alcance del jugador.
   wait-margin-blocks: 1.0
+  # Correa (CT-33): cuánto más se puede alejar el jugador del terreno donde empezó la pelea antes
+  # de que los cuerpo a cuerpo vuelvan a él. La perilla aprendida chaseCommitment elige entre estos
+  # dos valores.
+  min-chase-blocks: 8.0
+  max-chase-blocks: 32.0

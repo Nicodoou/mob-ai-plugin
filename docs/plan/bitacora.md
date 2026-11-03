@@ -1016,3 +1016,27 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** el agrandado es corto, exacto y probado con la predicción invariante; se aplica en un solo lugar del dominio; la persistencia casi no cambia.
 - **Lo flojo:** los modelos que no se tocan siguen con 60 en el disco y se agrandan en cada lectura. Es barato, pero queda una forma vieja dando vueltas hasta que aprenden.
 - **Riesgo:** los incidentes grabados antes del CT-33 no se reproducen.
+
+## WP-34C — Retirada del grupo y correa en el juego (PR #77, Opus) — CT-33
+
+**Qué hizo.**
+- **Retirada del grupo:** un plan por receta se retira con su propio umbral. `PlanAftermath` recuerda el umbral del último plan y el cerebro lo usa para decidir cuándo vuelve a planificar. Después de un reinicio vale el de la configuración.
+- **`ChaseAnchor`** (dominio): la receta jugada guarda el centro del grupo y la distancia al objetivo al abrir el plan.
+- **`ChaseLeash`** (cerebro): si el objetivo se aleja del terreno más que `distancia inicial + L`, los `PRESS` y `FLANK` que no pelean reciben `GATHER` con el punto de regreso. Se aplica antes de `PackCohesion`.
+- **`GatherGoal`:** con punto, camina hasta ahí y espera mirando al objetivo. Sin punto, como antes.
+- **Enmienda del CT-33 (Nico, 3 nov):** se suma la distancia inicial. Sin eso, un plan abierto con el jugador lejos y la perilla baja no se acercaba nunca.
+
+**Revisión.**
+- **Archivos y contenido:** coinciden con el WP. Desvíos aceptados: una prueba de más para el mensaje de error, y `tick()` de `GatherGoal` repartido en funciones.
+- **Roturas:** las 7 del WP mordieron, según el informe del agente. Mis 4 roturas también:
+  - `<` en la distancia de pelea → `engagedAtTheEdgeKeepsFighting`;
+  - `closePlan` sin recordar el umbral → 4 pruebas;
+  - `restore` sin leer el umbral → `retreatStrengthSurvivesCaptureAndRestore`;
+  - la correa sin mirar la perilla → 6 o más pruebas.
+- **Build, cobertura y CI:** en verde (1167 pruebas).
+- **Archivos de prueba:** `config.yml` de prueba y `config-de-prueba.yml` actualizados.
+
+**Opinión del código.**
+- **Lo bueno:** `ChaseLeash` no guarda estado y sus pruebas tienen números calculados. La retirada aprendida casi no agrega ramas al cerebro.
+- **Lo flojo:** `reinIn` quedó en unas 23 líneas. El comentario de `Role.java` quedó incompleto, porque olvidé ese archivo en el WP. `GatherGoal` no tiene prueba unitaria, como el resto de los goals.
+- **Riesgos:** justo en el límite de la correa pueden ir y venir, y al volver todos al mismo punto pueden amontonarse y comerse el barrido. Hay que confirmarlo en el juego.

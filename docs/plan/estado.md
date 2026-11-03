@@ -2,18 +2,18 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 3 de noviembre de 2026 (WP-34C aprobado por Nico y en curso).
+**Última actualización:** 3 de noviembre de 2026 (WP-34C mergeado; siguen los WP-34D y 34E).
 
 ## Próximo paso
 
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Ahora:** WP-34C en curso (subagente Opus). Enmienda del CT-33 aprobada el 3 nov: la correa suma la distancia al abrir el plan. Conviene que Nico no reinicie el server hasta mergearlo.
+1. **Ahora:** WP-34C mergeado (#77). `config.yml` de prueba actualizado: Nico ya puede reiniciar y probar la correa y la retirada aprendida (ver «Verificación en el server» del WP). Sigue especificar el WP-34D.
 2. **Después:**
-   - **WP-34D y 34E:** movimiento impredecible (CT-34). Hay que especificarlos.
+   - **WP-34D y 34E:** movimiento impredecible (CT-34). Hay que especificarlos. Sumar al 34D que los que vuelven con la correa no se amontonen en el terreno.
    - **Repetir la puerta E6** con `puerta-e6-recetas.md`.
    - **B-09 en análisis:** «los mobs se quedan quietos como esperando a los esqueletos». La traza apunta a la reserva con demora 400 y a la andanada, no al `GATHER`. El WP-31B ya sacó las recetas con todos de reserva y el arranque en el medio: hay que volver a mirarlo en el juego.
-   - **Pendiente de Nico:** decidir el entrenamiento con bots (Mineflayer o jugadores falsos).
+   - **Entrenamiento con bots:** Nico prefiere bots con Mineflayer que decidan como él (3 nov). Vamos armando las reglas por situaciones. Antes de programarlos falta una prueba corta con un solo bot: la versión de npm de Mineflayer llega hasta 26.1 y el soporte de 26.3 sigue en PRs abiertos.
 3. **Puerta E6 en curso por Nico:** con recetas, 51 planes en el log (26 de entrenamiento). Los pasos 1 a 4 están verificados: recetas variadas, reserva, y los rasgos de arco y escudo subiendo. Faltan los pasos 5 a 9.
 4. **Pendiente de Nico en el juego:**
    - B-07 (#72): un sobreviviente solo no ataca;
@@ -29,6 +29,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
    - los nits de los WP-33K y 24H;
    - una pieza común de rumbos (`bearingOf`/`directionOf` repetidos en `ShooterFormation` y `SurroundFormation`);
    - `training-data.jsonl` sin límite de tamaño.
+   - el comentario de `Role.java` describe `GATHER` solo por el bloque (CT-32), no por la correa (CT-33).
 6. **Versión:** el README dice 1.0 MVP; el build dice `0.1.0-SNAPSHOT`. Le pregunté a Nico si pasar a 1.0.0 ya o después de la puerta E6, y no respondió.
 7. **Preferencias:** después de cada compactación, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto. Antes de lanzar cada WP, presentarlo con qué hace, arquitectura y decisiones, y esperar el sí. Al mergear, actualizar `config.yml`, `messages.yml` y `config-de-prueba.yml` de prueba con las claves nuevas.
 
@@ -89,7 +90,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-31C | Agrandar lo aprendido sin perderlo | E6 | mergeado | Sonnet | [#76](https://github.com/Nicodoou/mob-ai-plugin/pull/76) | CT-33. Merge el 21 oct; `messages.yml` de prueba actualizado |
 | WP-34A | Persecución en bloque | E6 | mergeado | Opus | [#73](https://github.com/Nicodoou/mob-ai-plugin/pull/73) | CT-32. Merge el 13 oct; sección `pack` en el `config.yml` de prueba |
 | WP-34B | Zombies que rodean | E6 | mergeado | Sonnet | [#74](https://github.com/Nicodoou/mob-ai-plugin/pull/74) | CT-32. Merge el 13 oct; claves nuevas en `pack` del `config.yml` de prueba |
-| WP-34C | Retirada del grupo y correa en el juego | E6 | en curso | Opus | — | CT-33, con la enmienda del 3 nov. Aprobado por Nico el 3 nov |
+| WP-34C | Retirada del grupo y correa en el juego | E6 | mergeado | Opus | [#77](https://github.com/Nicodoou/mob-ai-plugin/pull/77) | CT-33, con la enmienda del 3 nov. Merge el 3 nov; `min-chase-blocks` y `max-chase-blocks` en el `config.yml` de prueba |
 | WP-34D | Costados al azar y mantener la distancia | E6 | pendiente | Sonnet | — | CT-34. Después del 34C |
 | WP-34E | Esquive del arco y golpe oportunista | E6 | pendiente | Sonnet | — | CT-34 (incluye el esquive de los esqueletos del CT-32) |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
