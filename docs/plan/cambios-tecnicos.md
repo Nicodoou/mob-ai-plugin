@@ -707,6 +707,7 @@ Las recetas eligen cuántos hacen cada cosa, pero el movimiento es fijo: el mode
    - Al abrir el plan se guarda el centro del grupo (el terreno) en la receta jugada.
    - Si el objetivo se aleja del terreno más de `L = pack.min-chase-blocks + chaseCommitment × (pack.max-chase-blocks − pack.min-chase-blocks)` (de 8 a 32), los cuerpo a cuerpo vuelven al terreno con `GATHER` y esperan, salvo los que ya pelean.
    - Los esqueletos siguen tirando.
+   - **Enmienda (Nico, 3 nov):** el límite es `distancia al abrir el plan + L`, medida en horizontal entre el terreno y el objetivo. El radio de detección es de 24 bloques: sin sumarla, un plan abierto con el jugador a 20 bloques y la perilla por debajo de 0,5 no se acercaría nunca, ni siquiera a un jugador quieto. La perilla mide cuánto persiguen al jugador **que se aleja**. La receta jugada guarda el terreno y esa distancia (`ChaseAnchor`).
 
 **WPs.**
 - WP-31B (Opus): perillas, rasgos, búsqueda, arranque en el medio, regla B, simulación y recalibración.
