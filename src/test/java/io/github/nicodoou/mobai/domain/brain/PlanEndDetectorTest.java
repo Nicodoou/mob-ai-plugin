@@ -14,6 +14,7 @@ import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
+import io.github.nicodoou.mobai.domain.strategy.ChaseAnchor;
 import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
 import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
@@ -179,7 +180,8 @@ class PlanEndDetectorTest {
             new PlayerTraits(0, 0, 0),
             Collections.nCopies(ContextualFeatures.DIMENSION, 0.0),
             roles,
-            Set.of());
+            Set.of(),
+            new ChaseAnchor(Vec3.ZERO, 0));
     PlanId id = new PlanId(new GroupId(new UUID(0, 3)), 1);
     return Plan.start(
         id, new PlanStart(RecipePlanner.STRATEGY_ID, ALICE, roles, 20, 100, Optional.of(play)));

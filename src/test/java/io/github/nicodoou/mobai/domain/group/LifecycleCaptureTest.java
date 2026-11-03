@@ -13,6 +13,7 @@ import io.github.nicodoou.mobai.domain.shared.PlanId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.StrategyId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
+import io.github.nicodoou.mobai.domain.strategy.ChaseAnchor;
 import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
 import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
@@ -297,7 +298,8 @@ class LifecycleCaptureTest {
             new PlayerTraits(0, 0, 0),
             Collections.nCopies(ContextualFeatures.DIMENSION, 0.0),
             roles,
-            Set.of());
+            Set.of(),
+            new ChaseAnchor(Vec3.ZERO, 0));
     return new PlanStart(RecipePlanner.STRATEGY_ID, player, roles, 20, 100, Optional.of(play));
   }
 

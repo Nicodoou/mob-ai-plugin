@@ -4,7 +4,6 @@ import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.GroupSnapshot;
-import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.snapshot.PlayerSnapshot;
 import java.util.Comparator;
 import java.util.List;
@@ -24,20 +23,12 @@ public final class RallyPointRule {
     if (snapshot.mobs().isEmpty()) {
       return Optional.empty();
     }
-    Vec3 center = centerOf(snapshot.mobs());
+    Vec3 center = snapshot.mobCenter();
     Optional<Vec3> danger = dangerFor(snapshot, committedTarget, center);
     if (danger.isEmpty()) {
       return Optional.of(center);
     }
     return Optional.of(movedAway(center, danger.get()));
-  }
-
-  private static Vec3 centerOf(List<MobSnapshot> mobs) {
-    Vec3 sum = Vec3.ZERO;
-    for (MobSnapshot mob : mobs) {
-      sum = sum.plus(mob.position());
-    }
-    return sum.times(1.0 / mobs.size());
   }
 
   private static Optional<Vec3> dangerFor(

@@ -302,6 +302,15 @@ class RecipePlannerTest {
   }
 
   @Test
+  void thePlayCarriesItsChaseAnchor() {
+    RecipeRequest request = fourZombiesFlankRequest(NO_TRAITS);
+
+    RecipePlay play = plannerWithNeutralDraws(1).plan(request);
+
+    assertThat(play.chaseAnchor()).isEqualTo(ChaseAnchor.of(request.snapshot(), request.target()));
+  }
+
+  @Test
   void learningAddsTheOutcome() {
     RecipePlanner planner = plannerWithNeutralDraws(1);
     RecipePlay play = planner.plan(fourZombiesFlankRequest(NO_TRAITS));

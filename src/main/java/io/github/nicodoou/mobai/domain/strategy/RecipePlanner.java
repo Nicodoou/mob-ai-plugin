@@ -102,7 +102,8 @@ public final class RecipePlanner {
         request.traits(),
         featuresOf(recipe, composition, request.traits()),
         rolesOf(request.snapshot(), flankers),
-        reserveOf(recipe, request, flankers));
+        reserveOf(recipe, request, flankers),
+        ChaseAnchor.of(request.snapshot(), request.target()));
   }
 
   public List<RecipeEstimate> estimates(RecipeQuery query, int count) {

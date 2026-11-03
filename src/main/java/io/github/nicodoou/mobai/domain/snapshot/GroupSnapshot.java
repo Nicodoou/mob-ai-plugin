@@ -3,6 +3,7 @@ package io.github.nicodoou.mobai.domain.snapshot;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
+import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +30,18 @@ public record GroupSnapshot(
 
   public Optional<PlayerSnapshot> player(PlayerId id) {
     return players.stream().filter(player -> player.id().equals(id)).findFirst();
+  }
+
+  /** The average position of the mobs; only a group with mobs has one. */
+  public Vec3 mobCenter() {
+    if (mobs.isEmpty()) {
+      throw new IllegalStateException("GroupSnapshot.mobCenter: the group has no mobs");
+    }
+    Vec3 sum = Vec3.ZERO;
+    for (MobSnapshot mob : mobs) {
+      sum = sum.plus(mob.position());
+    }
+    return sum.times(1.0 / mobs.size());
   }
 
   private static void requireDistinctMobIds(List<MobSnapshot> mobs) {
