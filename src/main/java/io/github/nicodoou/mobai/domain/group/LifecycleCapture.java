@@ -15,7 +15,8 @@ public record LifecycleCapture(
     OptionalLong regroupStartTick,
     long planSequence,
     Optional<Vec3> rallyPoint,
-    double lastPlanLostHealth) {
+    double lastPlanLostHealth,
+    Optional<Double> lastPlanGroupRetreatStrength) {
   public LifecycleCapture {
     Objects.requireNonNull(state, "LifecycleCapture.state");
     Objects.requireNonNull(plan, "LifecycleCapture.plan");
@@ -23,6 +24,8 @@ public record LifecycleCapture(
     Objects.requireNonNull(lastEndReason, "LifecycleCapture.lastEndReason");
     Objects.requireNonNull(regroupStartTick, "LifecycleCapture.regroupStartTick");
     Objects.requireNonNull(rallyPoint, "LifecycleCapture.rallyPoint");
+    Objects.requireNonNull(
+        lastPlanGroupRetreatStrength, "LifecycleCapture.lastPlanGroupRetreatStrength");
     requireNotPlanning(state);
     requirePlanMatchesState(state, plan);
     requireRegroupStartMatchesState(state, regroupStartTick);

@@ -49,9 +49,13 @@ public final class PlanEndDetector {
     return plan.ageTicks(tick) >= settings.maxPlanDurationTicks();
   }
 
-  // CT-31: the dead count as lost health, so a few healthy survivors do not keep a plan alive.
+  // CT-31, CT-33: the dead count as lost health, and a recipe plan brings its own threshold.
   private static boolean hasRetreated(Plan plan, PlanSettings settings) {
-    return GroupStrength.ofPlan(plan) < settings.groupRetreatStrength();
+    double threshold =
+        plan.recipe()
+            .map(play -> play.recipe().groupRetreatStrength())
+            .orElse(settings.groupRetreatStrength());
+    return GroupStrength.ofPlan(plan) < threshold;
   }
 
   private boolean isNearAnyMob(GroupSnapshot snapshot, PlayerSnapshot player) {

@@ -15,6 +15,8 @@ public final class PlanAftermath {
   // null outside a regroup or while no rally point was chosen; exposed only as Optional
   private Vec3 rallyPoint;
   private double lastPlanLostHealth;
+  // null while the last plan had no recipe; exposed only as Optional
+  private Double lastPlanGroupRetreatStrength;
 
   PlanAftermath() {}
 
@@ -28,6 +30,11 @@ public final class PlanAftermath {
   /** The starting health of the mobs the last closed plan lost; zero once a new plan opens. */
   public double lastPlanLostHealth() {
     return lastPlanLostHealth;
+  }
+
+  /** The threshold the last closed recipe plan retreated with; empty once a new plan opens. */
+  public Optional<Double> lastPlanGroupRetreatStrength() {
+    return Optional.ofNullable(lastPlanGroupRetreatStrength);
   }
 
   void startRegroup(long tick) {
@@ -56,6 +63,14 @@ public final class PlanAftermath {
     lastPlanLostHealth = 0;
   }
 
+  void rememberGroupRetreatStrength(Optional<Double> strength) {
+    lastPlanGroupRetreatStrength = strength.orElse(null);
+  }
+
+  void forgetGroupRetreatStrength() {
+    lastPlanGroupRetreatStrength = null;
+  }
+
   OptionalLong regroupStartTick() {
     return regrouping().stream().mapToLong(Regrouping::startTick).findFirst();
   }
@@ -68,5 +83,6 @@ public final class PlanAftermath {
     regroupStartTick = capture.regroupStartTick().orElse(NO_REGROUP);
     rallyPoint = capture.rallyPoint().orElse(null);
     lastPlanLostHealth = capture.lastPlanLostHealth();
+    lastPlanGroupRetreatStrength = capture.lastPlanGroupRetreatStrength().orElse(null);
   }
 }

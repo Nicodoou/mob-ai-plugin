@@ -97,6 +97,14 @@ class RetreatRuleTest {
     assertThat(rule.isGroupRetreated(new GroupSnapshotBuilder().build(), NO_LOSSES)).isTrue();
   }
 
+  @Test
+  void isGroupRetreatedAtUsesTheGivenStrength() {
+    GroupSnapshot snapshot = zombiesWithHealth(9, 9, 9);
+
+    assertThat(rule.isGroupRetreatedAt(snapshot, NO_LOSSES, 0.5)).isTrue();
+    assertThat(rule.isGroupRetreatedAt(snapshot, NO_LOSSES, 0.4)).isFalse();
+  }
+
   private static GroupSnapshot zombiesWithHealth(double... healths) {
     GroupSnapshotBuilder builder = new GroupSnapshotBuilder();
     for (int index = 0; index < healths.length; index++) {

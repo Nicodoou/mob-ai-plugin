@@ -9,12 +9,15 @@ import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Plan;
+import io.github.nicodoou.mobai.domain.group.PlanEndReason;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.domain.strategy.ContextualFeatures;
+import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import io.github.nicodoou.mobai.domain.strategy.PlayerTraits;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlanner;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
@@ -43,6 +46,9 @@ class BrainRecipesTest {
   private static final long AFTER_THE_DELAY_TICKS = 90;
   private static final double WOUNDED_HEALTH = 4;
   private static final double WOUNDED_FRACTION = 0.2;
+  // The peak is -linear / (2 * quadratic), and the group retreat knob scales it by 0.6.
+  private static final Map<Integer, Double> LOW_GROUP_RETREAT = Map.of(15, 0.6, 16, -1.0);
+  private static final Map<Integer, Double> HIGH_GROUP_RETREAT = Map.of(15, 1.0, 16, -0.6);
 
   private final BrainFixture fixture = BrainFixture.seededWithRecipes(SEED);
   private final List<MobSnapshot> mobs = fixture.catalogGroup();
@@ -134,6 +140,78 @@ class BrainRecipesTest {
     Plan plan = strategies.group().lifecycle().plan().orElseThrow();
     assertThat(plan.recipe()).isEmpty();
     assertThat(plan.strategy()).isNotEqualTo(RecipePlanner.STRATEGY_ID);
+  }
+
+  @Test
+  void aLowRecipeStrengthFightsBelowTheConfiguredOne() {
+    storeModel(LOW_GROUP_RETREAT);
+    fixture.decide(START_TICK, mobs, alice());
+    assertThat(currentRecipe().groupRetreatStrength()).isCloseTo(0.18, within(0.01));
+
+    BrainResult result = fixture.decide(START_TICK + 10, atHealthFraction(mobs, 0.3), alice());
+
+    assertThat(result.closedPlan()).isEmpty();
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.EXECUTING);
+  }
+
+  @Test
+  void aHighRecipeStrengthRetreatsAboveTheConfiguredOne() {
+    BrainResult result = retreatAtHighStrength();
+
+    assertThat(result.closedPlan().orElseThrow().reason()).isEqualTo(PlanEndReason.GROUP_RETREATED);
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.REGROUPING);
+  }
+
+  @Test
+  void theGroupStaysRetreatedByItsLastPlanStrength() {
+    retreatAtHighStrength();
+
+    fixture.decide(
+        START_TICK + 10 + fixture.regroupWindow().currentTicks(),
+        atHealthFraction(mobs, 0.45),
+        alice());
+
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.REGROUPING);
+  }
+
+  @Test
+  void theGroupRejoinsByItsLastPlanStrength() {
+    storeModel(LOW_GROUP_RETREAT);
+    fixture.decide(START_TICK, mobs, alice());
+    assertThat(currentRecipe().groupRetreatStrength()).isCloseTo(0.18, within(0.01));
+    BrainResult closed = fixture.decide(START_TICK + 10, atHealthFraction(mobs, 0.1), alice());
+    assertThat(closed.closedPlan().orElseThrow().reason()).isEqualTo(PlanEndReason.GROUP_RETREATED);
+
+    fixture.decide(
+        START_TICK + 10 + fixture.regroupWindow().currentTicks(),
+        atHealthFraction(mobs, 0.3),
+        alice());
+
+    assertThat(fixture.group().lifecycle().state()).isEqualTo(GroupState.OBSERVING);
+  }
+
+  private BrainResult retreatAtHighStrength() {
+    storeModel(HIGH_GROUP_RETREAT);
+    fixture.decide(START_TICK, mobs, alice());
+    assertThat(currentRecipe().groupRetreatStrength()).isCloseTo(0.5, within(0.01));
+    return fixture.decide(START_TICK + 10, atHealthFraction(mobs, 0.45), alice());
+  }
+
+  private PlanRecipe currentRecipe() {
+    return currentPlan().recipe().orElseThrow().recipe();
+  }
+
+  private static List<MobSnapshot> atHealthFraction(List<MobSnapshot> mobs, double fraction) {
+    return mobs.stream()
+        .map(
+            mob ->
+                new MobSnapshot(
+                    mob.id(),
+                    mob.kind(),
+                    mob.position(),
+                    mob.maxHealth() * fraction,
+                    mob.maxHealth()))
+        .toList();
   }
 
   private void assertHeldBack(List<RoleAssignment> orders) {
