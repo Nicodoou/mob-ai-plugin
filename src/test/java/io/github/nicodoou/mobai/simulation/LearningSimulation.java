@@ -160,6 +160,7 @@ final class LearningSimulation {
           new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
           base.learning(),
           TestSettings.pack(),
+          TestSettings.relay(),
           TestSettings.neural());
     }
 

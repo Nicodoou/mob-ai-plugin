@@ -23,6 +23,13 @@ public final class ShotRhythm {
   }
 
   public void markShot() {
-    nextShotTick = clock.currentTick() + MinecraftConstants.SKELETON_ATTACK_INTERVAL_TICKS;
+    markShotHeldFor(0);
+  }
+
+  // Holding an arrow for a free window only moves it: the next one keeps the vanilla rate.
+  public void markShotHeldFor(long heldTicks) {
+    nextShotTick =
+        clock.currentTick()
+            + Math.max(0, MinecraftConstants.SKELETON_ATTACK_INTERVAL_TICKS - heldTicks);
   }
 }

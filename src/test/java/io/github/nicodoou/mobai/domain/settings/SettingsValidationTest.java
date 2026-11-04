@@ -138,6 +138,21 @@ class SettingsValidationTest {
             "DebugSettings.recordingIntervalTicks must be at least 1, got 0",
             (Runnable) () -> new DebugSettings(TraceLevel.OFF, 200, 0)),
         org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.arrowMarginTicks must be at least 0, got -1",
+            (Runnable) () -> new RelaySettings(-1, 2, 2, 20, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.arrowSlackTicks must be at least 1, got 0",
+            (Runnable) () -> new RelaySettings(1, 0, 2, 20, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.landingGraceTicks must be at least 0, got -1",
+            (Runnable) () -> new RelaySettings(1, 2, -1, 20, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.maxShotHoldTicks must be at least 1, got 0",
+            (Runnable) () -> new RelaySettings(1, 2, 2, 0, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.readyStaleTicks must be at least 2, got 1",
+            (Runnable) () -> new RelaySettings(1, 2, 2, 20, 1)),
+        org.junit.jupiter.params.provider.Arguments.of(
             "VolleySettings.pressTicks must be at least 1, got 0",
             (Runnable) () -> new VolleySettings(0, 20, 30, 1.5)),
         org.junit.jupiter.params.provider.Arguments.of(
@@ -298,6 +313,7 @@ class SettingsValidationTest {
         defaults.success(),
         learning,
         TestSettings.pack(),
+        TestSettings.relay(),
         TestSettings.neural());
   }
 
@@ -391,6 +407,7 @@ class SettingsValidationTest {
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
                     TestSettings.pack(),
+                    TestSettings.relay(),
                     TestSettings.neural()))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("MobAiSettings.memory");
@@ -418,6 +435,7 @@ class SettingsValidationTest {
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
                     TestSettings.pack(),
+                    TestSettings.relay(),
                     TestSettings.neural()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(

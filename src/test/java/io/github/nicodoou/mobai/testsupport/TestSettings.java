@@ -15,6 +15,7 @@ import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.PlannerKind;
 import io.github.nicodoou.mobai.domain.settings.PressureSettings;
+import io.github.nicodoou.mobai.domain.settings.RelaySettings;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
@@ -56,12 +57,18 @@ public final class TestSettings {
         new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
         new LearningSettings(planner, 0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000, 600, 0.6, 0.0),
         pack(),
+        relay(),
         neural());
   }
 
   /** The pack section of the shipped config.yml. */
   public static PackSettings pack() {
     return new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 3, 60, 30, 1.7, 1.7, 1.5);
+  }
+
+  /** The relay section of the shipped config.yml. */
+  public static RelaySettings relay() {
+    return new RelaySettings(1, 2, 2, 20, 3);
   }
 
   /** The neural section of the shipped config.yml. */

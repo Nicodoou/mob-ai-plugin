@@ -23,6 +23,15 @@ class ShotAimTest {
   private final Vec3 movement = new Vec3(0, 0, 0.2);
 
   @Test
+  void aDirectShotFliesTheTicksItsVelocityNeedsToReachTheTarget() {
+    Vec3 velocity = aim.velocity(request(Attack.SKELETON_DIRECT_SHOT));
+
+    long flight = aim.flightTicks(request(Attack.SKELETON_DIRECT_SHOT));
+
+    assertThat(flight).isEqualTo(geometry.arrowTicksToCover(velocity, 10.0)).isEqualTo(7);
+  }
+
+  @Test
   void directShotAimsWhereTheTargetIs() {
     Vec3 velocity = aim.velocity(request(Attack.SKELETON_DIRECT_SHOT));
 

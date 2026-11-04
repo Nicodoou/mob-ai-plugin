@@ -426,6 +426,7 @@ class RecipePlannerTest {
             settings.success(),
             changed,
             TestSettings.pack(),
+            TestSettings.relay(),
             TestSettings.neural());
     return new RecipePlanner(() -> changedSettings, new ScriptedRandomSource(), base);
   }

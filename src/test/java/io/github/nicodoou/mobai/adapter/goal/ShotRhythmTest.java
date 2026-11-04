@@ -18,6 +18,24 @@ class ShotRhythmTest {
   }
 
   @Test
+  void aHeldShotTakesItsHoldOffTheNextInterval() {
+    rhythm.markShotHeldFor(5);
+
+    clock.advance(34);
+    assertThat(rhythm.canShoot()).isFalse();
+
+    clock.advance(1);
+    assertThat(rhythm.canShoot()).isTrue();
+  }
+
+  @Test
+  void aHoldLongerThanTheIntervalLeavesNoWait() {
+    rhythm.markShotHeldFor(100);
+
+    assertThat(rhythm.canShoot()).isTrue();
+  }
+
+  @Test
   void waitsTheSkeletonAttackInterval() {
     rhythm.markShot();
 

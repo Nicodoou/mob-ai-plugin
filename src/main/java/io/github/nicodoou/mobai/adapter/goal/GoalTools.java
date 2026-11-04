@@ -11,12 +11,14 @@ public record GoalTools(
     GoalTiming timing,
     Waypoints waypoints,
     RallyRoute rallyRoute,
-    PerchClaims perches) {
+    PerchClaims perches,
+    StrikeTurns turns) {
   public GoalTools {
     Objects.requireNonNull(weapons, "GoalTools.weapons");
     Objects.requireNonNull(timing, "GoalTools.timing");
     Objects.requireNonNull(waypoints, "GoalTools.waypoints");
     Objects.requireNonNull(rallyRoute, "GoalTools.rallyRoute");
     Objects.requireNonNull(perches, "GoalTools.perches");
+    Objects.requireNonNull(turns, "GoalTools.turns");
   }
 }

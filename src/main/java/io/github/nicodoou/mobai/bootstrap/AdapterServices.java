@@ -38,6 +38,7 @@ import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
 import io.github.nicodoou.mobai.adapter.goal.ShotAim;
 import io.github.nicodoou.mobai.adapter.goal.ShotParts;
 import io.github.nicodoou.mobai.adapter.goal.StrikeFollowUps;
+import io.github.nicodoou.mobai.adapter.goal.StrikeTurns;
 import io.github.nicodoou.mobai.adapter.goal.Waypoints;
 import io.github.nicodoou.mobai.adapter.goal.Weapons;
 import io.github.nicodoou.mobai.adapter.listener.DamageListener;
@@ -69,6 +70,7 @@ import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
 import io.github.nicodoou.mobai.application.TrainPlayers;
 import io.github.nicodoou.mobai.domain.attack.AttackClassifier;
 import io.github.nicodoou.mobai.domain.attack.BiteSlowness;
+import io.github.nicodoou.mobai.domain.attack.StrikeRelay;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.geometry.FlankFormation;
@@ -293,7 +295,11 @@ public record AdapterServices(
             new RallyDetour(geometry),
             core.settings().section(MobAiSettings::attack),
             core.settings().section(MobAiSettings::retreat)),
-        new PerchClaims());
+        new PerchClaims(),
+        new StrikeTurns(
+            new StrikeRelay(core.settings().section(MobAiSettings::relay)),
+            core.clock(),
+            parts.roles()));
   }
 
   private static Waypoints waypoints(CoreServices core, CombatGeometry geometry) {

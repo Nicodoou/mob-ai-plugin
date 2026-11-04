@@ -39,6 +39,10 @@ public final class BowShooter {
         parts.movement().movementPerTick(new PlayerId(target.getUniqueId())));
   }
 
+  public long flightTicks(Mob shooter, Player target, Attack attack) {
+    return parts.aim().flightTicks(requestFor(shooter, target, attack));
+  }
+
   public boolean isLaneClear(ShotRequest request, List<MovingAlly> allies) {
     return parts.aim().isLaneClear(request, allies);
   }

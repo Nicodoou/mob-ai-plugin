@@ -76,6 +76,7 @@ class RecordOutcomeTest {
             new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
             defaults.learning(),
             TestSettings.pack(),
+            TestSettings.relay(),
             TestSettings.neural()));
 
     Optional<RecordChange> change =
