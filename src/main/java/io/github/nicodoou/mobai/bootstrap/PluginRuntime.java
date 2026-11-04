@@ -11,7 +11,11 @@ import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.persistence.JsonMemoryRepository;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import org.bukkit.Bukkit;
@@ -58,6 +62,8 @@ public final class PluginRuntime {
 
   public void stop() {
     tick.cancel();
+    adapters.arenas().discardAll();
+    adapters.neural().stop(core.clock().currentTick());
     adapters.persistenceScheduler().shutdown();
     adapters.incidentWriter().shutdown();
     adapters.traceWriter().shutdown();
@@ -76,6 +82,7 @@ public final class PluginRuntime {
         .persistenceScheduler()
         .tick(now, core.settings().current().persistence().saveIntervalTicks());
     adapters.combatSampler().tick(now);
+    adapters.neural().tick(now);
   }
 
   private static MobAiSettings loadSettings(JavaPlugin plugin) {
@@ -96,12 +103,22 @@ public final class PluginRuntime {
       plugin.saveResource(MESSAGES_FILE, false);
     }
     try {
-      return Messages.load(YamlConfiguration.loadConfiguration(file));
+      YamlConfiguration messages = YamlConfiguration.loadConfiguration(file);
+      messages.setDefaults(bundledMessages(plugin));
+      return Messages.load(messages);
     } catch (InvalidConfigException exception) {
       throw exception;
     } catch (RuntimeException exception) {
       throw new InvalidConfigException("messages.yml: " + exception.getMessage(), exception);
     }
+  }
+
+  // A messages.yml from an older version lacks the newest keys: they come from the jar, so an
+  // update does not leave the plugin disabled.
+  private static YamlConfiguration bundledMessages(JavaPlugin plugin) {
+    InputStream bundled = Objects.requireNonNull(plugin.getResource(MESSAGES_FILE), MESSAGES_FILE);
+    return YamlConfiguration.loadConfiguration(
+        new InputStreamReader(bundled, StandardCharsets.UTF_8));
   }
 
   private static MemoryRepository memoryRepository(JavaPlugin plugin) {

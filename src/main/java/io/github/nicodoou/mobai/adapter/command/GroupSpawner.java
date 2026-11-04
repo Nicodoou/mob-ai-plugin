@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.Objects;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Zombie;
 
 /** Spawns the test group around a player, as a new group or as reinforcements. */
 public final class GroupSpawner {
@@ -41,6 +43,36 @@ public final class GroupSpawner {
       join(mob, kinds.get(index), groupId);
     }
     return groupId;
+  }
+
+  /** A group whose first placement founds it; the rest join in order. */
+  public GroupId spawnPlaced(World world, List<Placement> placements, SelectionPolicyType policy) {
+    Placement founder = placements.getFirst();
+    GroupId groupId = found(spawnUnburnable(world, founder), founder.kind(), policy);
+    for (Placement placement : placements.subList(1, placements.size())) {
+      join(spawnUnburnable(world, placement), placement.kind(), groupId);
+    }
+    return groupId;
+  }
+
+  // Daylight would hurt zombies and skeletons but not spiders, and a fight fought in the sun would
+  // teach a network about the sun instead of about the player.
+  private Mob spawnUnburnable(World world, Placement placement) {
+    Mob mob = spawn(world, placement.kind(), placement.position());
+    if (mob instanceof Zombie zombie) {
+      zombie.setShouldBurnInDay(false);
+    }
+    if (mob instanceof AbstractSkeleton skeleton) {
+      skeleton.setShouldBurnInDay(false);
+    }
+    return mob;
+  }
+
+  public record Placement(MobKind kind, Vec3 position) {
+    public Placement {
+      Objects.requireNonNull(kind, "Placement.kind");
+      Objects.requireNonNull(position, "Placement.position");
+    }
   }
 
   public int reinforce(Player player, GroupId groupId, int count) {

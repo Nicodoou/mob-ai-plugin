@@ -26,6 +26,7 @@ import io.github.nicodoou.mobai.domain.brain.BrainParts;
 import io.github.nicodoou.mobai.domain.brain.RegroupWindow;
 import io.github.nicodoou.mobai.domain.event.DomainEventPublisher;
 import io.github.nicodoou.mobai.domain.event.PlanClosed;
+import io.github.nicodoou.mobai.domain.neural.PolicyLibrary;
 import io.github.nicodoou.mobai.domain.port.MemoryRepository;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.port.StoredState;
@@ -55,7 +56,8 @@ public record CoreServices(
     SaveMemories saveMemories,
     LoadMemories loadMemories,
     TraitLedger traitLedger,
-    RecipeBase recipeBase) {
+    RecipeBase recipeBase,
+    PolicyLibrary policyLibrary) {
 
   public static CoreServices create(
       MobAiSettings initialSettings, MemoryRepository repository, RandomSource random) {
@@ -88,7 +90,8 @@ public record CoreServices(
         useCases.tools().saveMemories(),
         useCases.tools().loadMemories(),
         messaging.traitLedger(),
-        messaging.recipeBase());
+        messaging.recipeBase(),
+        messaging.policyLibrary());
   }
 
   public StoredState storedState() {
@@ -131,7 +134,8 @@ public record CoreServices(
         brain,
         parts.traitLedger(),
         parts.recipePlanner().base(),
-        parts.recipePlanner());
+        parts.recipePlanner(),
+        parts.neuralPlanner().library());
   }
 
   private static CombatUseCases combat(Foundation foundation, Messaging messaging) {
@@ -178,7 +182,8 @@ public record CoreServices(
       Brain brain,
       TraitLedger traitLedger,
       RecipeBase recipeBase,
-      RecipePlanner recipePlanner) {}
+      RecipePlanner recipePlanner,
+      PolicyLibrary policyLibrary) {}
 
   private record CombatUseCases(
       TickGroups tickGroups,

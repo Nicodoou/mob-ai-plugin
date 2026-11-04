@@ -32,7 +32,14 @@ public enum MessageKey {
   TRAIN_STRATEGIES("train-strategies"),
   MEMORY_RECIPES("memory-recipes"),
   MEMORY_RECIPE("memory-recipe"),
-  MEMORY_RECIPE_VOLLEY("memory-recipe-volley");
+  MEMORY_RECIPE_VOLLEY("memory-recipe-volley"),
+  ARENA_USAGE("arena-usage"),
+  ARENA_UNKNOWN("arena-unknown"),
+  ARENA_TOO_MANY("arena-too-many"),
+  ARENA_PREPARING("arena-preparing"),
+  ARENA_ARRIVED("arena-arrived"),
+  ARENA_FIGHT("arena-fight"),
+  ARENA_FAILED("arena-failed");
 
   private final String path;
 

@@ -2,7 +2,7 @@
 # Lo que va entre <...> sin formato (por ejemplo <reason>) lo completa el plugin.
 
 no-permission: "<red>No tenés permiso para usar este comando."
-unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|reinforce|status|memory|reset|train|reload|debug>"
+unknown-subcommand: "<red>Subcomando desconocido. <gray>Usá: /mobai <spawngroup|reinforce|status|memory|reset|train|reload|debug|arena>"
 reload-done: "<green>Configuración recargada."
 reload-failed: "<red>No se recargó la configuración: <gray><reason>"
 player-only: "<red>Este comando lo tiene que usar un jugador."
@@ -33,3 +33,10 @@ train-strategies: "<yellow>El planificador es STRATEGIES: el entrenamiento no ha
 memory-recipes: "<gray>  recetas (rasgos escudo <white><shield></white>, distancia <white><ranged></white>, armadura <white><armor></white> · <plans> planes):"
 memory-recipe: "<gray>    <rank>. zombies <white><zombies></white> · arañas <white><spiders></white> · reserva <delay> ticks · retirada <retreat>% · grupo <group>% · persecución <chase>%: <white><rate>%</white>"
 memory-recipe-volley: "<gray>    <rank>. zombies <white><zombies></white> · arañas <white><spiders></white> · andanada · reserva <delay> ticks · retirada <retreat>% · grupo <group>% · persecución <chase>%: <white><rate>%</white>"
+arena-usage: "<red>Usá: <gray>/mobai arena go \\<red></gray> o <gray>/mobai arena fight \\<red> [zombies esqueletos arañas]</gray>."
+arena-unknown: "<red>No hay una arena <gray><arena></gray>. Están en <gray>arena.names</gray> de la configuración."
+arena-too-many: "<red>Un grupo tiene de 1 a <white><max></white> mobs: pediste <white><count></white>."
+arena-preparing: "<gray>Preparando la arena <white><arena></white>..."
+arena-arrived: "<green>Estás en la arena <white><arena></white>."
+arena-fight: "<green>Arena <white><arena></white>: grupo <white><group></white> con <white><count></white> mobs."
+arena-failed: "<red>No se pudo preparar la arena <white><arena></white>: mirá el log del server."

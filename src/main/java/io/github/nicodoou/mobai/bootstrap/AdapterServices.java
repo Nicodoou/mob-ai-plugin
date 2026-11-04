@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.bootstrap;
 
+import io.github.nicodoou.mobai.adapter.command.ArenaCommand;
 import io.github.nicodoou.mobai.adapter.command.DebugCommand;
 import io.github.nicodoou.mobai.adapter.command.GroupSpawner;
 import io.github.nicodoou.mobai.adapter.command.MemoryCommand;
@@ -45,6 +46,9 @@ import io.github.nicodoou.mobai.adapter.listener.EntityLifecycleListener;
 import io.github.nicodoou.mobai.adapter.listener.ProjectileListener;
 import io.github.nicodoou.mobai.adapter.listener.TargetListener;
 import io.github.nicodoou.mobai.adapter.listener.ThreatListener;
+import io.github.nicodoou.mobai.adapter.neural.ArenaDirector;
+import io.github.nicodoou.mobai.adapter.neural.ArenaSites;
+import io.github.nicodoou.mobai.adapter.neural.ExperienceListener;
 import io.github.nicodoou.mobai.adapter.recording.CombatSampler;
 import io.github.nicodoou.mobai.adapter.recording.RecordingListener;
 import io.github.nicodoou.mobai.adapter.recording.RecordingScope;
@@ -95,7 +99,9 @@ public record AdapterServices(
     RecoveryHealer recoveryHealer,
     ProjectileResolver projectileResolver,
     TrainingDataLog trainingDataLog,
-    CombatSampler combatSampler) {
+    CombatSampler combatSampler,
+    NeuralServices neural,
+    ArenaDirector arenas) {
   private static final String TRAINING_DATA_FILE = "training-data.jsonl";
   private static final String DEBUG_FOLDER = "debug";
   private static final String TRACE_FILE_PREFIX = "trace-";
@@ -108,20 +114,21 @@ public record AdapterServices(
     GoalInstaller goalInstaller = goalInstaller(plugin, core, parts);
     TrainingDataLog trainingDataLog = trainingDataLog(plugin, core, logger);
     RecordingScope scope = recordingScope(core, parts);
+    NeuralServices neural = NeuralServices.create(plugin, core, logger);
+    GroupSpawner spawner = new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator());
+    ArenaDirector arenas = arenaDirector(plugin, core, spawner);
     return new AdapterServices(
         parts.translator(),
         goalInstaller,
         parts.movementSampler(),
         decisionScheduler(core, parts, logger),
         new PersistenceScheduler(core.saveMemories(), core::storedState, logger),
-        listeners(core, parts, new ListenerParts(goalInstaller, scope)),
+        listeners(
+            core, parts, new ListenerParts(goalInstaller, scope, experienceListener(core, neural))),
         mobAiCommand(
             plugin,
             core,
-            new CommandParts(
-                messages,
-                new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator()),
-                parts.debug().outputs().levels())),
+            new CommandParts(messages, spawner, parts.debug().outputs().levels(), arenas)),
         parts.debug().hub(),
         parts.debug().writer(),
         parts.debug().outputs().traceWriter(),
@@ -130,7 +137,22 @@ public record AdapterServices(
         new ProjectileResolver(
             parts.tracker(), parts.debug().hub(), core.settings().section(MobAiSettings::attack)),
         trainingDataLog,
-        combatSampler(core, parts, scope));
+        combatSampler(core, parts, scope),
+        neural,
+        arenas);
+  }
+
+  private static ArenaDirector arenaDirector(
+      Plugin plugin, CoreServices core, GroupSpawner spawner) {
+    return new ArenaDirector(
+        new ArenaSites(plugin, () -> core.settings().current().neural().arena()),
+        spawner,
+        new ArenaDirector.DirectorParts(
+            core.activeGroups(), core.removeMember(), core.clock(), core.settings()));
+  }
+
+  private static ExperienceListener experienceListener(CoreServices core, NeuralServices neural) {
+    return new ExperienceListener(neural.recorder(), core.activeGroups(), core.clock());
   }
 
   private static RecordingScope recordingScope(CoreServices core, SharedParts parts) {
@@ -185,6 +207,12 @@ public record AdapterServices(
     subcommands.put("reset", new ResetCommand(core.resetMemories(), messages));
     subcommands.put("reload", new ReloadCommand(plugin, core.settings(), messages));
     subcommands.put("debug", new DebugCommand(command.levels(), core.describeGroup(), messages));
+    subcommands.put(
+        "arena",
+        new ArenaCommand(
+            command.arenas(),
+            core.settings(),
+            new ArenaCommand.CommandTools(messages, plugin.getSLF4JLogger())));
     return new MobAiCommand(subcommands, messages);
   }
 
@@ -298,7 +326,8 @@ public record AdapterServices(
         core.settings().section(MobAiSettings::group));
   }
 
-  // RecordingListener goes first: it must find a dying mob's group before DeathListener removes it.
+  // RecordingListener and ExperienceListener go first: they must find a dying mob's group before
+  // DeathListener removes it.
   private static List<Listener> listeners(
       CoreServices core, SharedParts parts, ListenerParts listener) {
     GoalInstaller goalInstaller = listener.goalInstaller();
@@ -309,6 +338,7 @@ public record AdapterServices(
                 parts.debug().outputs().traceWriter(),
                 parts.translator(),
                 core.clock())),
+        listener.experienceListener(),
         new DamageListener(parts.tracker(), parts.translator()),
         new ProjectileListener(parts.tracker(), parts.translator(), core.activeGroups()),
         new ThreatListener(core.recordDamageTaken(), core.clock()),
@@ -318,7 +348,8 @@ public record AdapterServices(
         parts.movementSampler());
   }
 
-  private record ListenerParts(GoalInstaller goalInstaller, RecordingScope scope) {}
+  private record ListenerParts(
+      GoalInstaller goalInstaller, RecordingScope scope, ExperienceListener experienceListener) {}
 
   private record SharedParts(
       VersionTranslator translator,
@@ -333,5 +364,6 @@ public record AdapterServices(
 
   private record TraceOutputs(TraceLevels levels, TraceWriter traceWriter, DebugLog debugLog) {}
 
-  private record CommandParts(Messages messages, GroupSpawner spawner, TraceLevels levels) {}
+  private record CommandParts(
+      Messages messages, GroupSpawner spawner, TraceLevels levels, ArenaDirector arenas) {}
 }
