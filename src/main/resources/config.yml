@@ -166,3 +166,13 @@ pack:
   # dos valores.
   min-chase-blocks: 8.0
   max-chase-blocks: 32.0
+  # Turnos de ataque: cuántos cuerpo a cuerpo del grupo van a la vez directo al objetivo a pegarle,
+  # aunque los vea. El resto espera en el anillo, a wait-margin-blocks más allá del alcance del
+  # jugador. Entero, 1 o más.
+  attack-turns: 3
+  # Un turno se libera cuando su mob pega o recibe un golpe, o a los tantos ticks si no llegó.
+  # Entero, 1 o más.
+  attack-turn-timeout-ticks: 60
+  # Durante estos ticks tras soltar un turno, el mob cede el siguiente a quien no lo acaba de tener;
+  # sin nadie más libre, lo vuelve a tomar enseguida. Entero, 0 o más.
+  attack-turn-rest-ticks: 30

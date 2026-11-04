@@ -91,7 +91,13 @@ public final class ChaseLeash {
 
   private static RoleAssignment walkBackOrder(RoleAssignment order, Vec3 ground) {
     return new RoleAssignment(
-        order.mob(), Role.GATHER, order.target(), Optional.empty(), false, Optional.of(ground));
+        order.mob(),
+        Role.GATHER,
+        order.target(),
+        Optional.empty(),
+        false,
+        Optional.of(ground),
+        false);
   }
 
   private record Leash(

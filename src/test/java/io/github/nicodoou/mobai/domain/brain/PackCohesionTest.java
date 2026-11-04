@@ -30,7 +30,7 @@ class PackCohesionTest {
   private static final Vec3 BOB_POSITION = new Vec3(0, GROUND_Y, 40);
 
   private final PackCohesion cohesion =
-      new PackCohesion(() -> new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+      new PackCohesion(() -> new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 3, 60, 30));
   private final List<MobSnapshot> mobs = new ArrayList<>();
   private final List<RoleAssignment> orders = new ArrayList<>();
 
@@ -149,7 +149,8 @@ class PackCohesionTest {
                 Optional.of(ALICE),
                 Optional.empty(),
                 false,
-                Optional.empty()));
+                Optional.empty(),
+                false));
   }
 
   @Test
@@ -187,7 +188,7 @@ class PackCohesionTest {
 
   private static RoleAssignment order(MobId id, Role role, PlayerId target, Attack attack) {
     return new RoleAssignment(
-        id, role, Optional.of(target), Optional.of(attack), false, Optional.empty());
+        id, role, Optional.of(target), Optional.of(attack), false, Optional.empty(), false);
   }
 
   private static Attack attackOf(MobKind kind) {

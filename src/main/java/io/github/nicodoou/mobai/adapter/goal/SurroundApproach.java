@@ -4,23 +4,22 @@ import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
 import io.github.nicodoou.mobai.domain.geometry.SurroundFormation;
 import io.github.nicodoou.mobai.domain.geometry.SurroundQuery;
 import io.github.nicodoou.mobai.domain.geometry.SurroundRing;
-import io.github.nicodoou.mobai.domain.geometry.SurroundSpot;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.MobId;
-import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.PlayerId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
-/** Where a pressing zombie walks: its slot in the arc in front of its pack, or its turn (CT-32). */
+/**
+ * Where a pressing fighter without an attack turn waits: its place on the ring around the target.
+ */
 final class SurroundApproach {
   // A fifth of a block inside the zombie's reach, so it strikes from its slot without stepping in.
   private static final double STRIKE_SLOT_SLACK_BLOCKS = 0.2;
@@ -32,48 +31,37 @@ final class SurroundApproach {
     this.context = Objects.requireNonNull(context, "SurroundApproach.context");
   }
 
-  SurroundSpot spotFor(Mob zombie, Player target) {
-    Map<MobId, Mob> zombies = pressingZombies(zombie, target);
+  Vec3 ringSpotFor(Mob fighter, Player target) {
+    Map<MobId, Mob> waiters = waitingFighters(fighter, target);
     Map<MobId, Vec3> positions = new HashMap<>();
-    zombies.forEach(
-        (id, presser) -> positions.put(id, PoseReader.positionOf(presser.getLocation())));
+    waiters.forEach((id, waiter) -> positions.put(id, PoseReader.positionOf(waiter.getLocation())));
     SurroundQuery query =
         new SurroundQuery(
             PoseReader.positionOf(target.getLocation()),
-            new MobId(zombie.getUniqueId()),
+            new MobId(fighter.getUniqueId()),
             positions,
-            ringFor(zombies, target));
-    return formation.spotFor(query);
+            ringFor(waiters, target));
+    return formation.ringSpotFor(query);
   }
 
-  // Every zombie pressing this target loaded in its world, the asking one included.
-  private Map<MobId, Mob> pressingZombies(Mob zombie, Player target) {
-    Map<MobId, Mob> zombies = new HashMap<>();
-    for (MobId id : context.roles().mobsWith(Role.PRESS, new PlayerId(target.getUniqueId()))) {
-      if (Bukkit.getEntity(id.value()) instanceof Mob presser
-          && presser.isValid()
-          && presser.getWorld().equals(target.getWorld())
-          && isZombie(presser)) {
-        zombies.put(id, presser);
+  // Every fighter waiting on this target loaded in its world, the asking one included.
+  private Map<MobId, Mob> waitingFighters(Mob fighter, Player target) {
+    Map<MobId, Mob> waiters = new HashMap<>();
+    PlayerId targetId = new PlayerId(target.getUniqueId());
+    for (MobId id : context.roles().mobsWaitingWith(Role.PRESS, targetId)) {
+      if (Bukkit.getEntity(id.value()) instanceof Mob waiter
+          && waiter.isValid()
+          && waiter.getWorld().equals(target.getWorld())) {
+        waiters.put(id, waiter);
       }
     }
-    zombies.put(new MobId(zombie.getUniqueId()), zombie);
-    return zombies;
+    waiters.put(new MobId(fighter.getUniqueId()), fighter);
+    return waiters;
   }
 
-  private boolean isZombie(Mob mob) {
-    return context
-        .tools()
-        .weapons()
-        .bodies()
-        .mobKinds()
-        .of(mob)
-        .equals(Optional.of(MobKind.ZOMBIE));
-  }
-
-  private SurroundRing ringFor(Map<MobId, Mob> zombies, Player target) {
+  private SurroundRing ringFor(Map<MobId, Mob> waiters, Player target) {
     PackSettings pack = context.tools().timing().pack().get();
-    double widest = zombies.values().stream().mapToDouble(Mob::getWidth).max().orElseThrow();
+    double widest = waiters.values().stream().mapToDouble(Mob::getWidth).max().orElseThrow();
     double reach = context.tools().weapons().bodies().playerReach().blocksOf(target);
     return new SurroundRing(
         MinecraftConstants.MELEE_REACH_BLOCKS - STRIKE_SLOT_SLACK_BLOCKS,

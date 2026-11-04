@@ -84,6 +84,21 @@ class FlankManeuverTest {
     assertVec(step.waypoint(), slot.x(), slot.y(), slot.z());
   }
 
+  @Test
+  void waitingOutOfSightStaysAtTheKeepOutDistance() {
+    FlankStep step = maneuver.nextWaiting(alone(new Vec3(0, 0, -2)));
+
+    assertThat(step.outOfSight()).isTrue();
+    assertThat(step.waypoint().horizontal().length()).isCloseTo(KEEP_OUT_BLOCKS, within(TOLERANCE));
+  }
+
+  @Test
+  void waitingInSightSidestepsLikeAnyFlanker() {
+    FlankStep waiting = maneuver.nextWaiting(alone(new Vec3(0, 0, 5)));
+
+    assertThat(waiting).isEqualTo(maneuver.next(alone(new Vec3(0, 0, 5))));
+  }
+
   private FlankQuery alone(Vec3 position) {
     return new FlankQuery(pose, mob(1), Map.of(mob(1), position), KEEP_OUT_BLOCKS);
   }

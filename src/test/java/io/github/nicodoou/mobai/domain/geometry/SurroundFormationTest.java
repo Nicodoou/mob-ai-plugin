@@ -43,6 +43,55 @@ class SurroundFormationTest {
     return Map.of(a, new Vec3(-1, 64, 10), b, new Vec3(0, 64, 10), c, new Vec3(1, 64, 10));
   }
 
+  private Vec3 ringSpotOf(MobId self, Map<MobId, Vec3> waiters) {
+    return formation.ringSpotFor(new SurroundQuery(center, self, waiters, ring));
+  }
+
+  @Test
+  void aLoneWaiterStaysOnItsBearingAtTheWaitRadius() {
+    Vec3 spot = ringSpotOf(a, Map.of(a, new Vec3(0, 64, 10)));
+
+    assertThat(spot.x()).isCloseTo(0, within(TOLERANCE));
+    assertThat(spot.z()).isCloseTo(4, within(TOLERANCE));
+  }
+
+  @Test
+  void waitersShareTheWholeRingEvenly() {
+    Map<MobId, Vec3> waiters = Map.of(a, new Vec3(0, 64, 10), b, new Vec3(1, 64, 10));
+
+    Vec3 anchorSpot = ringSpotOf(a, waiters);
+    Vec3 otherSpot = ringSpotOf(b, waiters);
+
+    assertThat(otherSpot.x()).isCloseTo(-anchorSpot.x(), within(TOLERANCE));
+    assertThat(otherSpot.z()).isCloseTo(-anchorSpot.z(), within(TOLERANCE));
+  }
+
+  @Test
+  void aRingAlreadyEvenStaysPut() {
+    Map<MobId, Vec3> waiters =
+        Map.of(
+            a,
+            new Vec3(0, 64, 4),
+            b,
+            new Vec3(4, 64, 0),
+            c,
+            new Vec3(0, 64, -4),
+            d,
+            new Vec3(-4, 64, 0));
+
+    Vec3 spot = ringSpotOf(c, waiters);
+
+    assertThat(spot.x()).isCloseTo(0, within(TOLERANCE));
+    assertThat(spot.z()).isCloseTo(-4, within(TOLERANCE));
+  }
+
+  @Test
+  void aWaiterTooCloseIsSentOutToTheRing() {
+    Vec3 spot = ringSpotOf(a, Map.of(a, new Vec3(0, 64, 1)));
+
+    assertThat(spot.horizontal().length()).isCloseTo(4, within(TOLERANCE));
+  }
+
   @Test
   void zombieSpacingClearsTheSweep() {
     assertThat(formation.sweepSafeSpacingBlocks(0.6, 0.25))

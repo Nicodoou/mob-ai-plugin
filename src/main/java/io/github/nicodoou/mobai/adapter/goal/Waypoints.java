@@ -39,7 +39,7 @@ public final class Waypoints {
 
   public FlankStep flankStep(PlayerTarget target, MobId self, Map<MobId, Vec3> flankers) {
     double keepOut = target.reachBlocks() + settings.get().flankMarginBlocks();
-    return maneuver.next(new FlankQuery(target.pose(), self, flankers, keepOut));
+    return maneuver.nextWaiting(new FlankQuery(target.pose(), self, flankers, keepOut));
   }
 
   /** Beside the player's aim: its hitbox clear of the crosshair, plus a margin. */

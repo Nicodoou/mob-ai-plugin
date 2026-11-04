@@ -5,7 +5,6 @@ import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
-import io.github.nicodoou.mobai.domain.geometry.SurroundSpot;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -21,8 +20,8 @@ import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
 /**
- * PRESS: walk to the target and strike it head-on, wait for an opening if patient, or dodge its
- * charged hits if evasive.
+ * PRESS: with an attack turn, walk straight to the target and strike it. Without one, wait on the
+ * ring around it, striking only if it comes into reach, patiently or evasively if so suggested.
  */
 public final class PressGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
@@ -31,8 +30,7 @@ public final class PressGoal implements Goal<Mob> {
   // Paper's attack cooldown is 1 once the player's weapon has fully recharged.
   private static final float FULL_ATTACK_COOLDOWN = 1.0f;
 
-  // Paths run over whole blocks, so a zombie can stop a little short of its slot: once that close,
-  // it steps in to the player instead.
+  // Paths run over whole blocks and the target keeps moving: once this close, it counts as there.
   private static final double SLOT_ARRIVAL_BLOCKS = 1.0;
 
   private final Mob mob;
@@ -43,6 +41,7 @@ public final class PressGoal implements Goal<Mob> {
   private final SurroundApproach surround;
   private final PatientWait patience = new PatientWait();
   private EvasiveMove lastEvasiveMove = EvasiveMove.HOLD;
+  private boolean isCharging = false;
 
   public PressGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "PressGoal.mob");
@@ -65,6 +64,7 @@ public final class PressGoal implements Goal<Mob> {
 
   @Override
   public void stop() {
+    isCharging = false;
     mob.getPathfinder().stopPathfinding();
   }
 
@@ -96,12 +96,30 @@ public final class PressGoal implements Goal<Mob> {
 
   private void pressOn(RoleAssignment order, Player target) {
     mob.lookAt(target);
+    if (order.holdsAttackTurn()) {
+      takeTurn(target);
+      return;
+    }
+    isCharging = false;
     if (isEvasive(order)) {
       evade(target);
       return;
     }
     followIfDue(target);
     strikeIfReady(order, target);
+  }
+
+  // A new turn repaths at once: the rhythm was set by the walk to the ring.
+  private void takeTurn(Player target) {
+    if (!isCharging || rhythm.shouldRepath()) {
+      mob.getPathfinder().moveTo(target, WALK_SPEED);
+      rhythm.markRepath();
+    }
+    isCharging = true;
+    if (rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
+      context.tools().weapons().melee().strike(mob, target, executedAttack());
+      rhythm.markStrike();
+    }
   }
 
   private boolean isEvasive(RoleAssignment order) {
@@ -234,25 +252,12 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private void approach(Player target) {
-    if (kind != MobKind.ZOMBIE) {
-      mob.getPathfinder().moveTo(target, WALK_SPEED);
-      return;
-    }
-    SurroundSpot spot = surround.spotFor(mob, target);
-    if (spot.striking() && isInReach(target)) {
+    Vec3 spot = surround.ringSpotFor(mob, target);
+    if (isNear(spot)) {
       mob.getPathfinder().stopPathfinding();
       return;
     }
-    if (spot.striking() && isNear(spot.point())) {
-      mob.getPathfinder().moveTo(target, WALK_SPEED);
-      return;
-    }
-    walkTo(spot.point());
-  }
-
-  private boolean isInReach(Player target) {
-    return mob.getLocation().distance(target.getLocation())
-        <= MinecraftConstants.MELEE_REACH_BLOCKS;
+    walkTo(spot);
   }
 
   private boolean isNear(Vec3 point) {

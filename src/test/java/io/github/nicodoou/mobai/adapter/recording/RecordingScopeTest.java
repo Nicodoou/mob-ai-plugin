@@ -130,6 +130,6 @@ class RecordingScopeTest {
 
   private static RoleAssignment orderAgainst(MobId mob, PlayerId target) {
     return new RoleAssignment(
-        mob, Role.PRESS, Optional.of(target), Optional.empty(), false, Optional.empty());
+        mob, Role.PRESS, Optional.of(target), Optional.empty(), false, Optional.empty(), false);
   }
 }

@@ -29,7 +29,13 @@ class RoleRegistryTest {
   void newOrderReplacesTheOldOne() {
     RoleAssignment retreat =
         new RoleAssignment(
-            mob(1), Role.RETREAT, Optional.empty(), Optional.empty(), true, Optional.empty());
+            mob(1),
+            Role.RETREAT,
+            Optional.empty(),
+            Optional.empty(),
+            true,
+            Optional.empty(),
+            false);
     RoleAssignment press = pressOrder(mob(1));
     registry.assign(retreat);
 
@@ -82,6 +88,17 @@ class RoleRegistryTest {
   }
 
   @Test
+  void mobsWaitingWithLeavesOutTheTurnHolders() {
+    registry.assign(pressOrder(mob(1)));
+    registry.assign(pressOrder(mob(2)).withAttackTurn());
+    registry.assign(flankOrder(mob(3), Optional.of(player)));
+
+    Set<MobId> waiting = registry.mobsWaitingWith(Role.PRESS, player);
+
+    assertThat(waiting).containsExactly(mob(1));
+  }
+
+  @Test
   void mobsTargetingIncludesEveryRole() {
     PlayerId other = new PlayerId(new UUID(2, 2));
     registry.assign(pressOrder(mob(1)));
@@ -107,7 +124,13 @@ class RoleRegistryTest {
 
   private RoleAssignment flankOrder(MobId mob, Optional<PlayerId> target) {
     return new RoleAssignment(
-        mob, Role.FLANK, target, Optional.of(Attack.ZOMBIE_FLANK_STRIKE), false, Optional.empty());
+        mob,
+        Role.FLANK,
+        target,
+        Optional.of(Attack.ZOMBIE_FLANK_STRIKE),
+        false,
+        Optional.empty(),
+        false);
   }
 
   private RoleAssignment shootOrder(MobId mob) {
@@ -117,12 +140,13 @@ class RoleRegistryTest {
         Optional.of(player),
         Optional.of(Attack.SKELETON_DIRECT_SHOT),
         false,
-        Optional.empty());
+        Optional.empty(),
+        false);
   }
 
   private RoleAssignment retreatOrder(MobId mob, boolean recovering) {
     return new RoleAssignment(
-        mob, Role.RETREAT, Optional.empty(), Optional.empty(), recovering, Optional.empty());
+        mob, Role.RETREAT, Optional.empty(), Optional.empty(), recovering, Optional.empty(), false);
   }
 
   private RoleAssignment pressOrder(MobId mob) {
@@ -132,7 +156,8 @@ class RoleRegistryTest {
         Optional.of(player),
         Optional.of(Attack.ZOMBIE_FRONT_STRIKE),
         false,
-        Optional.empty());
+        Optional.empty(),
+        false);
   }
 
   private static MobId mob(long id) {

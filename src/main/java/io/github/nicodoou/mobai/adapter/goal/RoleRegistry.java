@@ -29,6 +29,14 @@ public final class RoleRegistry {
         .collect(Collectors.toUnmodifiableSet());
   }
 
+  public Set<MobId> mobsWaitingWith(Role role, PlayerId target) {
+    return assignments.values().stream()
+        .filter(order -> order.role() == role && order.target().equals(Optional.of(target)))
+        .filter(order -> !order.holdsAttackTurn())
+        .map(RoleAssignment::mob)
+        .collect(Collectors.toUnmodifiableSet());
+  }
+
   public Set<MobId> mobsTargeting(PlayerId target) {
     return assignments.values().stream()
         .filter(order -> order.target().equals(Optional.of(target)))

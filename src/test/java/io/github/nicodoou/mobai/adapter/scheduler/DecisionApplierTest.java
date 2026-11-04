@@ -74,7 +74,8 @@ class DecisionApplierTest {
         Optional.of(player),
         Optional.of(Attack.ZOMBIE_FRONT_STRIKE),
         false,
-        Optional.empty());
+        Optional.empty(),
+        false);
   }
 
   private static MobId mob(long id) {

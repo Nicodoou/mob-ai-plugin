@@ -62,6 +62,15 @@ public final class Group {
     }
   }
 
+  // Any swing counts, even a blocked or missed one: the fighter had its go.
+  public void recordMeleeStrike(MobId mobId, long tick) {
+    lifecycle.recordMeleeStrike(mobId, tick);
+  }
+
+  public void recordAttackTurns(AttackTurns turns) {
+    lifecycle.recordAttackTurns(turns);
+  }
+
   public List<DomainEvent> drainEvents() {
     return events.drain();
   }

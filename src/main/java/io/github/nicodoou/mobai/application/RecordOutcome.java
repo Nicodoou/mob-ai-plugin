@@ -22,6 +22,7 @@ public final class RecordOutcome {
 
   private Optional<RecordChange> record(Group group, AttackResolution resolution) {
     addPlanDamage(group, resolution);
+    endAttackTurn(group, resolution);
     OptionalDouble credit =
         resolution.outcome().credit(settings.current().memory().partialHitWeight());
     if (credit.isEmpty()) {
@@ -36,6 +37,12 @@ public final class RecordOutcome {
                     resolution.attack(),
                     credit.getAsDouble(),
                     resolution.tick())));
+  }
+
+  private static void endAttackTurn(Group group, AttackResolution resolution) {
+    if (resolution.attack().mobKind().isMelee()) {
+      group.recordMeleeStrike(resolution.mob(), resolution.tick());
+    }
   }
 
   // The plan rejects zero damage, and a blocked or missed attempt deals none.

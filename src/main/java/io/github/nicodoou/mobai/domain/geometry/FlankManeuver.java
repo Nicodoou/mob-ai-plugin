@@ -31,6 +31,15 @@ public final class FlankManeuver {
     return new FlankStep(sidestep(query.pose(), position, query.distanceBlocks()), false);
   }
 
+  /** The same walk round for a flanker without a turn: it stops behind the player, out of reach. */
+  public FlankStep nextWaiting(FlankQuery query) {
+    Vec3 position = query.flankers().get(query.self());
+    if (geometry.isOutOfSight(query.pose(), position)) {
+      return new FlankStep(formation.pointFor(query), true);
+    }
+    return new FlankStep(sidestep(query.pose(), position, query.distanceBlocks()), false);
+  }
+
   private Vec3 closeIn(FlankQuery query) {
     return formation.pointFor(
         new FlankQuery(query.pose(), query.self(), query.flankers(), CLOSE_IN_BLOCKS));
