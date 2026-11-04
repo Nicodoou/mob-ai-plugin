@@ -16,11 +16,9 @@ import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.strategy.RecipePlay;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Mob;
@@ -45,41 +43,27 @@ public final class CombatSampler {
     if (!selection.isActive()) {
       return;
     }
-    Set<PlayerId> targets = recordGroups(selection, now);
-    recordPlayers(targets, now);
+    recordGroups(selection, now);
+    recordPlayers(now);
   }
 
   private List<GroupId> activeGroupIds() {
     return parts.activeGroups().groups().stream().map(Group::id).toList();
   }
 
-  private Set<PlayerId> recordGroups(RecordingSelection selection, long now) {
-    Set<PlayerId> targets = new HashSet<>();
+  private void recordGroups(RecordingSelection selection, long now) {
     for (GroupId id : selection.groups()) {
-      parts
-          .activeGroups()
-          .group(id)
-          .ifPresent(group -> targets.addAll(targetsOf(recordGroup(group, now))));
+      parts.activeGroups().group(id).ifPresent(group -> recordGroup(group, now));
     }
-    return targets;
   }
 
-  private List<CombatSample.MobSample> recordGroup(Group group, long now) {
+  private void recordGroup(Group group, long now) {
     List<CombatSample.MobSample> mobs = mobSamples(group, now);
     if (mobs.isEmpty()) {
-      return mobs;
+      return;
     }
     parts.writer().write(groupSample(group, mobs, now));
     mobs.forEach(parts.writer()::write);
-    return mobs;
-  }
-
-  private static Set<PlayerId> targetsOf(List<CombatSample.MobSample> mobs) {
-    Set<PlayerId> targets = new HashSet<>();
-    for (CombatSample.MobSample mob : mobs) {
-      mob.order().flatMap(order -> order.target()).ifPresent(targets::add);
-    }
-    return targets;
   }
 
   private List<CombatSample.MobSample> mobSamples(Group group, long now) {
@@ -148,11 +132,11 @@ public final class CombatSampler {
     return lifecycle.plan().map(Plan::target).or(lifecycle::committedTarget);
   }
 
-  private void recordPlayers(Set<PlayerId> targets, long now) {
+  private void recordPlayers(long now) {
     Collection<? extends Player> online = Bukkit.getOnlinePlayers();
     for (Player player : online) {
       PlayerId id = new PlayerId(player.getUniqueId());
-      if (targets.contains(id) || parts.recipeBase().isTraining(id)) {
+      if (parts.scope().recordsPlayer(id)) {
         parts.writer().write(playerSample(player, now));
       }
     }

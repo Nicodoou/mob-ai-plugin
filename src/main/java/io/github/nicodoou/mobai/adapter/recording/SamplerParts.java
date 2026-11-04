@@ -20,6 +20,7 @@ public record SamplerParts(
     MovementTracker movement,
     VersionTranslator translator,
     RecipeBase recipeBase,
+    RecordingScope scope,
     Supplier<DebugSettings> settings) {
   public SamplerParts {
     Objects.requireNonNull(activeGroups, "SamplerParts.activeGroups");
@@ -29,6 +30,7 @@ public record SamplerParts(
     Objects.requireNonNull(movement, "SamplerParts.movement");
     Objects.requireNonNull(translator, "SamplerParts.translator");
     Objects.requireNonNull(recipeBase, "SamplerParts.recipeBase");
+    Objects.requireNonNull(scope, "SamplerParts.scope");
     Objects.requireNonNull(settings, "SamplerParts.settings");
   }
 }

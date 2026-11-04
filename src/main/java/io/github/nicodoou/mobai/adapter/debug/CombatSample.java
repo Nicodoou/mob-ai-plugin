@@ -12,6 +12,7 @@ import io.github.nicodoou.mobai.domain.strategy.PlanRecipe;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /** One line of the combat recording (CT-36): what an entity was doing at a given tick. */
 public sealed interface CombatSample {
@@ -97,5 +98,66 @@ public sealed interface CombatSample {
       Objects.requireNonNull(offHand, "PlayerSample.offHand");
       Objects.requireNonNull(itemInUse, "PlayerSample.itemInUse");
     }
+  }
+
+  record DamageSample(
+      long tick,
+      Optional<GroupId> group,
+      UUID victim,
+      String victimType,
+      String cause,
+      double damage,
+      double finalDamage,
+      double healthBefore,
+      boolean blocked,
+      boolean cancelled,
+      Optional<UUID> attacker,
+      Optional<String> attackerType,
+      Optional<String> projectile)
+      implements CombatSample {
+    public DamageSample {
+      Objects.requireNonNull(group, "DamageSample.group");
+      Objects.requireNonNull(victim, "DamageSample.victim");
+      Objects.requireNonNull(victimType, "DamageSample.victimType");
+      Objects.requireNonNull(cause, "DamageSample.cause");
+      Objects.requireNonNull(attacker, "DamageSample.attacker");
+      Objects.requireNonNull(attackerType, "DamageSample.attackerType");
+      Objects.requireNonNull(projectile, "DamageSample.projectile");
+    }
+  }
+
+  record DeathSample(
+      long tick,
+      Optional<GroupId> group,
+      UUID victim,
+      String victimType,
+      Optional<String> cause,
+      Optional<UUID> attacker,
+      Optional<String> attackerType)
+      implements CombatSample {
+    public DeathSample {
+      Objects.requireNonNull(group, "DeathSample.group");
+      Objects.requireNonNull(victim, "DeathSample.victim");
+      Objects.requireNonNull(victimType, "DeathSample.victimType");
+      Objects.requireNonNull(cause, "DeathSample.cause");
+      Objects.requireNonNull(attacker, "DeathSample.attacker");
+      Objects.requireNonNull(attackerType, "DeathSample.attackerType");
+    }
+  }
+
+  record ActionSample(
+      long tick, PlayerId player, PlayerAction action, String item, Optional<Double> force)
+      implements CombatSample {
+    public ActionSample {
+      Objects.requireNonNull(player, "ActionSample.player");
+      Objects.requireNonNull(action, "ActionSample.action");
+      Objects.requireNonNull(item, "ActionSample.item");
+      Objects.requireNonNull(force, "ActionSample.force");
+    }
+  }
+
+  enum PlayerAction {
+    SWING,
+    SHOOT
   }
 }

@@ -46,6 +46,7 @@ import io.github.nicodoou.mobai.adapter.listener.ProjectileListener;
 import io.github.nicodoou.mobai.adapter.listener.TargetListener;
 import io.github.nicodoou.mobai.adapter.listener.ThreatListener;
 import io.github.nicodoou.mobai.adapter.recording.CombatSampler;
+import io.github.nicodoou.mobai.adapter.recording.RecordingScope;
 import io.github.nicodoou.mobai.adapter.recording.SamplerParts;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionApplier;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionParts;
@@ -105,6 +106,7 @@ public record AdapterServices(
     SharedParts parts = sharedParts(core, debugParts(plugin, core, logger));
     GoalInstaller goalInstaller = goalInstaller(plugin, core, parts);
     TrainingDataLog trainingDataLog = trainingDataLog(plugin, core, logger);
+    RecordingScope scope = recordingScope(core, parts);
     return new AdapterServices(
         parts.translator(),
         goalInstaller,
@@ -127,10 +129,18 @@ public record AdapterServices(
         new ProjectileResolver(
             parts.tracker(), parts.debug().hub(), core.settings().section(MobAiSettings::attack)),
         trainingDataLog,
-        combatSampler(core, parts));
+        combatSampler(core, parts, scope));
   }
 
-  private static CombatSampler combatSampler(CoreServices core, SharedParts parts) {
+  private static RecordingScope recordingScope(CoreServices core, SharedParts parts) {
+    return new RecordingScope(
+        core.activeGroups(),
+        parts.roles(),
+        new RecordingScope.ScopeRules(parts.debug().outputs().levels(), core.recipeBase()));
+  }
+
+  private static CombatSampler combatSampler(
+      CoreServices core, SharedParts parts, RecordingScope scope) {
     return new CombatSampler(
         new SamplerParts(
             core.activeGroups(),
@@ -140,6 +150,7 @@ public record AdapterServices(
             parts.movement(),
             parts.translator(),
             core.recipeBase(),
+            scope,
             core.settings().section(MobAiSettings::debug)));
   }
 
