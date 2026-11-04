@@ -43,6 +43,8 @@ public final class PressGoal implements Goal<Mob> {
   private final SurroundApproach surround;
   private final PatientWait patience = new PatientWait();
   private EvasiveMove lastEvasiveMove = EvasiveMove.HOLD;
+  // The attack it chose, kept while it waits its turn: asking again would restart its patience.
+  private Optional<Attack> pendingAttack = Optional.empty();
 
   public PressGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "PressGoal.mob");
@@ -65,6 +67,7 @@ public final class PressGoal implements Goal<Mob> {
 
   @Override
   public void stop() {
+    pendingAttack = Optional.empty();
     mob.getPathfinder().stopPathfinding();
   }
 
@@ -158,11 +161,11 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private void strikeEvasiveIfInReach(Player target) {
-    if (!rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
+    if (!rhythm.canStrike(mob.getLocation().distance(target.getLocation()))
+        || !turns().mayStrike(mob, target)) {
       return;
     }
-    context.tools().weapons().melee().strike(mob, target, Attack.ZOMBIE_EVASIVE_STRIKE);
-    rhythm.markStrike();
+    strike(target, Attack.ZOMBIE_EVASIVE_STRIKE);
   }
 
   private void sideStep(Player target) {
@@ -269,14 +272,24 @@ public final class PressGoal implements Goal<Mob> {
     double distanceBlocks = mob.getLocation().distance(target.getLocation());
     if (!rhythm.canStrike(distanceBlocks)) {
       patience.reset();
+      pendingAttack = Optional.empty();
       return;
     }
-    attackNow(order, target)
-        .ifPresent(
-            attack -> {
-              context.tools().weapons().melee().strike(mob, target, attack);
-              rhythm.markStrike();
-            });
+    pendingAttack = pendingAttack.or(() -> attackNow(order, target));
+    pendingAttack
+        .filter(attack -> turns().mayStrike(mob, target))
+        .ifPresent(attack -> strike(target, attack));
+  }
+
+  private void strike(Player target, Attack attack) {
+    context.tools().weapons().melee().strike(mob, target, attack);
+    rhythm.markStrike();
+    turns().struck(mob, target);
+    pendingAttack = Optional.empty();
+  }
+
+  private StrikeTurns turns() {
+    return context.tools().turns();
   }
 
   private Optional<Attack> attackNow(RoleAssignment order, Player target) {

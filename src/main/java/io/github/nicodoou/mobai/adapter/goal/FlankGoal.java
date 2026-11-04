@@ -120,11 +120,13 @@ public final class FlankGoal implements Goal<Mob> {
     double distanceBlocks = mob.getLocation().distance(target.getLocation());
     Vec3 position = PoseReader.positionOf(mob.getLocation());
     if (!rhythm.canStrike(distanceBlocks)
-        || !context.tools().waypoints().isOutOfSight(pose, position)) {
+        || !context.tools().waypoints().isOutOfSight(pose, position)
+        || !context.tools().turns().mayStrike(mob, target)) {
       return;
     }
     context.tools().weapons().melee().strike(mob, target, executedAttack());
     rhythm.markStrike();
+    context.tools().turns().struck(mob, target);
   }
 
   // A flanker strikes from out of the player's sight, which is what the flank strike is (CT-16).

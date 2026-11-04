@@ -16,6 +16,15 @@ public final class TargetChecks {
         || target.getNoDamageTicks() > target.getMaximumNoDamageTicks() / 2.0;
   }
 
+  public static long protectedTicksLeft(Player target) {
+    return Math.max(0, target.getNoDamageTicks() - protectionWindowTicks(target));
+  }
+
+  // The counter starts at its maximum on a hit, but only protects while above half of it.
+  public static long protectionWindowTicks(Player target) {
+    return target.getMaximumNoDamageTicks() / 2;
+  }
+
   public static boolean isValidTarget(Player target, Mob attacker) {
     return target.isOnline() && !target.isDead() && target.getWorld().equals(attacker.getWorld());
   }

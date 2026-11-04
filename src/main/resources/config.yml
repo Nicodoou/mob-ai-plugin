@@ -109,6 +109,25 @@ volley:
   # Cuánto más allá del alcance del jugador se abren los cuerpo a cuerpo.
   fall-back-margin-blocks: 1.5
 
+relay:
+  # Relevo de golpes: el grupo reparte el daño para que ningún golpe caiga dentro de la ventana de
+  # invulnerabilidad del objetivo. Los valores van en ticks.
+  # Cuánto después del cierre de la ventana apunta a llegar una flecha, por el error del vuelo
+  # estimado (0 o más).
+  arrow-margin-ticks: 1
+  # Con un cuerpo a cuerpo listo, cuánto más tarde que eso puede llegar una flecha antes de
+  # esperar al cierre siguiente (1 o más: los goals corren cada 2 ticks).
+  arrow-slack-ticks: 2
+  # Cuánto después de la llegada estimada de una flecha se la sigue esperando; pasado esto se la
+  # da por errada (0 o más).
+  landing-grace-ticks: 2
+  # Máximo que un esqueleto con el arco tenso aguanta la flecha buscando una ventana libre (1 o
+  # más). Lo aguantado se descuenta del ritmo del disparo siguiente.
+  max-shot-hold-ticks: 20
+  # Sin volver a pedir su turno durante esto, un cuerpo a cuerpo pierde su lugar en la fila (2 o
+  # más: los goals corren cada 2 ticks).
+  ready-stale-ticks: 3
+
 success:
   # Éxito de un plan (CT-27): el ataque (daño hecho y rapidez, con sus pesos) multiplicado por cuánto
   # sobrevivió el grupo; survival-weight es cuánto descuenta perder al grupo entero.

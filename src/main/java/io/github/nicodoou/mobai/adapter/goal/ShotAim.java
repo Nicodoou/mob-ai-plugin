@@ -17,6 +17,12 @@ public final class ShotAim {
     return geometry.leadShotVelocity(request.eye(), aimPoint(request));
   }
 
+  /** The ticks this shot takes to reach the point it is aimed at. */
+  public long flightTicks(ShotRequest request) {
+    double distance = aimPoint(request).minus(request.eye()).horizontal().length();
+    return geometry.arrowTicksToCover(velocity(request), distance);
+  }
+
   /** Whether no ally stands in the lane towards the point this shot is aimed at (B-04). */
   public boolean isLaneClear(ShotRequest request, List<MovingAlly> allies) {
     Vec3 velocity = velocity(request);

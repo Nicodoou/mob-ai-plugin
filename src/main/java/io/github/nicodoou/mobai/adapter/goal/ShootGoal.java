@@ -54,6 +54,9 @@ public final class ShootGoal implements Goal<Mob> {
   private final OpportunisticWait opportunism = new OpportunisticWait();
   private final HighGroundFinder highGround;
   private final BowDraw draw;
+  private final ShotHold hold = new ShotHold();
+  // The shot it chose, kept while it holds: asking again would restart its opportunistic wait.
+  private Optional<Attack> pendingShot = Optional.empty();
   // The higher spot the shooter is heading for; empty when it has none.
   private Optional<Vec3> perch = Optional.empty();
   private long nextPerchSearchTick = Long.MIN_VALUE;
@@ -283,13 +286,31 @@ public final class ShootGoal implements Goal<Mob> {
       opportunism.reset();
       return;
     }
-    shotNow(order, target).ifPresent(attack -> releaseOrLower(target, attack));
+    pendingShot = pendingShot.or(() -> shotNow(order, target));
+    pendingShot
+        .filter(attack -> isShotDue(order, target, attack))
+        .ifPresent(attack -> releaseOrLower(target, attack));
+  }
+
+  // A volley fires together by design (CT-23); its arrows are still known to the relay.
+  private boolean isShotDue(RoleAssignment order, Player target, Attack attack) {
+    if (order.role() == Role.VOLLEY) {
+      return true;
+    }
+    long now = context.tools().timing().clock().currentTick();
+    if (turns().isShotSlotFree(target, bow().flightTicks(mob, target, attack))
+        || hold.hasRunOut(now, turns().maxShotHoldTicks())) {
+      return true;
+    }
+    hold.begin(now);
+    return false;
   }
 
   private void releaseOrLower(Player target, Attack attack) {
     if (isLaneClear(target, attack)) {
+      turns().shotLoosed(target, bow().flightTicks(mob, target, attack));
       bow().shoot(mob, target, attack);
-      shots.markShot();
+      shots.markShotHeldFor(hold.heldTicks(context.tools().timing().clock().currentTick()));
     } else {
       needsNewSpot = true;
     }
@@ -300,11 +321,17 @@ public final class ShootGoal implements Goal<Mob> {
     if (draw.isDrawing()) {
       bow().lower(mob);
       draw.release();
+      hold.reset();
+      pendingShot = Optional.empty();
     }
   }
 
   private void faceBodyTowards(Player target) {
     mob.setBodyYaw(BodyFacing.yawTowards(mobPosition(), position(target)));
+  }
+
+  private StrikeTurns turns() {
+    return context.tools().turns();
   }
 
   private BowShooter bow() {

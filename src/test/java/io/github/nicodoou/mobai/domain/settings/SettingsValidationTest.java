@@ -138,6 +138,21 @@ class SettingsValidationTest {
             "DebugSettings.recordingIntervalTicks must be at least 1, got 0",
             (Runnable) () -> new DebugSettings(TraceLevel.OFF, 200, 0)),
         org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.arrowMarginTicks must be at least 0, got -1",
+            (Runnable) () -> new RelaySettings(-1, 2, 2, 20, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.arrowSlackTicks must be at least 1, got 0",
+            (Runnable) () -> new RelaySettings(1, 0, 2, 20, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.landingGraceTicks must be at least 0, got -1",
+            (Runnable) () -> new RelaySettings(1, 2, -1, 20, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.maxShotHoldTicks must be at least 1, got 0",
+            (Runnable) () -> new RelaySettings(1, 2, 2, 0, 3)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "RelaySettings.readyStaleTicks must be at least 2, got 1",
+            (Runnable) () -> new RelaySettings(1, 2, 2, 20, 1)),
+        org.junit.jupiter.params.provider.Arguments.of(
             "VolleySettings.pressTicks must be at least 1, got 0",
             (Runnable) () -> new VolleySettings(0, 20, 30, 1.5)),
         org.junit.jupiter.params.provider.Arguments.of(
@@ -242,7 +257,8 @@ class SettingsValidationTest {
         defaults.volley(),
         defaults.success(),
         learning,
-        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+        TestSettings.defaults().relay());
   }
 
   private static LearningSettings learning(
@@ -333,7 +349,8 @@ class SettingsValidationTest {
                     defaults.volley(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
-                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0)))
+                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+                    TestSettings.defaults().relay()))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("MobAiSettings.memory");
   }
@@ -358,7 +375,8 @@ class SettingsValidationTest {
                     defaults.volley(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
-                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0)))
+                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+                    TestSettings.defaults().relay()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got 0.3 <= 0.3");

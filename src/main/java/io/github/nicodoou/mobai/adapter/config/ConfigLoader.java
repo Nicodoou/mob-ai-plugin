@@ -11,6 +11,7 @@ import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.PlannerKind;
+import io.github.nicodoou.mobai.domain.settings.RelaySettings;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
@@ -42,7 +43,8 @@ public final class ConfigLoader {
           volley(root),
           success(root),
           learning(root),
-          pack(root));
+          pack(root),
+          relay(root));
     } catch (IllegalArgumentException exception) {
       throw new InvalidConfigException("config.yml: " + exception.getMessage(), exception);
     }
@@ -169,6 +171,15 @@ public final class ConfigLoader {
         wholeNumber(root, "learning.base-weight-plans"),
         number(root, "learning.max-group-retreat-strength"),
         number(root, "learning.mid-knob-prior"));
+  }
+
+  private RelaySettings relay(ConfigurationSection root) {
+    return new RelaySettings(
+        wholeNumber(root, "relay.arrow-margin-ticks"),
+        wholeNumber(root, "relay.arrow-slack-ticks"),
+        wholeNumber(root, "relay.landing-grace-ticks"),
+        wholeNumber(root, "relay.max-shot-hold-ticks"),
+        wholeNumber(root, "relay.ready-stale-ticks"));
   }
 
   private PackSettings pack(ConfigurationSection root) {
