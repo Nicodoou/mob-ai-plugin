@@ -46,6 +46,7 @@ import io.github.nicodoou.mobai.adapter.listener.ProjectileListener;
 import io.github.nicodoou.mobai.adapter.listener.TargetListener;
 import io.github.nicodoou.mobai.adapter.listener.ThreatListener;
 import io.github.nicodoou.mobai.adapter.recording.CombatSampler;
+import io.github.nicodoou.mobai.adapter.recording.RecordingListener;
 import io.github.nicodoou.mobai.adapter.recording.RecordingScope;
 import io.github.nicodoou.mobai.adapter.recording.SamplerParts;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionApplier;
@@ -113,7 +114,7 @@ public record AdapterServices(
         parts.movementSampler(),
         decisionScheduler(core, parts, logger),
         new PersistenceScheduler(core.saveMemories(), core::storedState, logger),
-        listeners(core, parts, goalInstaller),
+        listeners(core, parts, new ListenerParts(goalInstaller, scope)),
         mobAiCommand(
             plugin,
             core,
@@ -297,9 +298,17 @@ public record AdapterServices(
         core.settings().section(MobAiSettings::group));
   }
 
+  // RecordingListener goes first: it must find a dying mob's group before DeathListener removes it.
   private static List<Listener> listeners(
-      CoreServices core, SharedParts parts, GoalInstaller goalInstaller) {
+      CoreServices core, SharedParts parts, ListenerParts listener) {
+    GoalInstaller goalInstaller = listener.goalInstaller();
     return List.of(
+        new RecordingListener(
+            new RecordingListener.RecordingParts(
+                listener.scope(),
+                parts.debug().outputs().traceWriter(),
+                parts.translator(),
+                core.clock())),
         new DamageListener(parts.tracker(), parts.translator()),
         new ProjectileListener(parts.tracker(), parts.translator(), core.activeGroups()),
         new ThreatListener(core.recordDamageTaken(), core.clock()),
@@ -308,6 +317,8 @@ public record AdapterServices(
         new TargetListener(core.activeGroups()),
         parts.movementSampler());
   }
+
+  private record ListenerParts(GoalInstaller goalInstaller, RecordingScope scope) {}
 
   private record SharedParts(
       VersionTranslator translator,
