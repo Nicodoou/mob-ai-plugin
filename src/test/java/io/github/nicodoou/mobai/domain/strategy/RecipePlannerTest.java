@@ -422,6 +422,7 @@ class RecipePlannerTest {
             settings.debug(),
             settings.retreat(),
             settings.volley(),
+            settings.pressure(),
             settings.success(),
             changed,
             TestSettings.pack(),

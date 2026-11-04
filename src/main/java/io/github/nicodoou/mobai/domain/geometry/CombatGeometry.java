@@ -63,6 +63,11 @@ public final class CombatGeometry {
     return angleFromFacingDegrees(pose, mobPosition) > VISION_HALF_ANGLE_DEGREES;
   }
 
+  /** Beyond the half of the circle the player faces, whatever the vision margin says. */
+  public boolean isOutsideFrontArc(PlayerPose pose, Vec3 mobPosition) {
+    return angleFromFacingDegrees(pose, mobPosition) > MinecraftConstants.SHIELD_HALF_ARC_DEGREES;
+  }
+
   public Vec3 flankPoint(PlayerPose pose, Vec3 mobPosition, double distanceBlocks) {
     requirePositiveDistance(distanceBlocks);
     Vec3 offset = mobPosition.minus(pose.position()).horizontal();

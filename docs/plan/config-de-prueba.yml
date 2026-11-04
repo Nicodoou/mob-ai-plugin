@@ -106,6 +106,13 @@ volley:
   # Cuánto más allá del alcance del jugador se abren los cuerpo a cuerpo.
   fall-back-margin-blocks: 1.5
 
+pressure:
+  engage-distance-blocks: 6.0
+  reserve-delay-fraction: 0.25
+  volley-sync-hold-ticks: 10
+  blocked-lane-wait-ticks: 15
+  opportunistic-shot-max-wait-ticks: 10
+
 success:
   # Éxito de un plan (CT-27): el ataque (daño hecho y rapidez, con sus pesos) multiplicado por cuánto
   # sobrevivió el grupo; survival-weight es cuánto descuenta perder al grupo entero.

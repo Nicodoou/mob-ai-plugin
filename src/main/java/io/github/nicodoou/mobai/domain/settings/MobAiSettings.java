@@ -14,6 +14,7 @@ public record MobAiSettings(
     DebugSettings debug,
     RetreatSettings retreat,
     VolleySettings volley,
+    PressureSettings pressure,
     SuccessSettings success,
     LearningSettings learning,
     PackSettings pack,
@@ -30,6 +31,7 @@ public record MobAiSettings(
     Objects.requireNonNull(debug, "MobAiSettings.debug");
     Objects.requireNonNull(retreat, "MobAiSettings.retreat");
     Objects.requireNonNull(volley, "MobAiSettings.volley");
+    Objects.requireNonNull(pressure, "MobAiSettings.pressure");
     Objects.requireNonNull(success, "MobAiSettings.success");
     Objects.requireNonNull(learning, "MobAiSettings.learning");
     Objects.requireNonNull(pack, "MobAiSettings.pack");

@@ -4,7 +4,12 @@ import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
+import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.Role;
+import io.github.nicodoou.mobai.domain.shared.Attack;
+import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
+import io.github.nicodoou.mobai.domain.shared.MobId;
+import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.EnumSet;
 import java.util.Objects;
@@ -14,7 +19,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
-/** FALL_BACK: step out of the player's reach so the volley has clear lanes, and watch. */
+/**
+ * FALL_BACK: step out of the player's reach so the volley has clear lanes, and watch. Under
+ * pressure (PRESSURE), wait on a ring just outside that reach, walking to it from either side, and
+ * strike a player that comes within the mob's own reach: backing off would only give it a free
+ * opening.
+ */
 public final class FallBackGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
   private static final double WALK_SPEED = 1.0;
@@ -23,14 +33,18 @@ public final class FallBackGoal implements Goal<Mob> {
   private static final long MOVE_INTERVAL_TICKS = 10;
 
   private final Mob mob;
+  private final MobKind kind;
   private final GoalKey<Mob> key;
   private final GoalContext context;
+  private final MeleeRhythm rhythm;
   private long nextMoveTick = Long.MIN_VALUE;
 
-  public FallBackGoal(Mob mob, GoalContext context) {
+  public FallBackGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "FallBackGoal.mob");
+    this.kind = Objects.requireNonNull(kind, "FallBackGoal.kind");
     this.context = Objects.requireNonNull(context, "FallBackGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "fall_back"));
+    this.rhythm = new MeleeRhythm(context.tools().timing().clock());
   }
 
   @Override
@@ -75,24 +89,58 @@ public final class FallBackGoal implements Goal<Mob> {
 
   private void fallBackFrom(Player target) {
     mob.lookAt(target);
+    double distanceBlocks = mob.getLocation().distance(target.getLocation());
+    if (isUnderPressure() && distanceBlocks <= MinecraftConstants.MELEE_REACH_BLOCKS) {
+      standAndStrike(target, distanceBlocks);
+      return;
+    }
+    holdRingIfDue(target);
+  }
+
+  private void standAndStrike(Player target, double distanceBlocks) {
+    mob.getPathfinder().stopPathfinding();
+    if (!rhythm.canStrike(distanceBlocks)) {
+      return;
+    }
+    context.tools().weapons().melee().strike(mob, target, strikeOn(target));
+    rhythm.markStrike();
+  }
+
+  private Attack strikeOn(Player target) {
+    return context
+        .tools()
+        .waypoints()
+        .fallBackStrike(kind, PoseReader.poseOf(target), PoseReader.positionOf(mob.getLocation()));
+  }
+
+  private void holdRingIfDue(Player target) {
     long now = context.tools().timing().clock().currentTick();
     if (now < nextMoveTick) {
       return;
     }
     nextMoveTick = now + MOVE_INTERVAL_TICKS;
-    Optional<Vec3> point =
-        context
-            .tools()
-            .waypoints()
-            .keepAwayPoint(
-                PoseReader.positionOf(mob.getLocation()),
-                PoseReader.positionOf(target.getLocation()),
-                distanceToKeepFrom(target));
+    Optional<Vec3> point = ringPoint(target);
     if (point.isEmpty()) {
       mob.getPathfinder().stopPathfinding();
       return;
     }
     walkTo(point.get());
+  }
+
+  private Optional<Vec3> ringPoint(Player target) {
+    Waypoints waypoints = context.tools().waypoints();
+    Vec3 position = PoseReader.positionOf(mob.getLocation());
+    Vec3 targetPosition = PoseReader.positionOf(target.getLocation());
+    double distance = distanceToKeepFrom(target);
+    Optional<Vec3> away = waypoints.keepAwayPoint(position, targetPosition, distance);
+    if (!isUnderPressure()) {
+      return away;
+    }
+    return away.or(() -> waypoints.approachPoint(position, targetPosition, distance));
+  }
+
+  private boolean isUnderPressure() {
+    return context.roles().tacticOf(new MobId(mob.getUniqueId())) == CombatTactic.PRESSURE;
   }
 
   private double distanceToKeepFrom(Player target) {

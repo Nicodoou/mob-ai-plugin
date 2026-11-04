@@ -47,6 +47,21 @@ class VolleyCycleTest {
   }
 
   @Test
+  void ticksUntilFiringCountDownToTheFiringPhase() {
+    long atStart = cycle.ticksUntilFiring(0);
+    long justBefore = cycle.ticksUntilFiring(70);
+    long firing = cycle.ticksUntilFiring(80);
+    long lastFiring = cycle.ticksUntilFiring(109);
+    long nextCycle = cycle.ticksUntilFiring(110);
+
+    assertThat(atStart).isEqualTo(80);
+    assertThat(justBefore).isEqualTo(10);
+    assertThat(firing).isZero();
+    assertThat(lastFiring).isZero();
+    assertThat(nextCycle).isEqualTo(80);
+  }
+
+  @Test
   void phasesFollowTheSettings() {
     VolleyCycle shortCycle = new VolleyCycle(() -> new VolleySettings(10, 10, 10, 0));
 

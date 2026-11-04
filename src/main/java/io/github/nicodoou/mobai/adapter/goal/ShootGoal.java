@@ -5,6 +5,7 @@ import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -54,6 +55,7 @@ public final class ShootGoal implements Goal<Mob> {
   private final OpportunisticWait opportunism = new OpportunisticWait();
   private final HighGroundFinder highGround;
   private final BowDraw draw;
+  private final BlockedLaneWait laneWait = new BlockedLaneWait();
   // The higher spot the shooter is heading for; empty when it has none.
   private Optional<Vec3> perch = Optional.empty();
   private long nextPerchSearchTick = Long.MIN_VALUE;
@@ -256,10 +258,7 @@ public final class ShootGoal implements Goal<Mob> {
   }
 
   private void startDrawIfReady(RoleAssignment order, Player target) {
-    if (needsNewSpot
-        || !shots.canDraw()
-        || !canAim(target)
-        || (order.role() == Role.HOLD_FIRE && !inPlace)) {
+    if (needsNewSpot || !shots.canDraw() || !canAim(target) || isHoldingFireOutOfPlace(order)) {
       opportunism.reset();
       return;
     }
@@ -267,6 +266,16 @@ public final class ShootGoal implements Goal<Mob> {
     draw.start();
     bow().draw(mob);
     faceBodyTowards(target);
+  }
+
+  // Under pressure HOLD_FIRE only keeps the arrow from leaving, so the bow is ready the instant the
+  // network or the volley calls for it; the shot itself stays the order's to give.
+  private boolean isHoldingFireOutOfPlace(RoleAssignment order) {
+    return order.role() == Role.HOLD_FIRE && !inPlace && !isUnderPressure();
+  }
+
+  private boolean isUnderPressure() {
+    return context.roles().tacticOf(self()) == CombatTactic.PRESSURE;
   }
 
   private void holdDraw(RoleAssignment order, Player target) {
@@ -290,13 +299,26 @@ public final class ShootGoal implements Goal<Mob> {
     if (isLaneClear(target, attack)) {
       bow().shoot(mob, target, attack);
       shots.markShot();
-    } else {
-      needsNewSpot = true;
+      lowerBow();
+      return;
     }
-    lowerBow();
+    if (!isStillWaitingForLane()) {
+      needsNewSpot = true;
+      lowerBow();
+    }
+  }
+
+  // Fighters keep crossing the lane now that they stay on the target: dropping a full draw and
+  // walking off for each of them would lose more arrows than the wait does.
+  private boolean isStillWaitingForLane() {
+    return isUnderPressure()
+        && laneWait.isStillWaiting(
+            context.tools().timing().clock().currentTick(),
+            context.tools().timing().pressure().get().blockedLaneWaitTicks());
   }
 
   private void lowerBow() {
+    laneWait.reset();
     if (draw.isDrawing()) {
       bow().lower(mob);
       draw.release();
@@ -340,13 +362,18 @@ public final class ShootGoal implements Goal<Mob> {
 
   private Optional<Attack> opportunisticShot(Player target) {
     long now = context.tools().timing().clock().currentTick();
-    return switch (opportunism.next(
-        focusOf(target), now, attack().opportunisticShotMaxWaitTicks())) {
+    return switch (opportunism.next(focusOf(target), now, opportunisticMaxWaitTicks())) {
       case WAIT -> Optional.empty();
       case SHOOT_OPPORTUNISTIC -> Optional.of(Attack.SKELETON_OPPORTUNISTIC_SHOT);
       // The wait ran out: no opportunistic attempt is opened (catalog); it shoots straight instead.
       case GIVE_UP -> Optional.of(Attack.SKELETON_DIRECT_SHOT);
     };
+  }
+
+  private long opportunisticMaxWaitTicks() {
+    return isUnderPressure()
+        ? context.tools().timing().pressure().get().opportunisticShotMaxWaitTicks()
+        : attack().opportunisticShotMaxWaitTicks();
   }
 
   private TargetFocus focusOf(Player target) {

@@ -13,6 +13,7 @@ import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.PlannerKind;
+import io.github.nicodoou.mobai.domain.settings.PressureSettings;
 import io.github.nicodoou.mobai.domain.settings.RetreatSettings;
 import io.github.nicodoou.mobai.domain.settings.SelectionSettings;
 import io.github.nicodoou.mobai.domain.settings.SpiderSettings;
@@ -43,6 +44,7 @@ public final class ConfigLoader {
           debug(root),
           retreat(root),
           volley(root),
+          pressure(root),
           success(root),
           learning(root),
           pack(root),
@@ -144,6 +146,15 @@ public final class ConfigLoader {
         wholeNumber(root, "volley.fall-back-ticks"),
         wholeNumber(root, "volley.fire-ticks"),
         number(root, "volley.fall-back-margin-blocks"));
+  }
+
+  private PressureSettings pressure(ConfigurationSection root) {
+    return new PressureSettings(
+        number(root, "pressure.engage-distance-blocks"),
+        number(root, "pressure.reserve-delay-fraction"),
+        wholeNumber(root, "pressure.volley-sync-hold-ticks"),
+        wholeNumber(root, "pressure.blocked-lane-wait-ticks"),
+        wholeNumber(root, "pressure.opportunistic-shot-max-wait-ticks"));
   }
 
   private SuccessSettings success(ConfigurationSection root) {

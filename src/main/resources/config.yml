@@ -109,6 +109,22 @@ volley:
   # Cuánto más allá del alcance del jugador se abren los cuerpo a cuerpo.
   fall-back-margin-blocks: 1.5
 
+pressure:
+  # Presión constante: nadie espera sin hacer nada. Vale para los grupos con táctica PRESION.
+  # Un cuerpo a cuerpo con el jugador a esta distancia ataca aunque la andanada o la reserva le digan
+  # que espere. Conviene que sea mayor que el alcance del jugador más fall-back-margin-blocks.
+  engage-distance-blocks: 6.0
+  # Fracción (0 a 1) de la demora de la receta que espera de verdad la reserva.
+  reserve-delay-fraction: 0.25
+  # Un esqueleto retiene la flecha ya tensada hasta el disparo conjunto solo si faltan estos ticks o
+  # menos para la andanada. 0: nunca la retiene.
+  volley-sync-hold-ticks: 10
+  # Con un aliado en la línea de tiro, un esqueleto mantiene el arco tenso estos ticks antes de ir a
+  # buscar otro lugar. 0: se va enseguida.
+  blocked-lane-wait-ticks: 15
+  # Lo que espera el tiro oportunista, en vez de attack.opportunistic-shot-max-wait-ticks. 1 o más.
+  opportunistic-shot-max-wait-ticks: 10
+
 success:
   # Éxito de un plan (CT-27): el ataque (daño hecho y rapidez, con sus pesos) multiplicado por cuánto
   # sobrevivió el grupo; survival-weight es cuánto descuenta perder al grupo entero.
