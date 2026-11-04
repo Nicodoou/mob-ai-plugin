@@ -2,13 +2,15 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 3 de noviembre de 2026 (WP-34C mergeado; siguen los WP-34D y 34E).
+**Última actualización:** 3 de noviembre de 2026 (WP-36A en curso: grabación del combate).
 
 ## Próximo paso
 
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Ahora:** WP-34C mergeado (#77). `config.yml` de prueba actualizado: Nico ya puede reiniciar y probar la correa y la retirada aprendida (ver «Verificación en el server» del WP). Sigue especificar el WP-34D.
+1. **Ahora:** CT-36 aprobado por Nico el 3 nov. WP-36A en curso (subagente Sonnet); después, el WP-36B. Se graba con `/mobai debug all full`, sin límite de tamaño. Al mergear cada uno, Opus lo verifica en el server con un bot y mide el tamaño por hora.
+   - **Bots:** prueba con Paper 26.1.2 hecha el 3 nov: un bot con Mineflayer entra, camina, usa escudo y arco, y MobAI ve sus rasgos. El plugin compila y pasa las pruebas en 26.1.2, y el mismo jar arranca en 26.3. Falta probar los goals en 26.3 con Nico y escribir el CT-35. El cambio de versión está en la rama local `spike/port-261`, sin push; el bot de prueba, en el scratchpad de la sesión.
+   - **Arenas de entrenamiento:** de noche fija, porque zombies y esqueletos se queman al sol.
 2. **Después:**
    - **WP-34D y 34E:** movimiento impredecible (CT-34). Hay que especificarlos. Sumar al 34D que los que vuelven con la correa no se amontonen en el terreno.
    - **Repetir la puerta E6** con `puerta-e6-recetas.md`.
@@ -93,6 +95,8 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-34C | Retirada del grupo y correa en el juego | E6 | mergeado | Opus | [#77](https://github.com/Nicodoou/mob-ai-plugin/pull/77) | CT-33, con la enmienda del 3 nov. Merge el 3 nov; `min-chase-blocks` y `max-chase-blocks` en el `config.yml` de prueba |
 | WP-34D | Costados al azar y mantener la distancia | E6 | pendiente | Sonnet | — | CT-34. Después del 34C |
 | WP-34E | Esquive del arco y golpe oportunista | E6 | pendiente | Sonnet | — | CT-34 (incluye el esquive de los esqueletos del CT-32) |
+| WP-36A | Grabación del combate: muestras periódicas | E6 | en curso | Sonnet | — | CT-36. Aprobado por Nico el 3 nov |
+| WP-36B | Grabación del combate: daño, muertes y acciones | E6 | aprobado | Sonnet | — | CT-36. Después del 36A |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30D | La supervivencia multiplica | E6 | mergeado | Sonnet | [#54](https://github.com/Nicodoou/mob-ai-plugin/pull/54) | D-01 del test fuerte, aprobado por Nico |

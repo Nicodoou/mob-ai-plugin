@@ -766,3 +766,36 @@ Se mergean los tres antes de que Nico pruebe. Entre el 31B y el 31C el server no
 - Corrimientos grandes hacen que tarden más en llegar. Por eso 1,5 bloques y nunca cuando están al alcance.
 - En la andanada, un costado puede cruzar la línea de tiro de un esqueleto. La revisión de la línea limpia (WP-24C) ya los espera.
 - Un esquive del arco mal calculado puede hacerlos temblar: hace falta un tiempo mínimo entre esquives.
+
+## CT-36 — Grabación del combate
+
+**Estado:** aprobado por Nico el 3 nov 2026, con estas decisiones: se graba con `/mobai debug`, cada 5 ticks y configurable, y por ahora sin límite de tamaño, porque hacen falta muchos datos para ver qué hacen bien y mal.
+
+**El problema.** La traza dice lo que el cerebro decide, pero no lo que cada mob hace después. El 3 nov, en la prueba con el bot, zombies y esqueletos desaparecían sin que ningún log dijera de qué morían: era el sol. Para entrenar con bots y corregirlos hace falta ver cada pelea sin tener que mirarla.
+
+**Qué cambia.**
+
+1. **Se graba con el nivel `full`.** `/mobai debug all full` (o `/mobai debug <grupo> full`) activa la grabación; cualquier otro nivel la apaga. No hay comando nuevo.
+2. **Cada `debug.recording-interval-ticks` (5), una línea por entidad:**
+   - cada mob de un grupo grabado: posición, velocidad, vida, en el suelo, fuego, la orden que tiene, los goals que corren y el final de su camino;
+   - cada grupo grabado: estado, plan, objetivo, miembros, centro, dispersión, cuántos hay por rol, receta y fuerza;
+   - cada jugador objetivo de un grupo grabado o en entrenamiento: posición, movimiento, mirada, vida, armadura, en el suelo, corriendo, escudo, ítems de las manos y el ítem que está usando.
+3. **Cada vez que pasa algo, en la misma línea de tiempo:** todo el daño a esas entidades, con causa y autor; las muertes; y los golpes y disparos de esos jugadores. Las decisiones, ataques y planes ya se escriben con el nivel `full`.
+4. **Un solo archivo:** el `trace-<tick>.jsonl` de cada arranque. Filtrando por ID se ve cada mob por separado; sin filtrar, todos juntos.
+5. **La caja negra no cambia:** lo grabado no entra en `FlightRecorder`, para que no desplace a los eventos que explican un incidente.
+
+**Por qué.** Con la orden y los goals reales en la misma línea se ve la diferencia entre lo que se le pidió a cada mob y lo que hizo.
+
+**WPs.**
+- WP-36A (Sonnet): muestras periódicas, configuración y armado.
+- WP-36B (Sonnet): daño, muertes y acciones del jugador.
+
+**Alternativas descartadas.**
+- **Comando propio de grabación:** duplicaba el control de `/mobai debug`.
+- **Archivo aparte:** obligaba a cruzar dos líneas de tiempo.
+- **Pasar las muestras por `TraceHub`:** habrían llenado la caja negra.
+
+**Riesgos.**
+- **Disco:** sin límite, una sesión larga puede pesar mucho. El tamaño real se mide en la primera corrida y se revisa la decisión.
+- **Rendimiento:** la lectura corre en el hilo principal. Solo cuesta mientras se graba.
+- **Velocidad de los mobs:** `getVelocity` puede no coincidir con lo que camina el pathfinder; la posición de cada muestra permite calcular el movimiento real.
