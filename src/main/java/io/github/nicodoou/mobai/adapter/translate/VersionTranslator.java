@@ -179,6 +179,11 @@ public final class VersionTranslator {
     return held == Material.BOW || held == Material.CROSSBOW;
   }
 
+  /** The item's name without its namespace, such as iron_sword; air for an empty hand. */
+  public String itemName(ItemStack item) {
+    return item.getType().getKey().getKey();
+  }
+
   public double movementSpeed(LivingEntity entity) {
     return attributeValue(entity, Attribute.MOVEMENT_SPEED)
         .orElse(MinecraftConstants.DEFAULT_MOB_MOVEMENT_SPEED);

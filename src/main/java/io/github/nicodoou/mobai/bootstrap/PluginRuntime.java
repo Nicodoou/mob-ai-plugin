@@ -71,6 +71,7 @@ public final class PluginRuntime {
     adapters.movementSampler().sampleOnlinePlayers();
     adapters.projectileResolver().tick(now);
     adapters.decisionScheduler().tick(now);
+    adapters.combatSampler().tick(now);
     adapters.recoveryHealer().tick(now);
     adapters
         .persistenceScheduler()

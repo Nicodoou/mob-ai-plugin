@@ -17,6 +17,11 @@ public final class TraceWriter {
     lines.append(gson.toJson(new TraceLine(kindOf(event), event)));
   }
 
+  public void write(CombatSample sample) {
+    Objects.requireNonNull(sample, "TraceWriter.sample");
+    lines.append(gson.toJson(new TraceLine(sample.getClass().getSimpleName(), sample)));
+  }
+
   public void shutdown() {
     lines.shutdown();
   }
@@ -25,5 +30,5 @@ public final class TraceWriter {
     return event.getClass().getSimpleName();
   }
 
-  private record TraceLine(String kind, TraceEvent event) {}
+  private record TraceLine(String kind, Object event) {}
 }
