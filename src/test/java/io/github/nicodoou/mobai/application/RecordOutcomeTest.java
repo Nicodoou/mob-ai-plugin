@@ -137,6 +137,15 @@ class RecordOutcomeTest {
     assertThat(turns().holds(mob(1))).isTrue();
   }
 
+  @Test
+  void withoutATacticAStrikeLeavesNoTraceOfTurns() {
+    startPlanAgainstPlayer();
+
+    recordOutcome.execute(resolution(mob(1), player, new AttackOutcome.Miss(), 0.0));
+
+    assertThat(turns().lastReleaseTicks()).isEmpty();
+  }
+
   private void holdTurn() {
     group.assignTactic(CombatTactic.TURNS);
     group.recordAttackTurns(AttackTurns.none().granted(mob(1), new AttackTurn(90, 20.0)));

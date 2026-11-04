@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 class ArenaGridTest {
   private static final ArenaSettings SETTINGS =
-      new ArenaSettings(List.of("a", "b", "c", "d", "e"), 1000, 5000, -2000, 4, 20.0);
+      new ArenaSettings(List.of("a", "b", "c", "d", "e"), 1000, 5000, -2000, 4, 20.0, true);
 
   @Test
   void theFirstArenaIsAtTheOrigin() {

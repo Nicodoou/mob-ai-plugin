@@ -30,7 +30,7 @@ class PolicyReloaderTest {
           true,
           "default",
           CHECK_INTERVAL_TICKS,
-          new ArenaSettings(List.of(ARENA), 1000, 0, 0, 4, 20.0));
+          new ArenaSettings(List.of(ARENA), 1000, 0, 0, 4, 20.0, true));
   private PolicyReloader reloader;
 
   @BeforeEach

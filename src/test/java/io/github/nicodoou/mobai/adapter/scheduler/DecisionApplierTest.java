@@ -47,6 +47,14 @@ class DecisionApplierTest {
   }
 
   @Test
+  void anOrderKnowsTheTacticAndGroupItCameFrom() {
+    applier.apply(decisionWith(pressOrder(mob(1))), members, CombatTactic.RELAY);
+
+    assertThat(roles.tacticOf(mob(1))).isEqualTo(CombatTactic.RELAY);
+    assertThat(roles.groupOf(mob(1))).isEqualTo(new GroupId(new UUID(0, 1)));
+  }
+
+  @Test
   void retainOnlyKeepsActiveMembers() {
     roles.assign(pressOrder(mob(1)));
     roles.assign(pressOrder(mob(9)));

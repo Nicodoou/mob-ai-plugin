@@ -481,7 +481,12 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Persecución en bloque | `PackCohesion`, `PackSettings` (dominio), `GatherGoal` (adaptadores); rol `GATHER` | Dominio y adaptadores |
 | Correa de la persecución | `ChaseLeash` (dominio, cerebro), `ChaseAnchor` (dominio, estrategia) | Dominio |
 | Zombies que rodean | `SurroundFormation`, `SurroundQuery`, `SurroundRing`, `SurroundSpot` (dominio), `SurroundApproach`, `MobKinds` (adaptadores) | Dominio y adaptadores |
-| Cerco de los cuerpo a cuerpo (tÃ¡ctica `ENCIRCLE`) | `EncircleFormation`, `EncircleQuery`, `EncircleRing`, `EncircleStep`, `EncircleMove`, `FlankStrike` (dominio), `EncircleApproach`, `MobKinds` (adaptadores) | Dominio y adaptadores |
+| Táctica de combate de un grupo (rama de experimento) | `CombatTactic`, `Group.tactic`, `NeuralAssignment` (dominio), `OrderSource`, `RoleRegistry.tacticOf` (adaptadores) | Dominio y adaptadores |
+| Turnos de ataque (táctica `TURNS`) | `AttackTurnRota`, `AttackTurns`, `AttackTurn`, `DealtTurns` (dominio), `RoleAssignment.holdsAttackTurn`, `SurroundApproach.ringSpotFor`, `Waypoints.waitingFlankStep` | Dominio y adaptadores |
+| Presión constante (táctica `PRESSURE`) | `PressureSettings`, `FallBackStrike`, `Brain.pressuredRole` (dominio), `BlockedLaneWait`, `FallBackGoal` (adaptadores) | Dominio y adaptadores |
+| Relevo de golpes (táctica `RELAY`) | `StrikeRelay`, `RelayLane`, `WindowReading`, `RelaySettings` (dominio), `StrikeTurns`, `ShotHold` (adaptadores) | Dominio y adaptadores |
+| Monstruos naturales bloqueados | `ArenaSettings.blockNaturalSpawns` (dominio), `NaturalSpawnBlocker`, `PluginSpawns` (adaptadores) | Dominio y adaptadores |
+| Cerco de los cuerpo a cuerpo (táctica `ENCIRCLE`) | `EncircleFormation`, `EncircleQuery`, `EncircleRing`, `EncircleStep`, `EncircleMove`, `FlankStrike` (dominio), `EncircleApproach`, `MobKinds` (adaptadores) | Dominio y adaptadores |
 | Golpe esquivo | `EvasiveRules`, `EvasiveReading`, `EvasiveMove`, `EscapeTiming`, `Waypoints.evadePoint` y `sideStepPoint` | Adaptadores |
 | Golpe paciente y tiempos de los goals | `PatientWait`, `PatientMove`, `PlayerStance`, `GoalTiming` | Adaptadores |
 | Formación de tiradores y línea de tiro | `ShooterFormation`, `ShooterQuery`, `CombatGeometry.isLineOfFireClear`, `clearLane` | Dominio |

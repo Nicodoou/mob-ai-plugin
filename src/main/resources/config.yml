@@ -258,3 +258,6 @@ arena:
   chunk-radius: 4
   # A qué distancia del jugador aparece el grupo (no más que chunk-radius en bloques).
   spawn-distance-blocks: 20.0
+  # Bloquea los monstruos que no aparece el plugin, en todo el server: spawn-monsters=false no alcanza,
+  # y un creeper natural mata al jugador y contamina el resultado de la pelea. true o false.
+  block-natural-spawns: true

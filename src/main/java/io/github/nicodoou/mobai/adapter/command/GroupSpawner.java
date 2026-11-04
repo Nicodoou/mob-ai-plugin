@@ -1,7 +1,6 @@
 package io.github.nicodoou.mobai.adapter.command;
 
 import io.github.nicodoou.mobai.adapter.goal.GoalInstaller;
-import io.github.nicodoou.mobai.adapter.translate.VersionTranslator;
 import io.github.nicodoou.mobai.application.RecruitMob;
 import io.github.nicodoou.mobai.application.RecruitRequest;
 import io.github.nicodoou.mobai.application.RecruitResult;
@@ -23,13 +22,12 @@ import org.bukkit.entity.Zombie;
 public final class GroupSpawner {
   private final RecruitMob recruitMob;
   private final GoalInstaller installer;
-  private final VersionTranslator translator;
+  private final PluginSpawns spawns;
 
-  public GroupSpawner(
-      RecruitMob recruitMob, GoalInstaller installer, VersionTranslator translator) {
+  public GroupSpawner(RecruitMob recruitMob, GoalInstaller installer, PluginSpawns spawns) {
     this.recruitMob = Objects.requireNonNull(recruitMob, "GroupSpawner.recruitMob");
     this.installer = Objects.requireNonNull(installer, "GroupSpawner.installer");
-    this.translator = Objects.requireNonNull(translator, "GroupSpawner.translator");
+    this.spawns = Objects.requireNonNull(spawns, "GroupSpawner.spawns");
   }
 
   public GroupId spawnTestGroup(Player player, SelectionPolicyType policy) {
@@ -37,9 +35,10 @@ public final class GroupSpawner {
     World world = origin.getWorld();
     List<MobKind> kinds = TestGroup.kinds();
     List<Vec3> positions = SpawnRing.positions(positionOf(player), kinds.size());
-    GroupId groupId = found(spawn(world, kinds.get(0), positions.get(0)), kinds.get(0), policy);
+    GroupId groupId =
+        found(spawns.spawn(world, kinds.get(0), positions.get(0)), kinds.get(0), policy);
     for (int index = 1; index < kinds.size(); index++) {
-      Mob mob = spawn(world, kinds.get(index), positions.get(index));
+      Mob mob = spawns.spawn(world, kinds.get(index), positions.get(index));
       join(mob, kinds.get(index), groupId);
     }
     return groupId;
@@ -58,7 +57,7 @@ public final class GroupSpawner {
   // Daylight would hurt zombies and skeletons but not spiders, and a fight fought in the sun would
   // teach a network about the sun instead of about the player.
   private Mob spawnUnburnable(World world, Placement placement) {
-    Mob mob = spawn(world, placement.kind(), placement.position());
+    Mob mob = spawns.spawn(world, placement.kind(), placement.position());
     if (mob instanceof Zombie zombie) {
       zombie.setShouldBurnInDay(false);
     }
@@ -83,7 +82,7 @@ public final class GroupSpawner {
     List<MobKind> kinds = TestGroup.kinds().subList(0, count);
     List<Vec3> positions = SpawnRing.positions(positionOf(player), count);
     for (int index = 0; index < count; index++) {
-      Mob mob = spawn(world, kinds.get(index), positions.get(index));
+      Mob mob = spawns.spawn(world, kinds.get(index), positions.get(index));
       reinforceWith(mob, kinds.get(index), groupId);
     }
     return count;
@@ -92,19 +91,6 @@ public final class GroupSpawner {
   private static Vec3 positionOf(Player player) {
     Location location = player.getLocation();
     return new Vec3(location.getX(), location.getY(), location.getZ());
-  }
-
-  // Without these, a member that vanishes while the server is off stays in its saved group forever.
-  private Mob spawn(World world, MobKind kind, Vec3 position) {
-    Location location = new Location(world, position.x(), position.y(), position.z());
-    Mob mob = (Mob) world.spawnEntity(location, translator.entityTypeOf(kind));
-    mob.getEquipment().clear();
-    if (kind == MobKind.SKELETON) {
-      translator.armWithBow(mob);
-    }
-    mob.setCanPickupItems(false);
-    mob.setRemoveWhenFarAway(false);
-    return mob;
   }
 
   private GroupId found(Mob mob, MobKind kind, SelectionPolicyType policy) {

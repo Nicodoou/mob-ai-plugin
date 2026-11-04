@@ -228,7 +228,8 @@ public final class ConfigLoader {
         Math.toIntExact(wholeNumber(root, "arena.origin-x")),
         Math.toIntExact(wholeNumber(root, "arena.origin-z")),
         Math.toIntExact(wholeNumber(root, "arena.chunk-radius")),
-        number(root, "arena.spawn-distance-blocks"));
+        number(root, "arena.spawn-distance-blocks"),
+        flag(root, "arena.block-natural-spawns"));
   }
 
   private boolean flag(ConfigurationSection root, String path) {

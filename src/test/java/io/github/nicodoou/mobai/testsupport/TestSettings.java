@@ -99,7 +99,8 @@ public final class TestSettings {
             5000,
             5000,
             4,
-            20.0));
+            20.0,
+            true));
   }
 
   public static PlanScoring scoring() {

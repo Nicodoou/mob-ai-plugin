@@ -63,19 +63,31 @@ public final class ExperienceListener implements Listener {
   public void onDeath(EntityDeathEvent event) {
     LivingEntity victim = event.getEntity();
     if (victim instanceof Player player) {
-      targetDied(new PlayerId(player.getUniqueId()));
+      targetDied(new PlayerId(player.getUniqueId()), lastAttackerOf(player));
       return;
     }
     groupOf(victim).ifPresent(group -> memberDied(group, victim));
   }
 
-  private void targetDied(PlayerId player) {
+  void targetDied(PlayerId player, Optional<MobId> killer) {
     long tick = clock.currentTick();
     for (Group group : activeGroups.groups()) {
       if (targetOf(group).filter(player::equals).isPresent()) {
-        recorder.endFight(group.id(), tick, FightWinner.MOBS);
+        recorder.endFight(group.id(), tick, winnerOver(group, killer));
       }
     }
+  }
+
+  // A lava pool or a stray creeper is no victory for the network: the mobs did not earn it.
+  private static FightWinner winnerOver(Group group, Optional<MobId> killer) {
+    boolean isKilledByGroup = killer.flatMap(group.roster()::member).isPresent();
+    return isKilledByGroup ? FightWinner.MOBS : FightWinner.NONE;
+  }
+
+  private static Optional<MobId> lastAttackerOf(Player player) {
+    return Optional.ofNullable(player.getLastDamageCause())
+        .flatMap(ExperienceListener::attackingMob)
+        .map(mob -> new MobId(mob.getUniqueId()));
   }
 
   private void memberDied(Group group, LivingEntity victim) {

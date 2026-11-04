@@ -8,6 +8,7 @@ import java.util.Objects;
 /**
  * @param names one arena per network; the position in this list is its place on the grid
  * @param chunkRadius chunks kept loaded around the center, on each side
+ * @param blockNaturalSpawns whether only the plugin's own monsters may appear on the server
  */
 public record ArenaSettings(
     List<String> names,
@@ -15,7 +16,8 @@ public record ArenaSettings(
     int originX,
     int originZ,
     int chunkRadius,
-    double spawnDistanceBlocks) {
+    double spawnDistanceBlocks,
+    boolean blockNaturalSpawns) {
   private static final int BLOCKS_PER_CHUNK = 16;
   private static final int MAX_CHUNK_RADIUS = 16;
 

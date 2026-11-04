@@ -5,6 +5,7 @@ import io.github.nicodoou.mobai.adapter.command.DebugCommand;
 import io.github.nicodoou.mobai.adapter.command.GroupSpawner;
 import io.github.nicodoou.mobai.adapter.command.MemoryCommand;
 import io.github.nicodoou.mobai.adapter.command.MobAiCommand;
+import io.github.nicodoou.mobai.adapter.command.PluginSpawns;
 import io.github.nicodoou.mobai.adapter.command.ReinforceCommand;
 import io.github.nicodoou.mobai.adapter.command.ReloadCommand;
 import io.github.nicodoou.mobai.adapter.command.ResetCommand;
@@ -44,6 +45,7 @@ import io.github.nicodoou.mobai.adapter.goal.Weapons;
 import io.github.nicodoou.mobai.adapter.listener.DamageListener;
 import io.github.nicodoou.mobai.adapter.listener.DeathListener;
 import io.github.nicodoou.mobai.adapter.listener.EntityLifecycleListener;
+import io.github.nicodoou.mobai.adapter.listener.NaturalSpawnBlocker;
 import io.github.nicodoou.mobai.adapter.listener.ProjectileListener;
 import io.github.nicodoou.mobai.adapter.listener.TargetListener;
 import io.github.nicodoou.mobai.adapter.listener.ThreatListener;
@@ -117,7 +119,7 @@ public record AdapterServices(
     TrainingDataLog trainingDataLog = trainingDataLog(plugin, core, logger);
     RecordingScope scope = recordingScope(core, parts);
     NeuralServices neural = NeuralServices.create(plugin, core, logger);
-    GroupSpawner spawner = new GroupSpawner(core.recruitMob(), goalInstaller, parts.translator());
+    GroupSpawner spawner = new GroupSpawner(core.recruitMob(), goalInstaller, parts.pluginSpawns());
     ArenaDirector arenas = arenaDirector(plugin, core, spawner);
     return new AdapterServices(
         parts.translator(),
@@ -255,8 +257,10 @@ public record AdapterServices(
 
   private static SharedParts sharedParts(CoreServices core, DebugParts debug) {
     MovementTracker movement = new MovementTracker();
+    VersionTranslator translator = new VersionTranslator();
     return new SharedParts(
-        new VersionTranslator(),
+        translator,
+        new PluginSpawns(translator),
         movement,
         new AttackTracker(core.recordOutcome(), new AttackClassifier()),
         new RoleRegistry(),
@@ -352,6 +356,8 @@ public record AdapterServices(
         new DeathListener(core.removeMember(), core.recordPlayerDeath(), core.clock()),
         new EntityLifecycleListener(core.activeGroups(), goalInstaller, parts.tracker()),
         new TargetListener(core.activeGroups()),
+        new NaturalSpawnBlocker(
+            parts.pluginSpawns(), () -> core.settings().current().neural().arena()),
         parts.movementSampler());
   }
 
@@ -360,6 +366,7 @@ public record AdapterServices(
 
   private record SharedParts(
       VersionTranslator translator,
+      PluginSpawns pluginSpawns,
       MovementTracker movement,
       AttackTracker tracker,
       RoleRegistry roles,
