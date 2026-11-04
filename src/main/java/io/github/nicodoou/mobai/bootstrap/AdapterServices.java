@@ -46,6 +46,8 @@ import io.github.nicodoou.mobai.adapter.listener.ProjectileListener;
 import io.github.nicodoou.mobai.adapter.listener.TargetListener;
 import io.github.nicodoou.mobai.adapter.listener.ThreatListener;
 import io.github.nicodoou.mobai.adapter.recording.CombatSampler;
+import io.github.nicodoou.mobai.adapter.recording.RecordingListener;
+import io.github.nicodoou.mobai.adapter.recording.RecordingScope;
 import io.github.nicodoou.mobai.adapter.recording.SamplerParts;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionApplier;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionParts;
@@ -105,13 +107,14 @@ public record AdapterServices(
     SharedParts parts = sharedParts(core, debugParts(plugin, core, logger));
     GoalInstaller goalInstaller = goalInstaller(plugin, core, parts);
     TrainingDataLog trainingDataLog = trainingDataLog(plugin, core, logger);
+    RecordingScope scope = recordingScope(core, parts);
     return new AdapterServices(
         parts.translator(),
         goalInstaller,
         parts.movementSampler(),
         decisionScheduler(core, parts, logger),
         new PersistenceScheduler(core.saveMemories(), core::storedState, logger),
-        listeners(core, parts, goalInstaller),
+        listeners(core, parts, new ListenerParts(goalInstaller, scope)),
         mobAiCommand(
             plugin,
             core,
@@ -127,10 +130,18 @@ public record AdapterServices(
         new ProjectileResolver(
             parts.tracker(), parts.debug().hub(), core.settings().section(MobAiSettings::attack)),
         trainingDataLog,
-        combatSampler(core, parts));
+        combatSampler(core, parts, scope));
   }
 
-  private static CombatSampler combatSampler(CoreServices core, SharedParts parts) {
+  private static RecordingScope recordingScope(CoreServices core, SharedParts parts) {
+    return new RecordingScope(
+        core.activeGroups(),
+        parts.roles(),
+        new RecordingScope.ScopeRules(parts.debug().outputs().levels(), core.recipeBase()));
+  }
+
+  private static CombatSampler combatSampler(
+      CoreServices core, SharedParts parts, RecordingScope scope) {
     return new CombatSampler(
         new SamplerParts(
             core.activeGroups(),
@@ -140,6 +151,7 @@ public record AdapterServices(
             parts.movement(),
             parts.translator(),
             core.recipeBase(),
+            scope,
             core.settings().section(MobAiSettings::debug)));
   }
 
@@ -286,9 +298,17 @@ public record AdapterServices(
         core.settings().section(MobAiSettings::group));
   }
 
+  // RecordingListener goes first: it must find a dying mob's group before DeathListener removes it.
   private static List<Listener> listeners(
-      CoreServices core, SharedParts parts, GoalInstaller goalInstaller) {
+      CoreServices core, SharedParts parts, ListenerParts listener) {
+    GoalInstaller goalInstaller = listener.goalInstaller();
     return List.of(
+        new RecordingListener(
+            new RecordingListener.RecordingParts(
+                listener.scope(),
+                parts.debug().outputs().traceWriter(),
+                parts.translator(),
+                core.clock())),
         new DamageListener(parts.tracker(), parts.translator()),
         new ProjectileListener(parts.tracker(), parts.translator(), core.activeGroups()),
         new ThreatListener(core.recordDamageTaken(), core.clock()),
@@ -297,6 +317,8 @@ public record AdapterServices(
         new TargetListener(core.activeGroups()),
         parts.movementSampler());
   }
+
+  private record ListenerParts(GoalInstaller goalInstaller, RecordingScope scope) {}
 
   private record SharedParts(
       VersionTranslator translator,

@@ -78,6 +78,16 @@ class RecordingSelectionTest {
   }
 
   @Test
+  void theConfiguredDefaultIsActiveWithoutGroups() {
+    configured.set(TraceLevel.FULL);
+
+    RecordingSelection selection = RecordingSelection.of(levels, List.of());
+
+    assertThat(selection.groups()).isEmpty();
+    assertThat(selection.isActive()).isTrue();
+  }
+
+  @Test
   void samplesOnMultiplesOfTheInterval() {
     assertThat(RecordingSelection.isSampleTick(10, INTERVAL_TICKS)).isTrue();
     assertThat(RecordingSelection.isSampleTick(11, INTERVAL_TICKS)).isFalse();

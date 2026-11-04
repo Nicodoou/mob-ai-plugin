@@ -15,6 +15,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -182,6 +183,11 @@ public final class VersionTranslator {
   /** The item's name without its namespace, such as iron_sword; air for an empty hand. */
   public String itemName(ItemStack item) {
     return item.getType().getKey().getKey();
+  }
+
+  /** The entity's type name without its namespace, such as zombie. */
+  public String entityName(Entity entity) {
+    return entity.getType().getKey().getKey();
   }
 
   public double movementSpeed(LivingEntity entity) {

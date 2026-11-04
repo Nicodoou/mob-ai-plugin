@@ -29,6 +29,7 @@ import org.slf4j.helpers.NOPLogger;
 class CombatSampleLinesTest {
   private static final long TICK = 100;
   private static final String TRACE_FILE = "trace.jsonl";
+  private static final UUID ATTACKER = new UUID(3, 3);
 
   @TempDir Path folder;
 
@@ -72,6 +73,27 @@ class CombatSampleLinesTest {
     assertThat(lines.get(1)).startsWith("{\"kind\":\"GroupSample\"");
   }
 
+  @Test
+  void aDamageSampleKeepsItsCauseAndAttacker() throws IOException {
+    writer.write(damageSample());
+    writer.shutdown();
+
+    String line = readLines().get(0);
+    assertThat(line).startsWith("{\"kind\":\"DamageSample\"");
+    assertThat(line).contains("FIRE_TICK");
+    assertThat(line).contains(ATTACKER.toString());
+  }
+
+  @Test
+  void anActionSampleKeepsItsActionAndForce() throws IOException {
+    writer.write(shootSample());
+    writer.shutdown();
+
+    String line = readLines().get(0);
+    assertThat(line).contains("\"action\":\"SHOOT\"");
+    assertThat(line).contains("\"force\":1.0");
+  }
+
   private List<String> readLines() throws IOException {
     return Files.readString(folder.resolve(TRACE_FILE)).lines().toList();
   }
@@ -95,6 +117,32 @@ class CombatSampleLinesTest {
         Optional.empty(),
         List.of("mobai_press"),
         Optional.empty());
+  }
+
+  private static CombatSample.DamageSample damageSample() {
+    return new CombatSample.DamageSample(
+        TICK,
+        Optional.of(groupId()),
+        new UUID(1, 1),
+        "zombie",
+        "FIRE_TICK",
+        1,
+        1,
+        20,
+        false,
+        false,
+        Optional.of(ATTACKER),
+        Optional.of("skeleton"),
+        Optional.empty());
+  }
+
+  private static CombatSample.ActionSample shootSample() {
+    return new CombatSample.ActionSample(
+        TICK,
+        new PlayerId(new UUID(2, 2)),
+        CombatSample.PlayerAction.SHOOT,
+        "bow",
+        Optional.of(1.0));
   }
 
   private static CombatSample.GroupSample groupSample() {

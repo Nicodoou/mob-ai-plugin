@@ -195,7 +195,7 @@ Requisito obligatorio: ante un bug, el modo debug tiene que decir dónde ocurri�
    - La memoria devuelve el registro antes y después de cada cambio.
 3. **Escritura.** `TraceWriter` escribe JSON Lines en `plugins/MobAI/debug/`, en otro hilo. El nivel (`TraceLevel`: `OFF`, `DECISIONS` o `FULL`) se elige por grupo con `/mobai debug <grupo|all> <nivel>`. En la consola solo salen errores y una línea por incidente.
 
-   **Grabación del combate (CT-36).** Con el nivel `FULL`, `CombatSampler` escribe en el mismo archivo una muestra de cada mob, grupo y jugador relevante cada `debug.recording-interval-ticks`. No pasa por `TraceHub`, para no llenar la caja negra.
+   **Grabación del combate (CT-36).** Con el nivel `FULL`, `CombatSampler` escribe en el mismo archivo una muestra de cada mob, grupo y jugador relevante cada `debug.recording-interval-ticks`. No pasa por `TraceHub`, para no llenar la caja negra. También escribe, en el momento en que pasan, el daño a esas entidades con su causa y autor, sus muertes, y los golpes y disparos de los jugadores grabados (`RecordingListener`).
 
 4. **Caja negra.** `FlightRecorder` guarda en RAM los últimos eventos de traza de cada grupo (cantidad configurable, 200 por defecto), siempre, aunque el nivel sea `OFF`.
 5. **Incidentes.** Ante una excepción atrapada en el borde de los adaptadores, una validación del dominio que falla o un estado imposible, `IncidentWriter` escribe `incident-<id>.json` con:
@@ -493,7 +493,7 @@ El código está en inglés y la documentación en español; esta tabla traduce 
 | Comandos de administración y grupo de prueba | `MobAiCommand`, `Subcommand`, `SpawnGroupCommand`, `StatusCommand`, `ResetCommand`, `ReloadCommand`, `GroupSpawner`, `SpawnRing` | Adaptadores |
 | Incidentes en el server: testigo de cada decisión, caja negra, entrada única de trazas | `DecisionWitness`, `WitnessParts`, `Observation`, `FlightRecorder`, `TraceHub`, `TraceEvent`, `IncidentWriter`, `DebugGson` | Adaptadores |
 | Trazas por nivel y log legible | `TraceLevels`, `TraceWriter`, `DebugLog`, `LineFileWriter`, `TraceDestinations`, `DebugCommand` | Adaptadores |
-| Grabación del combate | `CombatSample`, `PackShape`, `RecordingSelection` (depuración), `CombatSampler`, `SamplerParts` (grabación) | Adaptadores |
+| Grabación del combate | `CombatSample`, `PackShape`, `RecordingSelection` (depuración), `CombatSampler`, `SamplerParts`, `RecordingScope`, `RecordingListener` (grabación) | Adaptadores |
 | Armado y ciclo de vida del plugin | `CoreServices`, `AdapterServices`, `PluginRuntime` | Arranque |
 | Listeners de daño, amenaza y muertes | `DamageListener`, `ThreatListener`, `DeathListener` | Adaptadores |
 | Reloj propio, azar e ids de grupo reales | `ServerTickCounter`, `JdkRandomSource`, `RandomGroupIdSource` | Adaptadores |
