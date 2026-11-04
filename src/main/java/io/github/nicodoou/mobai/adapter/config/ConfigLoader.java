@@ -178,7 +178,10 @@ public final class ConfigLoader {
         number(root, "pack.surround-margin-blocks"),
         number(root, "pack.wait-margin-blocks"),
         number(root, "pack.min-chase-blocks"),
-        number(root, "pack.max-chase-blocks"));
+        number(root, "pack.max-chase-blocks"),
+        number(root, "pack.encircle-strike-radius-blocks"),
+        number(root, "pack.encircle-seat-spacing-blocks"),
+        number(root, "pack.encircle-crowding-blocks"));
   }
 
   private double number(ConfigurationSection root, String path) {

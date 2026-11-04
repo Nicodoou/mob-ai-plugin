@@ -166,3 +166,11 @@ pack:
   # dos valores.
   min-chase-blocks: 8.0
   max-chase-blocks: 32.0
+  # Cerco: cada zombie y araña con rol de ataque tiene su lugar alrededor del jugador. Radio de los
+  # lugares de golpe, mayor que 0 y hasta la distancia de golpe (2,0).
+  encircle-strike-radius-blocks: 1.7
+  # Separación entre lugares, mayor que 0 y hasta el doble del radio; con el radio define cuántos
+  # entran (1,7 sobre 1,7 da 6). Los que no entran esperan a wait-margin-blocks del alcance del jugador.
+  encircle-seat-spacing-blocks: 1.7
+  # Mayor que 0. Un aliado más cerca que esto molesta: el mob sigue hasta su lugar aunque ya pueda pegar.
+  encircle-crowding-blocks: 1.5

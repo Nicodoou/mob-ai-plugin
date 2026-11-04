@@ -72,7 +72,7 @@ class RecordOutcomeTest {
             defaults.volley(),
             new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
             defaults.learning(),
-            new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0)));
+            new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 1.7, 1.7, 1.5)));
 
     Optional<RecordChange> change =
         recordOutcome.execute(resolution(mob(1), player, new AttackOutcome.Partial(), 0.0));

@@ -5,7 +5,6 @@ import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
-import io.github.nicodoou.mobai.domain.geometry.SurroundSpot;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
@@ -31,16 +30,12 @@ public final class PressGoal implements Goal<Mob> {
   // Paper's attack cooldown is 1 once the player's weapon has fully recharged.
   private static final float FULL_ATTACK_COOLDOWN = 1.0f;
 
-  // Paths run over whole blocks, so a zombie can stop a little short of its slot: once that close,
-  // it steps in to the player instead.
-  private static final double SLOT_ARRIVAL_BLOCKS = 1.0;
-
   private final Mob mob;
   private final MobKind kind;
   private final GoalKey<Mob> key;
   private final GoalContext context;
   private final MeleeRhythm rhythm;
-  private final SurroundApproach surround;
+  private final EncircleApproach encircle;
   private final PatientWait patience = new PatientWait();
   private EvasiveMove lastEvasiveMove = EvasiveMove.HOLD;
 
@@ -50,7 +45,7 @@ public final class PressGoal implements Goal<Mob> {
     this.context = Objects.requireNonNull(context, "PressGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "press"));
     this.rhythm = new MeleeRhythm(context.tools().timing().clock());
-    this.surround = new SurroundApproach(context);
+    this.encircle = new EncircleApproach(context);
   }
 
   @Override
@@ -234,35 +229,7 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private void approach(Player target) {
-    if (kind != MobKind.ZOMBIE) {
-      mob.getPathfinder().moveTo(target, WALK_SPEED);
-      return;
-    }
-    SurroundSpot spot = surround.spotFor(mob, target);
-    if (spot.striking() && isInReach(target)) {
-      mob.getPathfinder().stopPathfinding();
-      return;
-    }
-    if (spot.striking() && isNear(spot.point())) {
-      mob.getPathfinder().moveTo(target, WALK_SPEED);
-      return;
-    }
-    walkTo(spot.point());
-  }
-
-  private boolean isInReach(Player target) {
-    return mob.getLocation().distance(target.getLocation())
-        <= MinecraftConstants.MELEE_REACH_BLOCKS;
-  }
-
-  private boolean isNear(Vec3 point) {
-    Vec3 offset = PoseReader.positionOf(mob.getLocation()).minus(point).horizontal();
-    return offset.length() <= SLOT_ARRIVAL_BLOCKS;
-  }
-
-  private void walkTo(Vec3 point) {
-    mob.getPathfinder()
-        .moveTo(new Location(mob.getWorld(), point.x(), point.y(), point.z()), WALK_SPEED);
+    encircle.advance(mob, target, Role.PRESS);
   }
 
   private void strikeIfReady(RoleAssignment order, Player target) {

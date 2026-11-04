@@ -55,6 +55,10 @@ public final class Waypoints {
     return geometry.isOutOfSight(pose, mobPosition);
   }
 
+  public boolean isInShieldArc(PlayerPose pose, Vec3 mobPosition) {
+    return geometry.isInShieldArc(pose, mobPosition);
+  }
+
   // Empty once the mob is far enough: it holds there instead of running on forever.
   public Optional<Vec3> retreatPoint(Vec3 mobPosition, Vec3 dangerPosition) {
     double missing =

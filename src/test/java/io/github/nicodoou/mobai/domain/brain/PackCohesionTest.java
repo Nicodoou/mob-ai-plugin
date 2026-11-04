@@ -30,7 +30,7 @@ class PackCohesionTest {
   private static final Vec3 BOB_POSITION = new Vec3(0, GROUND_Y, 40);
 
   private final PackCohesion cohesion =
-      new PackCohesion(() -> new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+      new PackCohesion(() -> new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 1.7, 1.7, 1.5));
   private final List<MobSnapshot> mobs = new ArrayList<>();
   private final List<RoleAssignment> orders = new ArrayList<>();
 
