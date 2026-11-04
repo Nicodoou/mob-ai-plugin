@@ -28,6 +28,15 @@ public final class TraceLevels {
     return levelForAll.orElseGet(() -> settings.get().defaultTraceLevel());
   }
 
+  public boolean isFull(GroupId group) {
+    return levelOf(group) == TraceLevel.FULL;
+  }
+
+  /** Whether a group with no level of its own would be recorded. */
+  public boolean isFullForAll() {
+    return levelForAll.orElseGet(() -> settings.get().defaultTraceLevel()) == TraceLevel.FULL;
+  }
+
   public void set(GroupId group, TraceLevel level) {
     ownLevels.put(
         Objects.requireNonNull(group, "TraceLevels.group"),

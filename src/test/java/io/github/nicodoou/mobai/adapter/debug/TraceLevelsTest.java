@@ -80,6 +80,26 @@ class TraceLevelsTest {
     assertThat(levels.writes(attackEvent())).isTrue();
   }
 
+  @Test
+  void isFullFollowsTheGroupLevel() {
+    levels.set(groupId(1), TraceLevel.FULL);
+    assertThat(levels.isFull(groupId(1))).isTrue();
+
+    levels.set(groupId(1), TraceLevel.DECISIONS);
+
+    assertThat(levels.isFull(groupId(1))).isFalse();
+  }
+
+  @Test
+  void isFullForAllIgnoresOwnLevels() {
+    levels.set(groupId(1), TraceLevel.FULL);
+    assertThat(levels.isFullForAll()).isFalse();
+
+    levels.setAll(TraceLevel.FULL);
+
+    assertThat(levels.isFullForAll()).isTrue();
+  }
+
   private static GroupId groupId(long n) {
     return new GroupId(new UUID(0, n));
   }
