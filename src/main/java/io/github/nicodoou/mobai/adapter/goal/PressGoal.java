@@ -43,6 +43,7 @@ public final class PressGoal implements Goal<Mob> {
   private final GoalContext context;
   private final MeleeRhythm rhythm;
   private final SurroundApproach surround;
+  private final EncircleApproach encircle;
   private final PatientWait patience = new PatientWait();
   private EvasiveMove lastEvasiveMove = EvasiveMove.HOLD;
   private boolean isCharging = false;
@@ -54,6 +55,7 @@ public final class PressGoal implements Goal<Mob> {
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "press"));
     this.rhythm = new MeleeRhythm(context.tools().timing().clock());
     this.surround = new SurroundApproach(context);
+    this.encircle = new EncircleApproach(context);
   }
 
   @Override
@@ -258,7 +260,8 @@ public final class PressGoal implements Goal<Mob> {
   private void approach(Player target) {
     switch (context.roles().tacticOf(new MobId(mob.getUniqueId()))) {
       case TURNS -> waitOnRing(target);
-      case NONE, PRESSURE, ENCIRCLE, RELAY -> closeIn(target);
+      case ENCIRCLE -> encircle.advance(mob, target, Role.PRESS);
+      case NONE, PRESSURE, RELAY -> closeIn(target);
     }
   }
 

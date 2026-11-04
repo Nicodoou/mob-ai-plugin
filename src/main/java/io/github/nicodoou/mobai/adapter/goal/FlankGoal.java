@@ -6,6 +6,7 @@ import com.destroystokyo.paper.entity.ai.GoalType;
 import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.geometry.FlankStep;
+import io.github.nicodoou.mobai.domain.geometry.FlankStrike;
 import io.github.nicodoou.mobai.domain.geometry.PlayerPose;
 import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.Role;
@@ -28,7 +29,8 @@ import org.bukkit.entity.Player;
 /**
  * FLANK: sidestep out of the player's sight, then close in on its slot and strike from behind. By
  * attack turns (TURNS), a fighter with one walks straight to the target and strikes it, seen or
- * not; the rest wait behind the player, striking only if it comes into reach.
+ * not; the rest wait behind the player, striking only if it comes into reach. In an encirclement
+ * (ENCIRCLE), it walks round to its seat beside or behind the player and strikes from there.
  */
 public final class FlankGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
@@ -39,6 +41,7 @@ public final class FlankGoal implements Goal<Mob> {
   private final GoalKey<Mob> key;
   private final GoalContext context;
   private final MeleeRhythm rhythm;
+  private final EncircleApproach encircle;
   private boolean isCharging = false;
 
   public FlankGoal(Mob mob, MobKind kind, GoalContext context) {
@@ -47,6 +50,7 @@ public final class FlankGoal implements Goal<Mob> {
     this.context = Objects.requireNonNull(context, "FlankGoal.context");
     this.key = GoalKey.of(Mob.class, new NamespacedKey(context.plugin(), "flank"));
     this.rhythm = new MeleeRhythm(context.tools().timing().clock());
+    this.encircle = new EncircleApproach(context);
   }
 
   @Override
@@ -122,8 +126,12 @@ public final class FlankGoal implements Goal<Mob> {
   }
 
   private void flank(Player target) {
-    PlayerPose pose = PoseReader.poseOf(target);
     mob.lookAt(target);
+    if (context.roles().tacticOf(self()) == CombatTactic.ENCIRCLE) {
+      fightFromSeat(target);
+      return;
+    }
+    PlayerPose pose = PoseReader.poseOf(target);
     walkRoundIfDue(target, pose);
     strikeIfOutOfSight(target, pose);
   }
@@ -175,6 +183,36 @@ public final class FlankGoal implements Goal<Mob> {
     }
     context.tools().weapons().melee().strike(mob, target, executedAttack());
     rhythm.markStrike();
+  }
+
+  private void fightFromSeat(Player target) {
+    if (rhythm.shouldRepath()) {
+      encircle.advance(mob, target, Role.FLANK);
+      rhythm.markRepath();
+    }
+    if (!rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
+      return;
+    }
+    FlankStrike strike = strikeFromSeat(target);
+    if (strike == FlankStrike.HOLD_FIRE) {
+      return;
+    }
+    context.tools().weapons().melee().strike(mob, target, seatAttack(strike));
+    rhythm.markStrike();
+  }
+
+  private FlankStrike strikeFromSeat(Player target) {
+    Vec3 position = PoseReader.positionOf(mob.getLocation());
+    boolean isInShieldArc =
+        context.tools().waypoints().isInShieldArc(PoseReader.poseOf(target), position);
+    return FlankStrike.of(isInShieldArc, target.isBlocking());
+  }
+
+  // The attack that lands is the one recorded: from the player's front it is a head-on hit.
+  private Attack seatAttack(FlankStrike strike) {
+    return kind == MobKind.ZOMBIE && strike == FlankStrike.HEAD_ON
+        ? Attack.ZOMBIE_FRONT_STRIKE
+        : executedAttack();
   }
 
   // A flanker strikes from out of the player's sight, which is what the flank strike is (CT-16).

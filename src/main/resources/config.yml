@@ -194,6 +194,14 @@ pack:
   # Durante estos ticks tras soltar un turno, el mob cede el siguiente a quien no lo acaba de tener;
   # sin nadie más libre, lo vuelve a tomar enseguida. Entero, 0 o más.
   attack-turn-rest-ticks: 30
+  # Cerco: cada zombie y araña con rol de ataque tiene su lugar alrededor del jugador. Radio de los
+  # lugares de golpe, mayor que 0 y hasta la distancia de golpe (2,0).
+  encircle-strike-radius-blocks: 1.7
+  # Separación entre lugares, mayor que 0 y hasta el doble del radio; con el radio define cuántos
+  # entran (1,7 sobre 1,7 da 6). Los que no entran esperan a wait-margin-blocks del alcance del jugador.
+  encircle-seat-spacing-blocks: 1.7
+  # Mayor que 0. Un aliado más cerca que esto molesta: el mob sigue hasta su lugar aunque ya pueda pegar.
+  encircle-crowding-blocks: 1.5
 
 neural:
   # Escribir plugins/MobAI/neural/<red>/experience.jsonl para el entrenador. false: no se escribe.

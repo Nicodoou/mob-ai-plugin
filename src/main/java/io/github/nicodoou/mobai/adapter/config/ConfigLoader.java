@@ -196,7 +196,10 @@ public final class ConfigLoader {
         number(root, "pack.max-chase-blocks"),
         wholeNumber(root, "pack.attack-turns"),
         wholeNumber(root, "pack.attack-turn-timeout-ticks"),
-        wholeNumber(root, "pack.attack-turn-rest-ticks"));
+        wholeNumber(root, "pack.attack-turn-rest-ticks"),
+        number(root, "pack.encircle-strike-radius-blocks"),
+        number(root, "pack.encircle-seat-spacing-blocks"),
+        number(root, "pack.encircle-crowding-blocks"));
   }
 
   private NeuralSettings neural(ConfigurationSection root) {

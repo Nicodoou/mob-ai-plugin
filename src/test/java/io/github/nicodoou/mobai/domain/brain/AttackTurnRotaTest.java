@@ -41,7 +41,9 @@ class AttackTurnRotaTest {
 
   private final AttackTurnRota rota =
       new AttackTurnRota(
-          () -> new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 2, TIMEOUT_TICKS, REST_TICKS));
+          () ->
+              new PackSettings(
+                  8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 2, TIMEOUT_TICKS, REST_TICKS, 1.7, 1.7, 1.5));
   private final GroupSnapshotBuilder snapshot =
       new GroupSnapshotBuilder()
           .withTick(TICK)

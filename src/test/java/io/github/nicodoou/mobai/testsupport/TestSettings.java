@@ -61,7 +61,7 @@ public final class TestSettings {
 
   /** The pack section of the shipped config.yml. */
   public static PackSettings pack() {
-    return new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 3, 60, 30);
+    return new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 3, 60, 30, 1.7, 1.7, 1.5);
   }
 
   /** The neural section of the shipped config.yml. */
