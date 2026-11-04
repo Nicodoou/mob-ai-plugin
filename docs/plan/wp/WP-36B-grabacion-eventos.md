@@ -45,6 +45,9 @@ Este WP no toca el dominio ni cambia el comportamiento de los mobs.
 6. **Sin grabación activa, cada evento solo cuesta comprobarlo.**
 7. **Orden con `DeathListener`:** al morir, un mob sale de su grupo en un listener con la misma prioridad. `RecordingListener` se registra **antes** en la lista de `AdapterServices.listeners`, para encontrar al grupo todavía. La prueba en el server lo confirma.
 8. **Solo mira:** prioridad `MONITOR` y `ignoreCancelled = false`. No cancela ni modifica nada.
+9. **Correcciones de la revisión del WP-36A:**
+   - en `PluginRuntime.runTick`, `combatSampler().tick(now)` pasa a ser **la última línea**: si la grabación falla, no puede impedir que se cure a los mobs ni que se guarde la memoria;
+   - falta una prueba: en la revisión, hacer que `isFullForAll` ignore la configuración no hizo fallar ninguna.
 
 ## Archivos
 
@@ -55,7 +58,8 @@ Este WP no toca el dominio ni cambia el comportamiento de los mobs.
 | Modificar | `src/main/java/io/github/nicodoou/mobai/adapter/debug/CombatSample.java` |
 | Modificar | `src/main/java/io/github/nicodoou/mobai/adapter/recording/CombatSampler.java`, `SamplerParts.java` |
 | Modificar | `src/main/java/io/github/nicodoou/mobai/adapter/translate/VersionTranslator.java` (`entityName`) |
-| Modificar | `src/main/java/io/github/nicodoou/mobai/bootstrap/AdapterServices.java` (solo armado) |
+| Modificar | `src/main/java/io/github/nicodoou/mobai/bootstrap/AdapterServices.java` (solo armado), `PluginRuntime.java` (regla 9) |
+| Modificar | `src/test/java/io/github/nicodoou/mobai/adapter/debug/RecordingSelectionTest.java` |
 | Crear | `src/test/java/io/github/nicodoou/mobai/adapter/recording/RecordingScopeTest.java` |
 | Modificar | `src/test/java/io/github/nicodoou/mobai/adapter/debug/CombatSampleLinesTest.java` |
 | Modificar | `docs/arquitectura.md`, `docs/actualizar-paper.md` |
@@ -226,6 +230,10 @@ Con `ActiveGroups`, `RoleRegistry`, `RecipeBase` y `TraceLevels` reales. Un grup
 | `aTrainingPlayerIsRecordedWhileActive` | `setAll(FULL)`, sin grupos, Alice en entrenamiento | `true` |
 | `aBystanderIsNotRecorded` | `setAll(FULL)`, Bob sin orden ni entrenamiento | `false` |
 
+### `RecordingSelectionTest` (1 nueva)
+
+`theConfiguredDefaultIsActiveWithoutGroups`: configuración `FULL`, sin candidatos: sin grupos; activa.
+
 ### `CombatSampleLinesTest` (2 nuevas)
 
 - `aDamageSampleKeepsItsCauseAndAttacker`: `DamageSample` con causa `"FIRE_TICK"` y un autor: la línea empieza con `{"kind":"DamageSample"` y contiene la causa y el UUID del autor.
@@ -240,6 +248,7 @@ Con `ActiveGroups`, `RoleRegistry`, `RecipeBase` y `TraceLevels` reales. Un grup
 | 1 | En `recordsPlayer`, sacar `if (!isActive()) return false` | `nothingIsRecordedWhenOff` |
 | 2 | En `recordsPlayer`, no filtrar por grupo grabado | `aTargetOfAnUnrecordedGroupIsNotRecorded` |
 | 3 | En `recordedGroupOf`, no mirar el nivel | `aMobOfAnotherLevelIsNotRecorded` |
+| 4 | En `TraceLevels.isFullForAll`, `levelForAll.orElse(TraceLevel.OFF)` | `theConfiguredDefaultIsActiveWithoutGroups` |
 
 ## Verificación en el server (Opus, después del merge)
 
@@ -253,12 +262,13 @@ Con `ActiveGroups`, `RoleRegistry`, `RecipeBase` y `TraceLevels` reales. Un grup
 ## Procedimiento
 
 1. Rama `wp-36b-grabacion-eventos` desde `origin/main` actualizado.
-2. `CombatSample`, `RecordingScope`, sus pruebas y `CombatSampler` usándolo. Commit: `feat: one rule for who the recording follows (CT-36)`.
-3. `VersionTranslator.entityName`, `RecordingListener` y `AdapterServices`. Commit: `feat: record damage, deaths and player actions (CT-36)`.
-4. Documentos. Commit: `docs: recorded events in the architecture and the Paper map`.
-5. Pruebas que muerden (de a una; sin commit).
-6. `./gradlew spotlessApply` y `./gradlew build jacocoTestReport jacocoTestCoverageVerification --no-daemon` en verde. **Nunca** `./gradlew --stop` ni `runServer`.
-7. Push, PR `WP-36B: recorded damage, deaths and player actions (CT-36)`, CI en verde e informe con la prueba exacta que falló en cada rotura.
+2. La regla 9 (`PluginRuntime` y la prueba). Commit: `fix: a recording failure cannot block saving (CT-36)`.
+3. `CombatSample`, `RecordingScope`, sus pruebas y `CombatSampler` usándolo. Commit: `feat: one rule for who the recording follows (CT-36)`.
+4. `VersionTranslator.entityName`, `RecordingListener` y `AdapterServices`. Commit: `feat: record damage, deaths and player actions (CT-36)`.
+5. Documentos. Commit: `docs: recorded events in the architecture and the Paper map`.
+6. Pruebas que muerden (de a una; sin commit).
+7. `./gradlew spotlessApply` y `./gradlew build jacocoTestReport jacocoTestCoverageVerification --no-daemon` en verde. **Nunca** `./gradlew --stop` ni `runServer`.
+8. Push, PR `WP-36B: recorded damage, deaths and player actions (CT-36)`, CI en verde e informe con la prueba exacta que falló en cada rotura.
 
 ## Correcciones permitidas
 
@@ -277,6 +287,6 @@ Con `ActiveGroups`, `RoleRegistry`, `RecipeBase` y `TraceLevels` reales. Un grup
 ## Aceptación
 
 - [ ] Exactamente los archivos indicados.
-- [ ] Las 10 pruebas nuevas, en verde; la suite completa en verde, sin cambios en pruebas existentes.
-- [ ] Las 3 roturas mordieron.
+- [ ] Las 11 pruebas nuevas, en verde; la suite completa en verde, sin cambios en pruebas existentes.
+- [ ] Las 4 roturas mordieron.
 - [ ] Build, cobertura y CI en verde.

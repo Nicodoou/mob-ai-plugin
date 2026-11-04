@@ -1040,3 +1040,25 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** `ChaseLeash` no guarda estado y sus pruebas tienen números calculados. La retirada aprendida casi no agrega ramas al cerebro.
 - **Lo flojo:** `reinIn` quedó en unas 23 líneas. El comentario de `Role.java` quedó incompleto, porque olvidé ese archivo en el WP. `GatherGoal` no tiene prueba unitaria, como el resto de los goals.
 - **Riesgos:** justo en el límite de la correa pueden ir y venir, y al volver todos al mismo punto pueden amontonarse y comerse el barrido. Hay que confirmarlo en el juego.
+
+## WP-36A — Grabación del combate: muestras periódicas (PR #79, Sonnet) — CT-36
+
+**Qué hizo.**
+- **`CombatSampler`** (`adapter/recording`): con el nivel `full`, cada `debug.recording-interval-ticks` escribe una línea por grupo, mob y jugador, en el mismo `trace-<tick>.jsonl`.
+- **`CombatSample`, `PackShape` y `RecordingSelection`** (`adapter/debug`): los datos y la lógica pura de qué se graba.
+- **`TraceWriter`:** suma las muestras sin pasar por `TraceHub`, para no llenar la caja negra.
+
+**Revisión.**
+- **Sobre `main` en 26.1.2:** el subagente partió de 26.3; hice el merge en mi worktree y da verde, con 1185 pruebas y la cobertura.
+- **Desvíos aceptados:**
+  - `getItemInUse` está deprecada para eliminación y `-Werror` no compila con ella: usa `hasActiveItem`, `getActiveItem` y `getActiveItemUsedTime`;
+  - `Player.isOnGround` está deprecada sin reemplazo: queda en un helper con `@SuppressWarnings` y un comentario;
+  - `clampHealth` privado, porque el de `EntityReadings` es del paquete;
+  - `playerSample` y `mobSample` pasan las 20 líneas: son una sola llamada a un constructor largo.
+- **Roturas:** las 4 del WP, según el informe. De mis 4, mordieron 3. La que hace que `isFullForAll` ignore la configuración no mordió: la prueba se suma en el WP-36B.
+- **Archivos de prueba:** `config.yml` de prueba y `config-de-prueba.yml` actualizados.
+
+**Opinión del código.**
+- **Lo bueno:** la lógica pura está separada y probada; cuando no se graba solo cuesta una cuenta por tick; un mismo archivo guarda toda la línea de tiempo.
+- **Lo flojo:** `CombatSampler` no tiene prueba unitaria. Va antes de curar y guardar en `runTick`, así que si falla puede frenarlos: mi WP lo pedía así, y se corrige en el WP-36B.
+- **Riesgo:** el tamaño real por hora está sin medir.
