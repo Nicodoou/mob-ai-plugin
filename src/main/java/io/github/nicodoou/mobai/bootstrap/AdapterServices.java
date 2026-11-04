@@ -45,6 +45,8 @@ import io.github.nicodoou.mobai.adapter.listener.EntityLifecycleListener;
 import io.github.nicodoou.mobai.adapter.listener.ProjectileListener;
 import io.github.nicodoou.mobai.adapter.listener.TargetListener;
 import io.github.nicodoou.mobai.adapter.listener.ThreatListener;
+import io.github.nicodoou.mobai.adapter.recording.CombatSampler;
+import io.github.nicodoou.mobai.adapter.recording.SamplerParts;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionApplier;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionParts;
 import io.github.nicodoou.mobai.adapter.scheduler.DecisionScheduler;
@@ -90,7 +92,8 @@ public record AdapterServices(
     DebugLog debugLog,
     RecoveryHealer recoveryHealer,
     ProjectileResolver projectileResolver,
-    TrainingDataLog trainingDataLog) {
+    TrainingDataLog trainingDataLog,
+    CombatSampler combatSampler) {
   private static final String TRAINING_DATA_FILE = "training-data.jsonl";
   private static final String DEBUG_FOLDER = "debug";
   private static final String TRACE_FILE_PREFIX = "trace-";
@@ -123,7 +126,21 @@ public record AdapterServices(
         new RecoveryHealer(parts.roles(), new HealSchedule()),
         new ProjectileResolver(
             parts.tracker(), parts.debug().hub(), core.settings().section(MobAiSettings::attack)),
-        trainingDataLog);
+        trainingDataLog,
+        combatSampler(core, parts));
+  }
+
+  private static CombatSampler combatSampler(CoreServices core, SharedParts parts) {
+    return new CombatSampler(
+        new SamplerParts(
+            core.activeGroups(),
+            parts.roles(),
+            parts.debug().outputs().levels(),
+            parts.debug().outputs().traceWriter(),
+            parts.movement(),
+            parts.translator(),
+            core.recipeBase(),
+            core.settings().section(MobAiSettings::debug)));
   }
 
   private static TrainingDataLog trainingDataLog(Plugin plugin, CoreServices core, Logger logger) {
