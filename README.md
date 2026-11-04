@@ -3,10 +3,10 @@
 **Mobs hostiles que pelean en grupo, con roles, y que aprenden de cada jugador.**
 
 ![Versión](https://img.shields.io/badge/versión-1.0_MVP-6a4fb3)
-![Paper](https://img.shields.io/badge/Paper-26.3-2f7d4f)
+![Paper](https://img.shields.io/badge/Paper-26.1.2-2f7d4f)
 ![Java](https://img.shields.io/badge/Java-25-b07219)
 
-MobAI es un plugin para servidores **Paper 26.3**. Los zombies, esqueletos y arañas dejan de pelear cada uno por su cuenta: se organizan en **grupos**, eligen a quién atacar, se reparten **roles** (presionar, flanquear, disparar, retirarse) y **recuerdan qué les funcionó contra cada jugador**. Si siempre bloqueás de frente, el grupo aprende a buscarte la espalda; si cargás golpes lentos, aprende a esquivarlos; si los destrozás, aprende a cuidarse más.
+MobAI es un plugin para servidores **Paper 26.1.2**. Los zombies, esqueletos y arañas dejan de pelear cada uno por su cuenta: se organizan en **grupos**, eligen a quién atacar, se reparten **roles** (presionar, flanquear, disparar, retirarse) y **recuerdan qué les funcionó contra cada jugador**. Si siempre bloqueás de frente, el grupo aprende a buscarte la espalda; si cargás golpes lentos, aprende a esquivarlos; si los destrozás, aprende a cuidarse más.
 
 > **Versión 1.0 — MVP.** Es la primera versión completa: tres tipos de mob, grupos con cerebro, memoria por jugador y dos formas de planificar. Va a seguir creciendo (ver [Hoja de ruta](#hoja-de-ruta)).
 
@@ -256,7 +256,7 @@ Todos requieren el permiso **`mobai.admin`**.
 
 ## Instalación
 
-**Requisitos:** servidor **Paper 26.3** con **Java 25**.
+**Requisitos:** servidor **Paper 26.1.2** con **Java 25**.
 
 1. Copiá `MobAI-<versión>.jar` en la carpeta `plugins/` del server.
 2. Iniciá el server. Se crean `plugins/MobAI/config.yml` y `plugins/MobAI/messages.yml`.

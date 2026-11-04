@@ -26,6 +26,8 @@ Es para la tercera edición de un server de Minecraft entre amigos, que arranca 
 | MobGoals en 26.3 | Interfaz completa en el Javadoc de 26.3, sin marca de deprecada ni experimental; `getGoal` puede devolver nulo | [Javadoc paper-api 26.3](https://jd.papermc.io/paper/com/destroystokyo/paper/entity/ai/MobGoals.html) |
 | Estado de 26.3 | Minecraft 26.3 salió el 15/09/2026; Paper 26.3 pasó de builds experimentales a beta | [mc-node.net](https://mc-node.net/blog/en/minecraft-26-3-server-breaking-changes/) |
 
+**Temporal (CT-35, 3 nov 2026):** mientras se entrena con bots, el plugin se compila y se prueba contra Paper 26.1.2, la última versión que soporta Mineflayer. Al terminar se vuelve a 26.3.
+
 **Decisión:** se desarrolla contra Paper 26.3 con Java 25 y la versión se congela un mes antes del lanzamiento. Si sale una versión nueva de Minecraft cerca de diciembre, se actualiza después del lanzamiento.
 
 ## Alcance

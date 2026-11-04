@@ -5,6 +5,7 @@ build/
 
 # Test server created by runServer (server config and real memories stay out of the repo)
 run/
+run-bots/
 
 # IDE
 .idea/

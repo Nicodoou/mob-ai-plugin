@@ -17,9 +17,9 @@ Regla de los adaptadores: lo que depende de la versión se averigua con `Version
 
 | Archivo | Qué cambiar | Hoy |
 | --- | --- | --- |
-| `gradle/libs.versions.toml` | `paper-api` | `26.3.build.151-beta` |
-| `build.gradle.kts` | `tasks.runServer { minecraftVersion(...) }` | `26.3` |
-| `src/main/resources/plugin.yml` | `api-version` | `'26.3'` |
+| `gradle/libs.versions.toml` | `paper-api` | `26.1.2.build.74-stable` (CT-35, temporal) |
+| `build.gradle.kts` | `tasks.runServer { minecraftVersion(...) }` | `26.1.2`, con carpeta `run-bots` (CT-35, temporal) |
+| `src/main/resources/plugin.yml` | `api-version` | `'26.1.2'` |
 
 Si la versión nueva pide otro Java, también `java.toolchain` y `options.release` en `build.gradle.kts`, y `java-version` en `.github/workflows/build.yml`.
 
