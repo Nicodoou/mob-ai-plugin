@@ -40,7 +40,7 @@ public final class RoleRegistry {
     return sourceOf(mob).tactic();
   }
 
-  /** The group of a mob that has an order; a mob without one belongs to none yet. */
+  /** The group a mob's order came from; ask only about a mob known to have an order. */
   public GroupId groupOf(MobId mob) {
     return sourceOf(mob).group();
   }
