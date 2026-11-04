@@ -1,6 +1,8 @@
 package io.github.nicodoou.mobai.domain.brain;
 
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
+import io.github.nicodoou.mobai.domain.neural.NeuralPlanner;
+import io.github.nicodoou.mobai.domain.neural.PolicyLibrary;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyFactory;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
@@ -27,7 +29,8 @@ public record BrainParts(
     RegroupWindow regroupWindow,
     RallyPointRule rallyPointRule,
     RecipePlanner recipePlanner,
-    TraitLedger traitLedger) {
+    TraitLedger traitLedger,
+    NeuralPlanner neuralPlanner) {
   public BrainParts {
     Objects.requireNonNull(targetSelector, "BrainParts.targetSelector");
     Objects.requireNonNull(spiderTargetRule, "BrainParts.spiderTargetRule");
@@ -41,6 +44,7 @@ public record BrainParts(
     Objects.requireNonNull(rallyPointRule, "BrainParts.rallyPointRule");
     Objects.requireNonNull(recipePlanner, "BrainParts.recipePlanner");
     Objects.requireNonNull(traitLedger, "BrainParts.traitLedger");
+    Objects.requireNonNull(neuralPlanner, "BrainParts.neuralPlanner");
   }
 
   /** The one way the plugin, the tests and incident replays assemble a brain. */
@@ -60,6 +64,7 @@ public record BrainParts(
         regroupWindow,
         new RallyPointRule(() -> settings.get().retreat()),
         new RecipePlanner(settings, random, new RecipeBase()),
-        new TraitLedger(() -> settings.get().learning()));
+        new TraitLedger(() -> settings.get().learning()),
+        new NeuralPlanner(new PolicyLibrary(), random, () -> settings.get().neural()));
   }
 }

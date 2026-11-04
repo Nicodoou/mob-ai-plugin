@@ -6,7 +6,8 @@ public enum Role {
   SHOOT,
   RETREAT,
   // Only in orders: FALL_BACK, HOLD_FIRE and VOLLEY in a volley plan (CT-23), GATHER for a fighter
-  // that ran ahead of its pack (CT-32). A plan never stores them.
+  // that ran ahead of its pack (CT-32). A plan never stores them, except FALL_BACK and HOLD_FIRE
+  // in a neural plan, where the network chooses them directly.
   FALL_BACK,
   HOLD_FIRE,
   VOLLEY,

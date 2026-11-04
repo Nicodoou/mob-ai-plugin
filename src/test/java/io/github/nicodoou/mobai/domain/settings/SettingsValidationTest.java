@@ -242,7 +242,8 @@ class SettingsValidationTest {
         defaults.volley(),
         defaults.success(),
         learning,
-        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+        TestSettings.neural());
   }
 
   private static LearningSettings learning(
@@ -333,7 +334,8 @@ class SettingsValidationTest {
                     defaults.volley(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
-                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0)))
+                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+                    TestSettings.neural()))
         .isInstanceOf(NullPointerException.class)
         .hasMessage("MobAiSettings.memory");
   }
@@ -358,7 +360,8 @@ class SettingsValidationTest {
                     defaults.volley(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
-                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0)))
+                    new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+                    TestSettings.neural()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage(
             "RetreatSettings.recoveryHealthFraction must exceed PlanSettings.retreatHealthFraction, got 0.3 <= 0.3");

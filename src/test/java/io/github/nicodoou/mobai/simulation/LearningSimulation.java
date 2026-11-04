@@ -22,6 +22,8 @@ import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.memory.AttackObservation;
 import io.github.nicodoou.mobai.domain.memory.GroupMemory;
 import io.github.nicodoou.mobai.domain.memory.StrategyObservation;
+import io.github.nicodoou.mobai.domain.neural.NeuralPlanner;
+import io.github.nicodoou.mobai.domain.neural.PolicyLibrary;
 import io.github.nicodoou.mobai.domain.port.RandomSource;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyFactory;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
@@ -157,7 +159,8 @@ final class LearningSimulation {
           base.volley(),
           new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
           base.learning(),
-          new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+          new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+          TestSettings.neural());
     }
 
     private Group newGroup() {
@@ -185,7 +188,8 @@ final class LearningSimulation {
               regroupWindow,
               new RallyPointRule(settings::retreat),
               new RecipePlanner(() -> settings, brainRandom, new RecipeBase()),
-              new TraitLedger(settings::learning)));
+              new TraitLedger(settings::learning),
+              new NeuralPlanner(new PolicyLibrary(), brainRandom, settings::neural)));
     }
 
     private void advance() {

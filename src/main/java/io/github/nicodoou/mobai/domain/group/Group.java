@@ -9,6 +9,7 @@ import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.threat.ThreatLedger;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class Group {
   private final GroupId id;
@@ -17,6 +18,8 @@ public final class Group {
   private final PendingEvents events = new PendingEvents();
   private final GroupRoster roster;
   private final PlanLifecycle lifecycle;
+  // null unless an arena gave the group its own network; exposed only as Optional
+  private NeuralAssignment neuralAssignment;
 
   public Group(GroupId id, SelectionPolicyType policy, GroupKnowledge knowledge) {
     this.id = Objects.requireNonNull(id, "Group.id");
@@ -48,6 +51,22 @@ public final class Group {
 
   public PlanLifecycle lifecycle() {
     return lifecycle;
+  }
+
+  public Optional<NeuralAssignment> neuralAssignment() {
+    return Optional.ofNullable(neuralAssignment);
+  }
+
+  public void assignNeural(NeuralAssignment assignment) {
+    neuralAssignment = Objects.requireNonNull(assignment, "Group.neuralAssignment");
+  }
+
+  public CombatTactic tactic() {
+    return neuralAssignment().map(NeuralAssignment::tactic).orElse(CombatTactic.NONE);
+  }
+
+  public void report(DomainEvent event) {
+    events.add(event);
   }
 
   public void removeMember(MobId mobId, long tick) {

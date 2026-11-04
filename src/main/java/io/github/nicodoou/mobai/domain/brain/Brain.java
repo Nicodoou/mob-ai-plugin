@@ -6,6 +6,7 @@ import io.github.nicodoou.mobai.domain.decision.ClosedPlan;
 import io.github.nicodoou.mobai.domain.decision.GroupDecision;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
 import io.github.nicodoou.mobai.domain.decision.StrategyCheck;
+import io.github.nicodoou.mobai.domain.event.NeuralDecided;
 import io.github.nicodoou.mobai.domain.group.DangerLevel;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupState;
@@ -19,6 +20,9 @@ import io.github.nicodoou.mobai.domain.group.Regrouping;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.DangerRecord;
+import io.github.nicodoou.mobai.domain.neural.NeuralContext;
+import io.github.nicodoou.mobai.domain.neural.NeuralPlanner;
+import io.github.nicodoou.mobai.domain.neural.NeuralStep;
 import io.github.nicodoou.mobai.domain.selection.SelectionCandidate;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicy;
 import io.github.nicodoou.mobai.domain.selection.SelectionResult;
@@ -192,10 +196,53 @@ public final class Brain {
 
   // The planner is read every decision, so /mobai reload switches it for the next plan.
   private void openPlan(Turn turn, PlayerId target) {
+    if (turn.group().neuralAssignment().isPresent()) {
+      startNeuralPlan(turn, target);
+      return;
+    }
     switch (settings.get().learning().planner()) {
       case STRATEGIES -> startPlan(turn, chooseStrategy(turn, target), target);
       case RECIPES -> startRecipePlan(turn, planRecipe(turn, target), target);
+      case NEURAL -> startNeuralPlan(turn, target);
     }
+  }
+
+  private void startNeuralPlan(Turn turn, PlayerId target) {
+    Map<MobId, Role> roles = new LinkedHashMap<>();
+    for (NeuralStep step : askNetwork(turn, NeuralContext.opening(target))) {
+      roles.put(step.mob(), step.action().role());
+    }
+    beginPlan(
+        turn,
+        new PlanStart(
+            NeuralPlanner.STRATEGY_ID,
+            target,
+            roles,
+            targetMaxHealth(turn, target),
+            turn.snapshot().tick(),
+            Optional.empty()));
+  }
+
+  private void continueNeuralPlan(Turn turn) {
+    NeuralContext context = NeuralContext.during(currentPlan(turn), turn.snapshot().tick());
+    for (NeuralStep step : askNetwork(turn, context)) {
+      turn.lifecycle().assignRole(step.mob(), step.action().role());
+    }
+  }
+
+  private List<NeuralStep> askNetwork(Turn turn, NeuralContext context) {
+    NeuralPlanner planner = parts.neuralPlanner();
+    String network = planner.networkOf(turn.group());
+    long tick = turn.snapshot().tick();
+    List<NeuralStep> steps = planner.decide(network, turn.snapshot(), context);
+    turn.group().report(new NeuralDecided(turn.group().id(), tick, network, steps));
+    return steps;
+  }
+
+  // The network owns every role of its plan, so the health and pack rules stay out of it: what the
+  // trainer reads as the chosen action is what the goals execute.
+  private static boolean isNeuralPlan(Plan plan) {
+    return plan.strategy().equals(NeuralPlanner.STRATEGY_ID);
   }
 
   private RecipePlay planRecipe(Turn turn, PlayerId target) {
@@ -250,6 +297,9 @@ public final class Brain {
   }
 
   private void retreatLowHealth(Turn turn) {
+    if (isNeuralPlan(currentPlan(turn))) {
+      return;
+    }
     for (MobSnapshot mob : turn.snapshot().mobs()) {
       if (shouldRetreat(turn, mob)) {
         startRetreat(turn, mob);
@@ -277,6 +327,9 @@ public final class Brain {
     if (endReason.isPresent()) {
       return closeAndEvaluate(turn, endReason.get());
     }
+    if (isNeuralPlan(currentPlan(turn))) {
+      continueNeuralPlan(turn);
+    }
     return Outcome.withOrders(planOrders(turn));
   }
 
@@ -287,6 +340,9 @@ public final class Brain {
   }
 
   private void updateRoles(Turn turn) {
+    if (isNeuralPlan(currentPlan(turn))) {
+      return;
+    }
     for (MobSnapshot mob : turn.snapshot().mobs()) {
       updateRole(turn, mob);
     }
@@ -448,6 +504,9 @@ public final class Brain {
     List<RoleAssignment> orders =
         turn.snapshot().mobs().stream().map(mob -> orderFor(turn, mob)).toList();
     Plan plan = currentPlan(turn);
+    if (isNeuralPlan(plan)) {
+      return orders;
+    }
     List<RoleAssignment> leashed = chaseLeash.reinIn(orders, turn.snapshot(), plan);
     return packCohesion.closeRanks(leashed, turn.snapshot(), plan.target());
   }

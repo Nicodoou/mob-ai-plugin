@@ -78,6 +78,14 @@ public final class BrainFixture {
         TestSettings.withRecipes());
   }
 
+  /** Thompson sampling with the neural planner switched on. */
+  public static BrainFixture seededWithNeural(long seed) {
+    return new BrainFixture(
+        SelectionPolicyType.THOMPSON_SAMPLING,
+        new SeededRandomSource(seed),
+        TestSettings.withNeural());
+  }
+
   public Group group() {
     return group;
   }

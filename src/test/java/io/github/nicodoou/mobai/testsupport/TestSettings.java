@@ -2,12 +2,14 @@ package io.github.nicodoou.mobai.testsupport;
 
 import io.github.nicodoou.mobai.domain.group.PlanScoring;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
+import io.github.nicodoou.mobai.domain.settings.ArenaSettings;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.settings.DebugSettings;
 import io.github.nicodoou.mobai.domain.settings.GroupSettings;
 import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.NeuralSettings;
 import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
@@ -19,12 +21,17 @@ import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
 import io.github.nicodoou.mobai.domain.settings.VolleySettings;
+import java.util.List;
 
 public final class TestSettings {
   private TestSettings() {}
 
   public static MobAiSettings defaults() {
     return withPlanner(PlannerKind.STRATEGIES);
+  }
+
+  public static MobAiSettings withNeural() {
+    return withPlanner(PlannerKind.NEURAL);
   }
 
   public static MobAiSettings withRecipes() {
@@ -46,7 +53,39 @@ public final class TestSettings {
         new VolleySettings(60, 20, 30, 1.5),
         new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
         new LearningSettings(planner, 0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000, 600, 0.6, 0.0),
-        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+        neural());
+  }
+
+  /** The neural section of the shipped config.yml. */
+  public static NeuralSettings neural() {
+    return new NeuralSettings(
+        true,
+        "default",
+        100,
+        new ArenaSettings(
+            List.of(
+                "turnos-1",
+                "turnos-2",
+                "turnos-3",
+                "turnos-4",
+                "presion-1",
+                "presion-2",
+                "presion-3",
+                "presion-4",
+                "cerco-1",
+                "cerco-2",
+                "cerco-3",
+                "cerco-4",
+                "relevo-1",
+                "relevo-2",
+                "relevo-3",
+                "relevo-4"),
+            1000,
+            5000,
+            5000,
+            4,
+            20.0));
   }
 
   public static PlanScoring scoring() {

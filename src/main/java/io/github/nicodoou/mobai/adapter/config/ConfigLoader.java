@@ -1,12 +1,14 @@
 package io.github.nicodoou.mobai.adapter.config;
 
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
+import io.github.nicodoou.mobai.domain.settings.ArenaSettings;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.settings.DebugSettings;
 import io.github.nicodoou.mobai.domain.settings.GroupSettings;
 import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
+import io.github.nicodoou.mobai.domain.settings.NeuralSettings;
 import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
@@ -19,6 +21,7 @@ import io.github.nicodoou.mobai.domain.settings.TargetSettings;
 import io.github.nicodoou.mobai.domain.settings.TraceLevel;
 import io.github.nicodoou.mobai.domain.settings.VolleySettings;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -42,7 +45,8 @@ public final class ConfigLoader {
           volley(root),
           success(root),
           learning(root),
-          pack(root));
+          pack(root),
+          neural(root));
     } catch (IllegalArgumentException exception) {
       throw new InvalidConfigException("config.yml: " + exception.getMessage(), exception);
     }
@@ -179,6 +183,49 @@ public final class ConfigLoader {
         number(root, "pack.wait-margin-blocks"),
         number(root, "pack.min-chase-blocks"),
         number(root, "pack.max-chase-blocks"));
+  }
+
+  private NeuralSettings neural(ConfigurationSection root) {
+    return new NeuralSettings(
+        flag(root, "neural.experience-enabled"),
+        text(root, "neural.default-network"),
+        wholeNumber(root, "neural.policy-check-interval-ticks"),
+        arena(root));
+  }
+
+  private ArenaSettings arena(ConfigurationSection root) {
+    return new ArenaSettings(
+        texts(root, "arena.names"),
+        Math.toIntExact(wholeNumber(root, "arena.spacing-blocks")),
+        Math.toIntExact(wholeNumber(root, "arena.origin-x")),
+        Math.toIntExact(wholeNumber(root, "arena.origin-z")),
+        Math.toIntExact(wholeNumber(root, "arena.chunk-radius")),
+        number(root, "arena.spawn-distance-blocks"));
+  }
+
+  private boolean flag(ConfigurationSection root, String path) {
+    Object value = requirePresent(root, path);
+    if (!(value instanceof Boolean flag)) {
+      throw new InvalidConfigException(
+          "config.yml: " + path + " must be true or false, got " + value);
+    }
+    return flag;
+  }
+
+  private String text(ConfigurationSection root, String path) {
+    Object value = requirePresent(root, path);
+    if (!(value instanceof String text)) {
+      throw new InvalidConfigException("config.yml: " + path + " must be text, got " + value);
+    }
+    return text;
+  }
+
+  private List<String> texts(ConfigurationSection root, String path) {
+    Object value = requirePresent(root, path);
+    if (!(value instanceof List<?> items)) {
+      throw new InvalidConfigException("config.yml: " + path + " must be a list, got " + value);
+    }
+    return items.stream().map(String::valueOf).toList();
   }
 
   private double number(ConfigurationSection root, String path) {

@@ -425,7 +425,8 @@ class RecipePlannerTest {
             settings.volley(),
             settings.success(),
             changed,
-            new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+            new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+            TestSettings.neural());
     return new RecipePlanner(() -> changedSettings, new ScriptedRandomSource(), base);
   }
 

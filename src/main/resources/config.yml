@@ -127,7 +127,9 @@ success:
   danger-prior-damage: 10.0
 
 learning:
-  # Quién decide los planes (CT-30): "STRATEGIES" (las 4 estrategias de siempre) o "RECIPES" (recetas aprendidas).
+  # Quién decide los planes (CT-30): "STRATEGIES" (las 4 estrategias de siempre), "RECIPES" (recetas
+  # aprendidas) o "NEURAL" (una red elige el rol de cada mob en cada decisión). Un grupo de arena
+  # usa siempre su red, diga lo que diga este valor.
   planner: "STRATEGIES"
   # Modelo de recetas, calibrado con la simulación (docs/plan/calibracion-recetas.md).
   model-noise-variance: 0.01
@@ -166,3 +168,40 @@ pack:
   # dos valores.
   min-chase-blocks: 8.0
   max-chase-blocks: 32.0
+
+neural:
+  # Escribir plugins/MobAI/neural/<red>/experience.jsonl para el entrenador. false: no se escribe.
+  experience-enabled: true
+  # La red de los grupos sin red propia cuando planner es "NEURAL" (minúsculas, números, - y _).
+  default-network: "default"
+  # Cada cuántos ticks se mira si cambió algún plugins/MobAI/neural/<red>/policy.json.
+  policy-check-interval-ticks: 100
+
+arena:
+  # Una arena por red. El orden fija su lugar en la grilla: cambiarlo mueve las arenas.
+  names:
+    - "turnos-1"
+    - "turnos-2"
+    - "turnos-3"
+    - "turnos-4"
+    - "presion-1"
+    - "presion-2"
+    - "presion-3"
+    - "presion-4"
+    - "cerco-1"
+    - "cerco-2"
+    - "cerco-3"
+    - "cerco-4"
+    - "relevo-1"
+    - "relevo-2"
+    - "relevo-3"
+    - "relevo-4"
+  # Distancia entre centros de arenas vecinas: que no se vean ni se detecten entre sí.
+  spacing-blocks: 1000
+  # Centro de la primera arena; lejos del spawn del mundo.
+  origin-x: 5000
+  origin-z: 5000
+  # Chunks forzados alrededor del centro, por lado (4 = 81 chunks por arena; 0 a 16).
+  chunk-radius: 4
+  # A qué distancia del jugador aparece el grupo (no más que chunk-radius en bloques).
+  spawn-distance-blocks: 20.0
