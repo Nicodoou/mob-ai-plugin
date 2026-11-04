@@ -71,7 +71,7 @@ public final class GroupDecider {
   // other groups.
   private void applyLogged(Group group, BrainResult result) {
     try {
-      parts.applier().apply(result.decision(), group.roster().members());
+      parts.applier().apply(result.decision(), group.roster().members(), group.tactic());
     } catch (RuntimeException exception) {
       logger.error(
           "MobAI group {} failed to apply its orders at tick {}",

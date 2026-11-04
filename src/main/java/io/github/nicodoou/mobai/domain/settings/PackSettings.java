@@ -9,7 +9,10 @@ public record PackSettings(
     double surroundMarginBlocks,
     double waitMarginBlocks,
     double minChaseBlocks,
-    double maxChaseBlocks) {
+    double maxChaseBlocks,
+    long attackTurns,
+    long attackTurnTimeoutTicks,
+    long attackTurnRestTicks) {
   public PackSettings {
     SettingsChecks.requirePositive("PackSettings.maxSpreadBlocks", maxSpreadBlocks);
     SettingsChecks.requirePositive("PackSettings.engagedDistanceBlocks", engagedDistanceBlocks);
@@ -20,5 +23,8 @@ public record PackSettings(
     SettingsChecks.requireNotAbove(
         new NamedSetting("PackSettings.minChaseBlocks", minChaseBlocks),
         new NamedSetting("PackSettings.maxChaseBlocks", maxChaseBlocks));
+    SettingsChecks.requireAtLeast("PackSettings.attackTurns", attackTurns, 1);
+    SettingsChecks.requireAtLeast("PackSettings.attackTurnTimeoutTicks", attackTurnTimeoutTicks, 1);
+    SettingsChecks.requireAtLeast("PackSettings.attackTurnRestTicks", attackTurnRestTicks, 0);
   }
 }

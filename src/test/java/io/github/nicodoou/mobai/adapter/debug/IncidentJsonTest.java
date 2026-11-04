@@ -65,17 +65,17 @@ class IncidentJsonTest {
 
     JsonObject parsed = JsonParser.parseString(text).getAsJsonObject();
 
-    assertThat(parsed.get("schemaVersion").getAsInt()).isEqualTo(4);
+    assertThat(parsed.get("schemaVersion").getAsInt()).isEqualTo(5);
     assertThat(parsed.get("report").isJsonObject()).isTrue();
   }
 
   @Test
   void unknownSchemaVersionIsRejected() {
     String text = json.write(IncidentFixture.recordedDecision(START_TICK + 20));
-    String otherVersion = text.replace("\"schemaVersion\": 4", "\"schemaVersion\": 1");
+    String otherVersion = text.replace("\"schemaVersion\": 5", "\"schemaVersion\": 1");
 
     assertThatThrownBy(() -> json.read(otherVersion))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Incident file has schema version 1, this plugin reads 4");
+        .hasMessage("Incident file has schema version 1, this plugin reads 5");
   }
 }

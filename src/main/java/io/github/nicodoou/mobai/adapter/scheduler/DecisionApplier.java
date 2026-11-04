@@ -1,8 +1,10 @@
 package io.github.nicodoou.mobai.adapter.scheduler;
 
+import io.github.nicodoou.mobai.adapter.goal.OrderSource;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
 import io.github.nicodoou.mobai.domain.decision.GroupDecision;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.Member;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import java.util.HashMap;
@@ -19,10 +21,11 @@ public final class DecisionApplier {
     this.roles = Objects.requireNonNull(roles, "DecisionApplier.roles");
   }
 
-  public void apply(GroupDecision decision, List<Member> members) {
+  public void apply(GroupDecision decision, List<Member> members, CombatTactic tactic) {
     Map<MobId, RoleAssignment> orders = ordersByMob(decision);
+    OrderSource source = new OrderSource(decision.group(), tactic);
     for (Member member : members) {
-      applyTo(member.id(), orders);
+      applyTo(member.id(), orders, source);
     }
   }
 
@@ -30,13 +33,13 @@ public final class DecisionApplier {
     roles.retainOnly(members);
   }
 
-  private void applyTo(MobId mob, Map<MobId, RoleAssignment> orders) {
+  private void applyTo(MobId mob, Map<MobId, RoleAssignment> orders, OrderSource source) {
     RoleAssignment order = orders.get(mob);
     if (order == null) {
       roles.clear(mob);
       return;
     }
-    roles.assign(order);
+    roles.assign(order, source);
   }
 
   private static Map<MobId, RoleAssignment> ordersByMob(GroupDecision decision) {

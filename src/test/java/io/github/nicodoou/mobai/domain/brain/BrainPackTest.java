@@ -8,7 +8,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.nicodoou.mobai.domain.decision.BrainResult;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.Role;
+import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import io.github.nicodoou.mobai.domain.snapshot.MobSnapshot;
 import io.github.nicodoou.mobai.testsupport.BrainFixture;
@@ -21,6 +23,7 @@ class BrainPackTest {
   private static final List<Integer> ZOMBIES = List.of(0, 1, 2, 3);
   private static final List<Integer> SKELETONS = List.of(4, 5, 6);
   private static final List<Integer> SPIDERS = List.of(7, 8);
+  private static final int FIRST_ZOMBIE_DISTANCE = 3;
   private static final Vec3 ZOMBIE_POSITION = new Vec3(0, 64, 20);
   private static final Vec3 SPIDER_AHEAD_POSITION = new Vec3(0, 64, 10);
   private static final Vec3 SPIDER_CAUGHT_UP_POSITION = new Vec3(0, 64, 14);
@@ -61,6 +64,65 @@ class BrainPackTest {
       assertThat(orders.get(index).role()).isEqualTo(Role.PRESS);
       assertThat(orders.get(index).suggestedAttack()).isPresent();
     }
+  }
+
+  @Test
+  void onlyTheClosestFightersHoldATurnAndTheRolesStay() {
+    fixture.group().assignTactic(CombatTactic.TURNS);
+    List<MobSnapshot> mobs = staggered();
+
+    List<RoleAssignment> orders =
+        fixture.decide(START_TICK, mobs, alice()).decision().assignments();
+
+    assertThat(holders(orders))
+        .containsExactly(mobs.get(0).id(), mobs.get(1).id(), mobs.get(2).id());
+    assertThat(orders.get(3).role()).isEqualTo(Role.PRESS);
+    for (int index : SKELETONS) {
+      assertThat(orders.get(index).holdsAttackTurn()).isFalse();
+    }
+  }
+
+  @Test
+  void aStrikeHandsTheTurnToTheNextClosestFighter() {
+    fixture.group().assignTactic(CombatTactic.TURNS);
+    List<MobSnapshot> mobs = staggered();
+    fixture.decide(START_TICK, mobs, alice());
+
+    fixture.group().recordMeleeStrike(mobs.get(0).id(), START_TICK + 1);
+    List<RoleAssignment> orders =
+        fixture.decide(START_TICK + NEXT_DECISION_TICKS, mobs, alice()).decision().assignments();
+
+    assertThat(holders(orders))
+        .containsExactly(mobs.get(1).id(), mobs.get(2).id(), mobs.get(3).id());
+  }
+
+  @Test
+  void aNewPlanHasNoReleasedTurnsYet() {
+    fixture.group().assignTactic(CombatTactic.TURNS);
+    List<MobSnapshot> mobs = staggered();
+
+    fixture.decide(START_TICK, mobs, alice());
+
+    assertThat(fixture.group().lifecycle().plan().orElseThrow().attackTurns().lastReleaseTicks())
+        .isEmpty();
+  }
+
+  private static List<MobId> holders(List<RoleAssignment> orders) {
+    return orders.stream()
+        .filter(RoleAssignment::holdsAttackTurn)
+        .map(RoleAssignment::mob)
+        .toList();
+  }
+
+  private List<MobSnapshot> staggered() {
+    List<MobSnapshot> mobs = catalog;
+    for (int index : ZOMBIES) {
+      mobs = withPosition(mobs, index, new Vec3(0, 64, FIRST_ZOMBIE_DISTANCE + index));
+    }
+    for (int index : SPIDERS) {
+      mobs = withPosition(mobs, index, new Vec3(0, 64, FIRST_ZOMBIE_DISTANCE + index));
+    }
+    return mobs;
   }
 
   private List<MobSnapshot> placed(Vec3 spiderPosition) {

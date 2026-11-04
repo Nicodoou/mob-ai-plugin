@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.github.nicodoou.mobai.adapter.goal.RoleRegistry;
 import io.github.nicodoou.mobai.domain.decision.GroupDecision;
 import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.GroupState;
 import io.github.nicodoou.mobai.domain.group.Member;
 import io.github.nicodoou.mobai.domain.group.Role;
@@ -30,7 +31,7 @@ class DecisionApplierTest {
   void membersWithAnOrderGetIt() {
     RoleAssignment order = pressOrder(mob(1));
 
-    applier.apply(decisionWith(order), members);
+    applier.apply(decisionWith(order), members, CombatTactic.NONE);
 
     assertThat(roles.assignmentOf(mob(1))).contains(order);
     assertThat(roles.assignmentOf(mob(2))).isEmpty();
@@ -40,7 +41,7 @@ class DecisionApplierTest {
   void membersWithoutAnOrderLoseTheirOldOne() {
     roles.assign(pressOrder(mob(2)));
 
-    applier.apply(decisionWith(pressOrder(mob(1))), members);
+    applier.apply(decisionWith(pressOrder(mob(1))), members, CombatTactic.NONE);
 
     assertThat(roles.assignmentOf(mob(2))).isEmpty();
   }
@@ -74,7 +75,8 @@ class DecisionApplierTest {
         Optional.of(player),
         Optional.of(Attack.ZOMBIE_FRONT_STRIKE),
         false,
-        Optional.empty());
+        Optional.empty(),
+        false);
   }
 
   private static MobId mob(long id) {

@@ -4,7 +4,10 @@ import com.destroystokyo.paper.entity.ai.Goal;
 import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import io.github.nicodoou.mobai.adapter.snapshot.PoseReader;
+import io.github.nicodoou.mobai.domain.decision.RoleAssignment;
+import io.github.nicodoou.mobai.domain.geometry.FlankStep;
 import io.github.nicodoou.mobai.domain.geometry.PlayerPose;
+import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MobId;
@@ -22,7 +25,11 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
-/** FLANK: sidestep out of the player's sight, then close in on its slot and strike from behind. */
+/**
+ * FLANK: sidestep out of the player's sight, then close in on its slot and strike from behind. By
+ * attack turns (TURNS), a fighter with one walks straight to the target and strikes it, seen or
+ * not; the rest wait behind the player, striking only if it comes into reach.
+ */
 public final class FlankGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
   private static final double WALK_SPEED = 1.0;
@@ -32,6 +39,7 @@ public final class FlankGoal implements Goal<Mob> {
   private final GoalKey<Mob> key;
   private final GoalContext context;
   private final MeleeRhythm rhythm;
+  private boolean isCharging = false;
 
   public FlankGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "FlankGoal.mob");
@@ -53,12 +61,15 @@ public final class FlankGoal implements Goal<Mob> {
 
   @Override
   public void stop() {
+    isCharging = false;
     mob.getPathfinder().stopPathfinding();
   }
 
   @Override
   public void tick() {
-    currentTarget().ifPresent(this::flank);
+    GoalOrders.orderFor(mob, context.roles(), Role.FLANK)
+        .ifPresent(
+            order -> GoalOrders.validTarget(order, mob).ifPresent(target -> act(order, target)));
   }
 
   @Override
@@ -76,6 +87,40 @@ public final class FlankGoal implements Goal<Mob> {
         .flatMap(order -> GoalOrders.validTarget(order, mob));
   }
 
+  private void act(RoleAssignment order, Player target) {
+    if (order.holdsAttackTurn()) {
+      takeTurn(target);
+      return;
+    }
+    isCharging = false;
+    flank(target);
+  }
+
+  // A new turn repaths at once: the rhythm was set by the walk round.
+  private void takeTurn(Player target) {
+    mob.lookAt(target);
+    if (!isCharging || rhythm.shouldRepath()) {
+      mob.getPathfinder().moveTo(target, WALK_SPEED);
+      rhythm.markRepath();
+    }
+    isCharging = true;
+    if (rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
+      context.tools().weapons().melee().strike(mob, target, turnAttack(target));
+      rhythm.markStrike();
+    }
+  }
+
+  // Seen by the player, it is a plain front strike: the flank strike's credit is for not being seen
+  // (CT-16).
+  private Attack turnAttack(Player target) {
+    Vec3 position = PoseReader.positionOf(mob.getLocation());
+    boolean isSeen = !context.tools().waypoints().isOutOfSight(PoseReader.poseOf(target), position);
+    if (kind == MobKind.ZOMBIE && isSeen) {
+      return Attack.ZOMBIE_FRONT_STRIKE;
+    }
+    return executedAttack();
+  }
+
   private void flank(Player target) {
     PlayerPose pose = PoseReader.poseOf(target);
     mob.lookAt(target);
@@ -87,15 +132,19 @@ public final class FlankGoal implements Goal<Mob> {
     if (!rhythm.shouldRepath()) {
       return;
     }
-    Vec3 point =
-        context
-            .tools()
-            .waypoints()
-            .flankStep(new PlayerTarget(pose, reachOf(target)), self(), flankerPositions(target))
-            .waypoint();
+    Vec3 point = flankStepFor(target, pose).waypoint();
     mob.getPathfinder()
         .moveTo(new Location(target.getWorld(), point.x(), point.y(), point.z()), WALK_SPEED);
     rhythm.markRepath();
+  }
+
+  private FlankStep flankStepFor(Player target, PlayerPose pose) {
+    Waypoints waypoints = context.tools().waypoints();
+    PlayerTarget playerTarget = new PlayerTarget(pose, reachOf(target));
+    Map<MobId, Vec3> flankers = flankerPositions(target);
+    return context.roles().tacticOf(self()) == CombatTactic.TURNS
+        ? waypoints.waitingFlankStep(playerTarget, self(), flankers)
+        : waypoints.flankStep(playerTarget, self(), flankers);
   }
 
   private double reachOf(Player target) {
@@ -105,7 +154,8 @@ public final class FlankGoal implements Goal<Mob> {
   // Every flanker of this target loaded in its world, this mob included.
   private Map<MobId, Vec3> flankerPositions(Player target) {
     Map<MobId, Vec3> positions = new HashMap<>();
-    for (MobId id : context.roles().mobsWith(Role.FLANK, new PlayerId(target.getUniqueId()))) {
+    for (MobId id :
+        context.roles().mobsWith(Role.FLANK, new PlayerId(target.getUniqueId()), self())) {
       if (Bukkit.getEntity(id.value()) instanceof Mob flanker
           && flanker.isValid()
           && flanker.getWorld().equals(target.getWorld())) {

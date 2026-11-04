@@ -10,6 +10,7 @@ import io.github.nicodoou.mobai.domain.group.Role;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
+import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.EnumSet;
@@ -22,7 +23,8 @@ import org.bukkit.entity.Player;
 
 /**
  * PRESS: walk to the target and strike it head-on, wait for an opening if patient, or dodge its
- * charged hits if evasive.
+ * charged hits if evasive. By attack turns (TURNS), only a fighter with one walks straight in and
+ * strikes; the rest wait on the ring around the target, striking only if it comes into reach.
  */
 public final class PressGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
@@ -43,6 +45,7 @@ public final class PressGoal implements Goal<Mob> {
   private final SurroundApproach surround;
   private final PatientWait patience = new PatientWait();
   private EvasiveMove lastEvasiveMove = EvasiveMove.HOLD;
+  private boolean isCharging = false;
 
   public PressGoal(Mob mob, MobKind kind, GoalContext context) {
     this.mob = Objects.requireNonNull(mob, "PressGoal.mob");
@@ -65,6 +68,7 @@ public final class PressGoal implements Goal<Mob> {
 
   @Override
   public void stop() {
+    isCharging = false;
     mob.getPathfinder().stopPathfinding();
   }
 
@@ -96,12 +100,30 @@ public final class PressGoal implements Goal<Mob> {
 
   private void pressOn(RoleAssignment order, Player target) {
     mob.lookAt(target);
+    if (order.holdsAttackTurn()) {
+      takeTurn(target);
+      return;
+    }
+    isCharging = false;
     if (isEvasive(order)) {
       evade(target);
       return;
     }
     followIfDue(target);
     strikeIfReady(order, target);
+  }
+
+  // A new turn repaths at once: the rhythm was set by the walk to the ring.
+  private void takeTurn(Player target) {
+    if (!isCharging || rhythm.shouldRepath()) {
+      mob.getPathfinder().moveTo(target, WALK_SPEED);
+      rhythm.markRepath();
+    }
+    isCharging = true;
+    if (rhythm.canStrike(mob.getLocation().distance(target.getLocation()))) {
+      context.tools().weapons().melee().strike(mob, target, executedAttack());
+      rhythm.markStrike();
+    }
   }
 
   private boolean isEvasive(RoleAssignment order) {
@@ -234,6 +256,22 @@ public final class PressGoal implements Goal<Mob> {
   }
 
   private void approach(Player target) {
+    switch (context.roles().tacticOf(new MobId(mob.getUniqueId()))) {
+      case TURNS -> waitOnRing(target);
+      case NONE, PRESSURE, ENCIRCLE, RELAY -> closeIn(target);
+    }
+  }
+
+  private void waitOnRing(Player target) {
+    Vec3 spot = surround.ringSpotFor(mob, target);
+    if (isNear(spot)) {
+      mob.getPathfinder().stopPathfinding();
+      return;
+    }
+    walkTo(spot);
+  }
+
+  private void closeIn(Player target) {
     if (kind != MobKind.ZOMBIE) {
       mob.getPathfinder().moveTo(target, WALK_SPEED);
       return;

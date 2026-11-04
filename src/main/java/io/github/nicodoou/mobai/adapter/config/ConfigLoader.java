@@ -182,7 +182,10 @@ public final class ConfigLoader {
         number(root, "pack.surround-margin-blocks"),
         number(root, "pack.wait-margin-blocks"),
         number(root, "pack.min-chase-blocks"),
-        number(root, "pack.max-chase-blocks"));
+        number(root, "pack.max-chase-blocks"),
+        wholeNumber(root, "pack.attack-turns"),
+        wholeNumber(root, "pack.attack-turn-timeout-ticks"),
+        wholeNumber(root, "pack.attack-turn-rest-ticks"));
   }
 
   private NeuralSettings neural(ConfigurationSection root) {

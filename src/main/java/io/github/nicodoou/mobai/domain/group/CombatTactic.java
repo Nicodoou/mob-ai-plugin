@@ -4,8 +4,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * The way of fighting an arena tests, told by the prefix of its network's name. Nothing reads it
- * yet: it is where the goals of the tactic experiments will plug in.
+ * The way of fighting a group uses, told by the prefix of its network's name. NONE is the plugin
+ * without any tactic experiment; each of the others changes the brain and the goals of its own
+ * groups only.
  */
 public enum CombatTactic {
   NONE(""),

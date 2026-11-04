@@ -45,6 +45,37 @@ public final class SurroundFormation {
     return new SurroundSpot(strikeSpot(query, strikers), true);
   }
 
+  /**
+   * A waiter's point on the wait ring. The ring hangs from the waiter with the lowest id, which
+   * stays on its own bearing: anchoring it to the waiters' centroid would spin it, since that
+   * centroid sits on the target once they surround it.
+   */
+  public Vec3 ringSpotFor(SurroundQuery query) {
+    MobId anchor =
+        query.pressers().keySet().stream().min(Comparator.comparing(MobId::value)).orElseThrow();
+    double anchorBearing = bearingOf(query.center(), query.pressers().get(anchor));
+    List<MobId> roundTheRing = roundTheRing(query, anchorBearing);
+    double slotDegrees = FULL_TURN_DEGREES / roundTheRing.size();
+    double bearing = anchorBearing + roundTheRing.indexOf(query.self()) * slotDegrees;
+    return pointAt(query, bearing, query.ring().waitRadiusBlocks());
+  }
+
+  private List<MobId> roundTheRing(SurroundQuery query, double anchorBearing) {
+    return query.pressers().keySet().stream()
+        .sorted(
+            Comparator.comparingDouble(
+                    (MobId id) ->
+                        turnFrom(
+                            anchorBearing, bearingOf(query.center(), query.pressers().get(id))))
+                .thenComparing(MobId::value))
+        .toList();
+  }
+
+  private static double turnFrom(double fromBearing, double toBearing) {
+    double turn = signedTurn(fromBearing, toBearing);
+    return turn < 0 ? turn + FULL_TURN_DEGREES : turn;
+  }
+
   private double slotAngleDegrees(SurroundRing ring) {
     return Math.toDegrees(2 * Math.asin(ring.spacingBlocks() / (2 * ring.strikeRadiusBlocks())));
   }

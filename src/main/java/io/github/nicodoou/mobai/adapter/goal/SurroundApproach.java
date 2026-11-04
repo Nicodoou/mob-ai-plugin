@@ -16,11 +16,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
-/** Where a pressing zombie walks: its slot in the arc in front of its pack, or its turn (CT-32). */
+/**
+ * Where a pressing zombie walks: its slot in the arc in front of its pack, or its turn (CT-32).
+ * With attack turns, where a pressing fighter without one waits: its place on the ring round the
+ * target.
+ */
 final class SurroundApproach {
   // A fifth of a block inside the zombie's reach, so it strikes from its slot without stepping in.
   private static final double STRIKE_SLOT_SLACK_BLOCKS = 0.2;
@@ -34,31 +40,57 @@ final class SurroundApproach {
 
   SurroundSpot spotFor(Mob zombie, Player target) {
     Map<MobId, Mob> zombies = pressingZombies(zombie, target);
+    return formation.spotFor(queryFor(zombie, target, zombies));
+  }
+
+  Vec3 ringSpotFor(Mob fighter, Player target) {
+    Map<MobId, Mob> waiters = waitingFighters(fighter, target);
+    return formation.ringSpotFor(queryFor(fighter, target, waiters));
+  }
+
+  private SurroundQuery queryFor(Mob asking, Player target, Map<MobId, Mob> fighters) {
     Map<MobId, Vec3> positions = new HashMap<>();
-    zombies.forEach(
-        (id, presser) -> positions.put(id, PoseReader.positionOf(presser.getLocation())));
-    SurroundQuery query =
-        new SurroundQuery(
-            PoseReader.positionOf(target.getLocation()),
-            new MobId(zombie.getUniqueId()),
-            positions,
-            ringFor(zombies, target));
-    return formation.spotFor(query);
+    fighters.forEach(
+        (id, fighter) -> positions.put(id, PoseReader.positionOf(fighter.getLocation())));
+    return new SurroundQuery(
+        PoseReader.positionOf(target.getLocation()),
+        new MobId(asking.getUniqueId()),
+        positions,
+        ringFor(fighters, target));
   }
 
   // Every zombie pressing this target loaded in its world, the asking one included.
   private Map<MobId, Mob> pressingZombies(Mob zombie, Player target) {
-    Map<MobId, Mob> zombies = new HashMap<>();
-    for (MobId id : context.roles().mobsWith(Role.PRESS, new PlayerId(target.getUniqueId()))) {
-      if (Bukkit.getEntity(id.value()) instanceof Mob presser
-          && presser.isValid()
-          && presser.getWorld().equals(target.getWorld())
-          && isZombie(presser)) {
-        zombies.put(id, presser);
+    Set<MobId> pressers =
+        context
+            .roles()
+            .mobsWith(
+                Role.PRESS, new PlayerId(target.getUniqueId()), new MobId(zombie.getUniqueId()));
+    return fightersAmong(pressers, zombie, this::isZombie);
+  }
+
+  // Every fighter waiting on this target loaded in its world, the asking one included.
+  private Map<MobId, Mob> waitingFighters(Mob fighter, Player target) {
+    Set<MobId> waiters =
+        context
+            .roles()
+            .mobsWaitingWith(
+                Role.PRESS, new PlayerId(target.getUniqueId()), new MobId(fighter.getUniqueId()));
+    return fightersAmong(waiters, fighter, mob -> true);
+  }
+
+  private Map<MobId, Mob> fightersAmong(Set<MobId> ids, Mob asking, Predicate<Mob> isFighter) {
+    Map<MobId, Mob> fighters = new HashMap<>();
+    for (MobId id : ids) {
+      if (Bukkit.getEntity(id.value()) instanceof Mob fighter
+          && fighter.isValid()
+          && fighter.getWorld().equals(asking.getWorld())
+          && isFighter.test(fighter)) {
+        fighters.put(id, fighter);
       }
     }
-    zombies.put(new MobId(zombie.getUniqueId()), zombie);
-    return zombies;
+    fighters.put(new MobId(asking.getUniqueId()), asking);
+    return fighters;
   }
 
   private boolean isZombie(Mob mob) {
@@ -71,9 +103,9 @@ final class SurroundApproach {
         .equals(Optional.of(MobKind.ZOMBIE));
   }
 
-  private SurroundRing ringFor(Map<MobId, Mob> zombies, Player target) {
+  private SurroundRing ringFor(Map<MobId, Mob> fighters, Player target) {
     PackSettings pack = context.tools().timing().pack().get();
-    double widest = zombies.values().stream().mapToDouble(Mob::getWidth).max().orElseThrow();
+    double widest = fighters.values().stream().mapToDouble(Mob::getWidth).max().orElseThrow();
     double reach = context.tools().weapons().bodies().playerReach().blocksOf(target);
     return new SurroundRing(
         MinecraftConstants.MELEE_REACH_BLOCKS - STRIKE_SLOT_SLACK_BLOCKS,

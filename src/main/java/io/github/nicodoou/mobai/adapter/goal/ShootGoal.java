@@ -216,7 +216,7 @@ public final class ShootGoal implements Goal<Mob> {
     PlayerId targetId = new PlayerId(target.getUniqueId());
     Set<MobId> ids = new HashSet<>();
     for (Role role : SHOOTER_ROLES) {
-      ids.addAll(context.roles().mobsWith(role, targetId));
+      ids.addAll(context.roles().mobsWith(role, targetId, self()));
     }
     return ids;
   }

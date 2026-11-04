@@ -109,6 +109,18 @@ public final class PlanLifecycle {
     plan = plan.withDamageDealt(damage);
   }
 
+  void recordMeleeStrike(MobId mob, long tick) {
+    if (state != GroupState.EXECUTING) {
+      return;
+    }
+    plan = plan.withAttackTurns(plan.attackTurns().released(mob, tick));
+  }
+
+  void recordAttackTurns(AttackTurns turns) {
+    requireState(GroupState.EXECUTING, "record attack turns");
+    plan = plan.withAttackTurns(turns);
+  }
+
   public void markTargetSeen(long tick) {
     requireState(GroupState.EXECUTING, "mark the target seen");
     plan = plan.withTargetSeenAt(tick);

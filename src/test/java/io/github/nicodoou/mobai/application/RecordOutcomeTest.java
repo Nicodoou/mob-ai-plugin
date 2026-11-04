@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.within;
 
 import io.github.nicodoou.mobai.domain.attack.AttackOutcome;
 import io.github.nicodoou.mobai.domain.attack.NeutralCause;
+import io.github.nicodoou.mobai.domain.group.AttackTurn;
+import io.github.nicodoou.mobai.domain.group.AttackTurns;
+import io.github.nicodoou.mobai.domain.group.CombatTactic;
 import io.github.nicodoou.mobai.domain.group.Group;
 import io.github.nicodoou.mobai.domain.group.GroupKnowledge;
 import io.github.nicodoou.mobai.domain.group.PlanStart;
@@ -15,7 +18,6 @@ import io.github.nicodoou.mobai.domain.memory.RecordChange;
 import io.github.nicodoou.mobai.domain.selection.SelectionPolicyType;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
-import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
@@ -72,7 +74,7 @@ class RecordOutcomeTest {
             defaults.volley(),
             new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
             defaults.learning(),
-            new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+            TestSettings.pack(),
             TestSettings.neural()));
 
     Optional<RecordChange> change =
@@ -108,6 +110,38 @@ class RecordOutcomeTest {
         recordOutcome.execute(resolution(mob(7), player, new AttackOutcome.Hit(), 0.0));
 
     assertThat(change).isEmpty();
+  }
+
+  @Test
+  void aMeleeStrikeEndsTheStrikersTurn() {
+    startPlanAgainstPlayer();
+    holdTurn();
+
+    recordOutcome.execute(resolution(mob(1), player, new AttackOutcome.Miss(), 0.0));
+
+    assertThat(turns().holds(mob(1))).isFalse();
+    assertThat(turns().lastReleaseTicks()).containsKey(mob(1));
+  }
+
+  @Test
+  void aShotDoesNotCountAsAMeleeStrike() {
+    startPlanAgainstPlayer();
+    holdTurn();
+
+    recordOutcome.execute(
+        new AttackResolution(
+            mob(1), player, Attack.SKELETON_DIRECT_SHOT, new AttackOutcome.Hit(), 1.0, 100));
+
+    assertThat(turns().holds(mob(1))).isTrue();
+  }
+
+  private void holdTurn() {
+    group.assignTactic(CombatTactic.TURNS);
+    group.recordAttackTurns(AttackTurns.none().granted(mob(1), new AttackTurn(90, 20.0)));
+  }
+
+  private AttackTurns turns() {
+    return group.lifecycle().plan().orElseThrow().attackTurns();
   }
 
   @Test

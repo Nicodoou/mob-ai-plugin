@@ -23,7 +23,8 @@ public record Plan(
     Map<MobId, Role> startingRoles,
     Map<MobId, Double> startingHealth,
     Map<MobId, Double> lastSeenHealth,
-    Optional<RecipePlay> recipe) {
+    Optional<RecipePlay> recipe,
+    AttackTurns attackTurns) {
 
   public Plan {
     Objects.requireNonNull(id, "Plan.id");
@@ -38,6 +39,7 @@ public record Plan(
     Objects.requireNonNull(lastSeenHealth, "Plan.lastSeenHealth");
     lastSeenHealth = Collections.unmodifiableMap(new LinkedHashMap<>(lastSeenHealth));
     Objects.requireNonNull(recipe, "Plan.recipe");
+    Objects.requireNonNull(attackTurns, "Plan.attackTurns");
   }
 
   public static Plan start(PlanId id, PlanStart start) {
@@ -53,7 +55,8 @@ public record Plan(
         start.roles(),
         Map.of(),
         Map.of(),
-        start.recipe());
+        start.recipe(),
+        AttackTurns.none());
   }
 
   public Plan withDamageDealt(double damage) {
@@ -85,7 +88,24 @@ public record Plan(
     }
     Map<MobId, Role> newRoles = new LinkedHashMap<>(roles);
     newRoles.remove(mob);
-    return copyWithRoles(newRoles);
+    return copyWithRoles(newRoles).withAttackTurns(attackTurns.withoutMember(mob));
+  }
+
+  public Plan withAttackTurns(AttackTurns newTurns) {
+    return new Plan(
+        id,
+        strategy,
+        target,
+        roles,
+        targetMaxHealth,
+        startTick,
+        lastTargetSeenTick,
+        damageDealt,
+        startingRoles,
+        startingHealth,
+        lastSeenHealth,
+        recipe,
+        newTurns);
   }
 
   /** Health seen this decision; only mobs the plan started with count (CT-27). */
@@ -135,7 +155,8 @@ public record Plan(
         startingRoles,
         startingHealth,
         lastSeenHealth,
-        recipe);
+        recipe,
+        attackTurns);
   }
 
   private Plan copyWithDamage(double newDamage) {
@@ -151,7 +172,8 @@ public record Plan(
         startingRoles,
         startingHealth,
         lastSeenHealth,
-        recipe);
+        recipe,
+        attackTurns);
   }
 
   private Plan copyWithLastSeen(long newTick) {
@@ -167,7 +189,8 @@ public record Plan(
         startingRoles,
         startingHealth,
         lastSeenHealth,
-        recipe);
+        recipe,
+        attackTurns);
   }
 
   private Plan copyWithHealth(Map<MobId, Double> newStarting, Map<MobId, Double> newLastSeen) {
@@ -183,6 +206,7 @@ public record Plan(
         startingRoles,
         newStarting,
         newLastSeen,
-        recipe);
+        recipe,
+        attackTurns);
   }
 }

@@ -11,7 +11,6 @@ import io.github.nicodoou.mobai.domain.settings.GroupSettings;
 import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MemorySettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
-import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.PersistenceSettings;
 import io.github.nicodoou.mobai.domain.settings.PlanSettings;
 import io.github.nicodoou.mobai.domain.settings.PlannerKind;
@@ -141,7 +140,7 @@ class ConfigLoaderTest {
         new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
         new LearningSettings(
             PlannerKind.STRATEGIES, 0.01, 1.0, 0.5, 1.0, 2.0, 20, 400, 0.5, 6000, 600, 0.6, 2.0),
-        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+        TestSettings.pack(),
         TestSettings.neural());
   }
 }

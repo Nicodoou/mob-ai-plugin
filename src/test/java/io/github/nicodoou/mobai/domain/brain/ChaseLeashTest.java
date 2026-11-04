@@ -49,7 +49,7 @@ class ChaseLeashTest {
   private static final double OPENING_BLOCKS = 10;
 
   private final ChaseLeash leash =
-      new ChaseLeash(() -> new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
+      new ChaseLeash(() -> new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0, 3, 60, 30));
   private final List<MobSnapshot> mobs = new ArrayList<>();
   private final List<RoleAssignment> orders = new ArrayList<>();
 
@@ -76,7 +76,8 @@ class ChaseLeashTest {
                 Optional.of(ALICE),
                 Optional.empty(),
                 false,
-                Optional.of(GROUND)));
+                Optional.of(GROUND),
+                false));
   }
 
   @Test
@@ -267,7 +268,8 @@ class ChaseLeashTest {
         Optional.of(target),
         Optional.of(Attack.ZOMBIE_FRONT_STRIKE),
         false,
-        Optional.empty());
+        Optional.empty(),
+        false);
   }
 
   private GroupSnapshot snapshotWithAliceAt(double z) {

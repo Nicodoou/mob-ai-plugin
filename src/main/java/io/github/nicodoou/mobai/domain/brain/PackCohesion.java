@@ -90,7 +90,7 @@ public final class PackCohesion {
 
   private static RoleAssignment gatherOrder(RoleAssignment order) {
     return new RoleAssignment(
-        order.mob(), Role.GATHER, order.target(), Optional.empty(), false, Optional.empty());
+        order.mob(), Role.GATHER, order.target(), Optional.empty(), false, Optional.empty(), false);
   }
 
   private record PackTarget(PlayerId id, Vec3 position) {}

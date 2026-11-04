@@ -8,7 +8,6 @@ import io.github.nicodoou.mobai.domain.learning.LinearPosterior;
 import io.github.nicodoou.mobai.domain.memory.RecipeModelRecord;
 import io.github.nicodoou.mobai.domain.settings.LearningSettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
-import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.shared.GroupId;
 import io.github.nicodoou.mobai.domain.shared.MobId;
 import io.github.nicodoou.mobai.domain.shared.MobKind;
@@ -425,7 +424,7 @@ class RecipePlannerTest {
             settings.volley(),
             settings.success(),
             changed,
-            new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+            TestSettings.pack(),
             TestSettings.neural());
     return new RecipePlanner(() -> changedSettings, new ScriptedRandomSource(), base);
   }

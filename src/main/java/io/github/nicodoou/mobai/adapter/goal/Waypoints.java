@@ -42,6 +42,12 @@ public final class Waypoints {
     return maneuver.next(new FlankQuery(target.pose(), self, flankers, keepOut));
   }
 
+  /** For a flanker without an attack turn: it stops behind the player, out of reach. */
+  public FlankStep waitingFlankStep(PlayerTarget target, MobId self, Map<MobId, Vec3> flankers) {
+    double keepOut = target.reachBlocks() + settings.get().flankMarginBlocks();
+    return maneuver.nextWaiting(new FlankQuery(target.pose(), self, flankers, keepOut));
+  }
+
   /** Beside the player's aim: its hitbox clear of the crosshair, plus a margin. */
   public Vec3 sideStepPoint(PlayerPose pose, Vec3 mobPosition, double mobHalfWidthBlocks) {
     double distance = MinecraftConstants.MELEE_REACH_BLOCKS - SIDE_STEP_SLACK_BLOCKS;

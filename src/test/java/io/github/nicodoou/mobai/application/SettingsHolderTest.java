@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.nicodoou.mobai.domain.settings.GroupSettings;
 import io.github.nicodoou.mobai.domain.settings.MobAiSettings;
-import io.github.nicodoou.mobai.domain.settings.PackSettings;
 import io.github.nicodoou.mobai.domain.settings.SuccessSettings;
 import io.github.nicodoou.mobai.testsupport.TestSettings;
 import java.util.function.Supplier;
@@ -56,7 +55,7 @@ class SettingsHolderTest {
         base.volley(),
         new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
         base.learning(),
-        new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0),
+        TestSettings.pack(),
         TestSettings.neural());
   }
 }

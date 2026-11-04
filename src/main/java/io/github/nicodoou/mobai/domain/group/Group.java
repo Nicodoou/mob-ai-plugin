@@ -20,6 +20,7 @@ public final class Group {
   private final PlanLifecycle lifecycle;
   // null unless an arena gave the group its own network; exposed only as Optional
   private NeuralAssignment neuralAssignment;
+  private CombatTactic tactic = CombatTactic.NONE;
 
   public Group(GroupId id, SelectionPolicyType policy, GroupKnowledge knowledge) {
     this.id = Objects.requireNonNull(id, "Group.id");
@@ -59,10 +60,17 @@ public final class Group {
 
   public void assignNeural(NeuralAssignment assignment) {
     neuralAssignment = Objects.requireNonNull(assignment, "Group.neuralAssignment");
+    tactic = assignment.tactic();
   }
 
+  /** What every goal and rule of this group fights by. An arena's network sets it by its name. */
   public CombatTactic tactic() {
-    return neuralAssignment().map(NeuralAssignment::tactic).orElse(CombatTactic.NONE);
+    return tactic;
+  }
+
+  /** A tactic without a network: the group keeps the planner the configuration says. */
+  public void assignTactic(CombatTactic newTactic) {
+    tactic = Objects.requireNonNull(newTactic, "Group.tactic");
   }
 
   public void report(DomainEvent event) {
@@ -79,6 +87,15 @@ public final class Group {
     if (wasLeader) {
       events.add(new LeaderDied(id, mobId, roster.leader(), tick));
     }
+  }
+
+  // Any swing counts, even a blocked or missed one: the fighter had its go.
+  public void recordMeleeStrike(MobId mobId, long tick) {
+    lifecycle.recordMeleeStrike(mobId, tick);
+  }
+
+  public void recordAttackTurns(AttackTurns turns) {
+    lifecycle.recordAttackTurns(turns);
   }
 
   public List<DomainEvent> drainEvents() {

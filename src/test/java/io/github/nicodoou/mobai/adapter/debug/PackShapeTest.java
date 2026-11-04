@@ -77,7 +77,13 @@ class PackShapeTest {
         role.map(
             assigned ->
                 new RoleAssignment(
-                    id, assigned, Optional.empty(), Optional.empty(), false, Optional.empty()));
+                    id,
+                    assigned,
+                    Optional.empty(),
+                    Optional.empty(),
+                    false,
+                    Optional.empty(),
+                    false));
     return new CombatSample.MobSample(
         0,
         new GroupId(new UUID(0, 1)),

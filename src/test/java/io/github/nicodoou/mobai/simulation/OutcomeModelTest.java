@@ -32,7 +32,8 @@ class OutcomeModelTest {
         Optional.of(ALICE),
         Optional.of(attack),
         false,
-        Optional.empty());
+        Optional.empty(),
+        false);
   }
 
   private double share(
