@@ -767,6 +767,34 @@ Se mergean los tres antes de que Nico pruebe. Entre el 31B y el 31C el server no
 - En la andanada, un costado puede cruzar la línea de tiro de un esqueleto. La revisión de la línea limpia (WP-24C) ya los espera.
 - Un esquive del arco mal calculado puede hacerlos temblar: hace falta un tiempo mínimo entre esquives.
 
+## CT-35 — Paper 26.1.2 mientras se entrena con bots
+
+**Estado:** aprobado por Nico el 3 nov 2026: «Porteamos el server a la 26.1, seguimos ahí, hasta que terminemos con los bots». Es temporal.
+
+**El problema.** Mineflayer, con el que se programan los bots, soporta hasta 26.1. En 26.3 faltan sus datos y los servers echan a los bots a los 1,5 segundos.
+
+**Qué cambia.**
+- `paper-api` pasa a `26.1.2.build.74-stable`, `api-version` a `26.1.2` y `runServer` a 26.1.2.
+- `runServer` usa la carpeta `run-bots/`. `run/` queda con su mundo de 26.3, sin tocar.
+- Ninguna línea de código cambia.
+
+**Qué se verificó (3 nov).**
+- Compila y pasan las 1167 pruebas contra 26.1.2.
+- En el server: un bot con Mineflayer entra, camina, usa escudo y arco; MobAI abre planes por receta, registra ataques y daño y mide los rasgos del bot.
+- `papu123` juega contra un grupo: el plan registra daño real.
+
+**Al terminar con los bots.** Se vuelve a 26.3 revirtiendo este cambio, y se repite la verificación de los goals allá. Lo que se aprenda queda en archivos JSON propios, pero hay que confirmar que `base.json` se pueda llevar.
+
+**Alternativas descartadas.**
+- **ViaVersion y ViaBackwards en 26.3:** agregan una traducción que puede deformar el escudo o el arco, y plugins de terceros en beta.
+- **Ramas sin terminar de Mineflayer:** varios PRs abiertos, algunos de forks de terceros.
+- **Un jar para las dos versiones:** el jar arranca en 26.3, pero sus goals no se probaron ahí. Con la decisión de Nico deja de hacer falta por ahora.
+
+**Riesgos.**
+- Paper marca 26.1.2 como sin soporte desde el 26 de julio de 2026. No importa para un server local de entrenamiento, pero no hay que publicar el plugin así.
+- `hallazgos-api.md` se verificó en 26.3: si algo se comporta distinto en 26.1.2, podría confundirse con un bug del plugin.
+- Si el plugin empieza a usar algo nuevo de 26.2 o 26.3, deja de compilar acá.
+
 ## CT-36 — Grabación del combate
 
 **Estado:** aprobado por Nico el 3 nov 2026, con estas decisiones: se graba con `/mobai debug`, cada 5 ticks y configurable, y por ahora sin límite de tamaño, porque hacen falta muchos datos para ver qué hacen bien y mal.

@@ -9,7 +9,8 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
 1. **Ahora:** CT-36 aprobado por Nico el 3 nov. WP-36A en curso (subagente Sonnet); después, el WP-36B. Se graba con `/mobai debug all full`, sin límite de tamaño. Al mergear cada uno, Opus lo verifica en el server con un bot y mide el tamaño por hora.
-   - **Bots:** prueba con Paper 26.1.2 hecha el 3 nov: un bot con Mineflayer entra, camina, usa escudo y arco, y MobAI ve sus rasgos. El plugin compila y pasa las pruebas en 26.1.2, y el mismo jar arranca en 26.3. Falta probar los goals en 26.3 con Nico y escribir el CT-35. El cambio de versión está en la rama local `spike/port-261`, sin push; el bot de prueba, en el scratchpad de la sesión.
+   - **Versión:** CT-35: el plugin queda en Paper 26.1.2, en `run-bots/`, hasta terminar con los bots; después se vuelve a 26.3 y se repite la verificación de los goals.
+   - **Bots:** prueba hecha el 3 nov: un bot con Mineflayer entra, camina, usa escudo y arco, y MobAI ve sus rasgos. El bot de prueba está en el scratchpad de la sesión; se lleva al repo con un WP.
    - **Arenas de entrenamiento:** de noche fija, porque zombies y esqueletos se queman al sol.
 2. **Después:**
    - **WP-34D y 34E:** movimiento impredecible (CT-34). Hay que especificarlos. Sumar al 34D que los que vuelven con la correa no se amontonen en el terreno.

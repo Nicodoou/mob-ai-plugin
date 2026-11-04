@@ -103,5 +103,7 @@ tasks.jacocoTestCoverageVerification {
 }
 
 tasks.runServer {
-    minecraftVersion("26.3")
+    minecraftVersion("26.1.2")
+    // CT-35: a world from 26.3 stays in run/ for when the plugin goes back to that version.
+    runDirectory.set(layout.projectDirectory.dir("run-bots"))
 }

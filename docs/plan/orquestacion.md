@@ -149,17 +149,17 @@ Si la sesión se está haciendo larga antes de terminar una etapa, hacé lo mism
 | `gh` | `"/c/Program Files/GitHub CLI/gh.exe"` (no está en el PATH de Git Bash) |
 | Java | JDK 21 instalado; Gradle descarga el JDK 25 en `~/.gradle/jdks` |
 | javap para inspeccionar la API | `~/.gradle/jdks/eclipse_adoptium-25-amd64-windows.2/bin/javap` sobre el jar de paper-api en `~/.gradle/caches/modules-2/files-2.1/io.papermc.paper/paper-api/` |
-| Server de prueba | Carpeta `run/` (ignorada por Git). EULA aceptado, `online-mode=false`, dificultad normal |
+| Server de prueba | Carpeta `run-bots/` (ignorada por Git), Paper 26.1.2 (CT-35). EULA aceptado por Nico el 3 nov, `online-mode=false`, sin whitelist y solo en `127.0.0.1`. `run/` conserva el mundo de 26.3 para cuando se vuelva |
 | Jugador | `papu123` (cuenta no premium), en la whitelist y operador |
 | IP | `localhost` desde esta PC; `10.10.10.105` en la red local |
 
 Levantar el server desde Bash, con la consola por un archivo (para poder mandarle comandos):
 
 ```bash
-cd /c/Users/Nico/Documents/Plugin && : > run/console-input.txt
-(tail -f run/console-input.txt | ./gradlew runServer --no-daemon > run/server.log 2>&1 &)
-echo "<comando>" >> run/console-input.txt        # por ejemplo: op papu123, gamemode survival papu123
-echo stop >> run/console-input.txt               # apagar
+cd /c/Users/Nico/Documents/Plugin && : > run-bots/console-input.txt
+(tail -f run-bots/console-input.txt | ./gradlew runServer --no-daemon > run-bots/server.log 2>&1 &)
+echo "<comando>" >> run-bots/console-input.txt        # por ejemplo: op papu123, gamemode survival papu123
+echo stop >> run-bots/console-input.txt               # apagar
 taskkill //F //IM tail.exe                       # después de apagar
 ```
 

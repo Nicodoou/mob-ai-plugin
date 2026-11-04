@@ -1,5 +1,5 @@
 [versions]
-paper-api = "26.3.build.151-beta"
+paper-api = "26.1.2.build.74-stable"
 junit = "5.14.4"
 assertj = "3.27.7"
 archunit = "1.5.1"

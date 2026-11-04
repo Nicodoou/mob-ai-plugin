@@ -1,6 +1,6 @@
 # Plugin de IA adaptable para mobs
 
-Plugin para Paper 26.3 (Java 25) que hace que los mobs hostiles peleen en grupos con roles y aprendan de cada jugador. La documentación está en español; el código, en inglés.
+Plugin para Paper 26.1.2 (Java 25; temporal hasta terminar con los bots, ver CT-35) que hace que los mobs hostiles peleen en grupos con roles y aprendan de cada jugador. La documentación está en español; el código, en inglés.
 
 ## Antes de cualquier tarea
 
