@@ -2,13 +2,13 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 3 de noviembre de 2026 (WP-36A mergeado; WP-36B en curso).
+**Última actualización:** 3 de noviembre de 2026 (WP-36A y 36B mergeados; falta verificar la grabación completa con un bot).
 
 ## Próximo paso
 
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Ahora:** CT-36 aprobado por Nico el 3 nov. WP-36A mergeado (#79). WP-36B en curso (subagente Sonnet). Se graba con `/mobai debug all full`, sin límite de tamaño. Al mergear cada uno, Opus lo verifica en el server con un bot y mide el tamaño por hora.
+1. **Ahora:** CT-36 aprobado por Nico el 3 nov. WP-36A (#79) y WP-36B (#80) mergeados. Falta reiniciar `run-bots` y verificar el daño, las muertes y las acciones con un bot. Medido: unos 217 MB por hora con un grupo de 9 mobs. Después, con logs, se analiza qué hacen bien y mal, y recién ahí se sigue con el bot (decisión de Nico). Se graba con `/mobai debug all full`, sin límite de tamaño. Al mergear cada uno, Opus lo verifica en el server con un bot y mide el tamaño por hora.
    - **Versión:** CT-35: el plugin queda en Paper 26.1.2, en `run-bots/`, hasta terminar con los bots; después se vuelve a 26.3 y se repite la verificación de los goals.
    - **Bots:** prueba hecha el 3 nov: un bot con Mineflayer entra, camina, usa escudo y arco, y MobAI ve sus rasgos. El bot de prueba está en el scratchpad de la sesión; se lleva al repo con un WP.
    - **Arenas de entrenamiento:** de noche fija, porque zombies y esqueletos se queman al sol.
@@ -97,7 +97,7 @@ Estados: `pendiente` → `especificado` (WP escrito, sin aprobar) → `aprobado`
 | WP-34D | Costados al azar y mantener la distancia | E6 | pendiente | Sonnet | — | CT-34. Después del 34C |
 | WP-34E | Esquive del arco y golpe oportunista | E6 | pendiente | Sonnet | — | CT-34 (incluye el esquive de los esqueletos del CT-32) |
 | WP-36A | Grabación del combate: muestras periódicas | E6 | mergeado | Sonnet | [#79](https://github.com/Nicodoou/mob-ai-plugin/pull/79) | CT-36. Merge el 3 nov; falta verificarlo en el server con un bot |
-| WP-36B | Grabación del combate: daño, muertes y acciones | E6 | en curso | Sonnet | — | CT-36. Suma dos correcciones de la revisión del 36A |
+| WP-36B | Grabación del combate: daño, muertes y acciones | E6 | mergeado | Sonnet | [#80](https://github.com/Nicodoou/mob-ai-plugin/pull/80) | CT-36. Merge el 3 nov; falta verificarlo en el server con un bot |
 | WP-30A | Éxito con tres medidas | E6 | mergeado | Opus | [#50](https://github.com/Nicodoou/mob-ai-plugin/pull/50) | CT-27. Al mergear, sumar `success` al `config.yml` del server de prueba |
 | WP-30B | Peso de la supervivencia según el jugador | E6 | mergeado | Opus | [#51](https://github.com/Nicodoou/mob-ai-plugin/pull/51) | CT-27 |
 | WP-30D | La supervivencia multiplica | E6 | mergeado | Sonnet | [#54](https://github.com/Nicodoou/mob-ai-plugin/pull/54) | D-01 del test fuerte, aprobado por Nico |

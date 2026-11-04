@@ -1062,3 +1062,22 @@ Las entradas de WP-00 a WP-05 se reconstruyeron después, a partir de los cierre
 - **Lo bueno:** la lógica pura está separada y probada; cuando no se graba solo cuesta una cuenta por tick; un mismo archivo guarda toda la línea de tiempo.
 - **Lo flojo:** `CombatSampler` no tiene prueba unitaria. Va antes de curar y guardar en `runTick`, así que si falla puede frenarlos: mi WP lo pedía así, y se corrige en el WP-36B.
 - **Riesgo:** el tamaño real por hora está sin medir.
+
+## WP-36B — Grabación del combate: daño, muertes y acciones (PR #80, Sonnet) — CT-36
+
+**Qué hizo.**
+- **`RecordingListener`:** escribe, en el momento, el daño a las entidades grabadas con su causa y autor, sus muertes, y los golpes y disparos de los jugadores grabados.
+- **`RecordingScope`:** una sola regla de a quién se sigue; `CombatSampler` pasó a usarla.
+- **Correcciones de la revisión del 36A:** la grabación corre al final de `runTick` y hay una prueba del valor por defecto de la configuración.
+
+**Revisión.**
+- **Build, cobertura y CI:** en verde (1196 pruebas).
+- **Roturas:** las 4 del WP, según el informe. Mis 2 mordieron: sacar el entrenamiento de `recordsPlayer` y cambiar la condición del objetivo grabado.
+- **Desvíos aceptados:**
+  - un proyectil sin tirador se registra con el propio proyectil como autor;
+  - `ListenerParts`, un record privado para no pasar los 3 parámetros.
+
+**Opinión del código.**
+- **Lo bueno:** la regla de a quién se sigue quedó en un solo lugar y bien probada; el listener solo mira y no cambia nada.
+- **Lo flojo:** `RecordingListener` no tiene prueba unitaria. `recordedVictim` devuelve `Optional<Optional<GroupId>>`, que se lee mal: un record chico sería más claro. Va a la lista de limpieza.
+- **Riesgo:** que la muerte encuentre al grupo depende del orden de registro de los listeners. Hay que confirmarlo en el server.
