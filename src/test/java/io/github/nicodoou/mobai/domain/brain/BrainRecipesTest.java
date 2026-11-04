@@ -4,6 +4,7 @@ import static io.github.nicodoou.mobai.testsupport.BrainFixture.ALICE;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.START_TICK;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.alice;
 import static io.github.nicodoou.mobai.testsupport.BrainFixture.withHealth;
+import static io.github.nicodoou.mobai.testsupport.BrainFixture.withPosition;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
@@ -40,13 +41,21 @@ class BrainRecipesTest {
   // threshold and no volley, unless a test says otherwise.
   private static final Map<Integer, Double> TIE_BREAKERS =
       Map.of(1, -1.0, 3, -1.0, 5, -1.0, 9, -1.0, 11, -1.0);
+  // A split of two pressing zombies and two in reserve, delayed 89 ticks.
+  private static final Map<Integer, Double> RESERVE_OF_TWO =
+      Map.of(3, 1.0, 4, -1.0, 7, 1.0, 8, -1.0);
   private static final List<Integer> SKELETONS = List.of(4, 5, 6);
   private static final int FIRST_ZOMBIE = 0;
   private static final int SECOND_ZOMBIE = 1;
   private static final int THIRD_ZOMBIE = 2;
   private static final int FOURTH_ZOMBIE = 3;
-  private static final long BEFORE_THE_DELAY_TICKS = 80;
-  private static final long AFTER_THE_DELAY_TICKS = 90;
+  // The recipe's 89-tick delay, at the settings' quarter.
+  private static final long BEFORE_THE_DELAY_TICKS = 20;
+  private static final long AFTER_THE_DELAY_TICKS = 30;
+  private static final double FAR_AWAY_Z = 30;
+  private static final double WITHIN_ENGAGE_Z = 2;
+  private static final long VOLLEY_SYNC_AGE_TICKS = 70;
+  private static final long VOLLEY_FIRE_AGE_TICKS = 80;
   private static final double WOUNDED_HEALTH = 4;
   private static final double WOUNDED_FRACTION = 0.2;
   // The peak is -linear / (2 * quadratic), and the group retreat knob scales it by 0.6.
@@ -74,14 +83,15 @@ class BrainRecipesTest {
 
   @Test
   void theReserveFallsBackUntilTheDelay() {
-    storeModel(Map.of(3, 1.0, 4, -1.0, 7, 1.0, 8, -1.0));
+    storeModel(RESERVE_OF_TWO);
+    List<MobSnapshot> far = farFromAlice(mobs);
 
     List<RoleAssignment> atStart =
-        fixture.decide(START_TICK, mobs, alice()).decision().assignments();
+        fixture.decide(START_TICK, far, alice()).decision().assignments();
     List<RoleAssignment> beforeTheDelay =
-        fixture.decide(START_TICK + BEFORE_THE_DELAY_TICKS, mobs, alice()).decision().assignments();
+        fixture.decide(START_TICK + BEFORE_THE_DELAY_TICKS, far, alice()).decision().assignments();
     List<RoleAssignment> afterTheDelay =
-        fixture.decide(START_TICK + AFTER_THE_DELAY_TICKS, mobs, alice()).decision().assignments();
+        fixture.decide(START_TICK + AFTER_THE_DELAY_TICKS, far, alice()).decision().assignments();
 
     RecipePlay play = currentPlan().recipe().orElseThrow();
     assertThat(play.recipe().zombies()).isEqualTo(new RoleSplit(2, 0, 2));
@@ -89,6 +99,21 @@ class BrainRecipesTest {
     assertHeldBack(atStart);
     assertHeldBack(beforeTheDelay);
     assertThat(zombieRoles(afterTheDelay)).containsOnly(Role.PRESS);
+  }
+
+  @Test
+  void aReserveWithTheTargetAtHandJoinsInAtOnce() {
+    storeModel(RESERVE_OF_TWO);
+    List<MobSnapshot> far = farFromAlice(mobs);
+    fixture.decide(START_TICK, far, alice());
+    Vec3 close = new Vec3(mobs.get(THIRD_ZOMBIE).position().x(), GROUND_Y, WITHIN_ENGAGE_Z);
+    List<MobSnapshot> reserveClose = withPosition(far, THIRD_ZOMBIE, close);
+
+    List<RoleAssignment> orders =
+        fixture.decide(START_TICK + 10, reserveClose, alice()).decision().assignments();
+
+    assertThat(orders.get(THIRD_ZOMBIE).role()).isEqualTo(Role.PRESS);
+    assertThat(orders.get(FOURTH_ZOMBIE).role()).isEqualTo(Role.FALL_BACK);
   }
 
   @Test
@@ -109,11 +134,16 @@ class BrainRecipesTest {
   void aVolleyRecipeUsesTheVolleyPhases() {
     storeModel(Map.of(11, 1.0));
 
-    BrainResult result = fixture.decide(START_TICK, mobs, alice());
+    BrainResult atStart = fixture.decide(START_TICK, mobs, alice());
+    BrainResult beforeTheShot = fixture.decide(START_TICK + VOLLEY_SYNC_AGE_TICKS, mobs, alice());
+    BrainResult atTheShot = fixture.decide(START_TICK + VOLLEY_FIRE_AGE_TICKS, mobs, alice());
 
     assertThat(currentPlan().recipe().orElseThrow().recipe().volley()).isTrue();
     for (int index : SKELETONS) {
-      assertThat(result.decision().assignments().get(index).role()).isEqualTo(Role.HOLD_FIRE);
+      assertThat(atStart.decision().assignments().get(index).role()).isEqualTo(Role.SHOOT);
+      assertThat(beforeTheShot.decision().assignments().get(index).role())
+          .isEqualTo(Role.HOLD_FIRE);
+      assertThat(atTheShot.decision().assignments().get(index).role()).isEqualTo(Role.VOLLEY);
     }
   }
 
@@ -266,6 +296,20 @@ class BrainRecipesTest {
                     mob.kind(),
                     mob.position(),
                     mob.maxHealth() * fraction,
+                    mob.maxHealth()))
+        .toList();
+  }
+
+  // Beyond the engage distance, each keeping its offset along x so the farthest stay the farthest.
+  private static List<MobSnapshot> farFromAlice(List<MobSnapshot> mobs) {
+    return mobs.stream()
+        .map(
+            mob ->
+                new MobSnapshot(
+                    mob.id(),
+                    mob.kind(),
+                    new Vec3(mob.position().x(), mob.position().y(), FAR_AWAY_Z),
+                    mob.health(),
                     mob.maxHealth()))
         .toList();
   }

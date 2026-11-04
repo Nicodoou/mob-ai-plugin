@@ -471,8 +471,12 @@ public final class Brain {
 
   // The plan itself keeps PRESS and SHOOT, so retreats and group-retreat checks are unaffected by
   // the phases: CT-30 holds a recipe's reserve back until its delay, and CT-23 lets the volley
-  // phase decide what each planned role does right now.
+  // phase decide what each planned role does right now. A fighter with the target at hand never
+  // backs off: in the measured duels it stood idle next to the player instead of hitting it.
   private Role phasedRole(Turn turn, MobSnapshot mob, Role planned) {
+    if (planned == Role.PRESS && isEngaged(turn, mob)) {
+      return Role.PRESS;
+    }
     Plan plan = currentPlan(turn);
     long ageTicks = plan.ageTicks(turn.snapshot().tick());
     if (planned == Role.PRESS && isHeldInReserve(plan, mob.id(), ageTicks)) {
@@ -481,13 +485,24 @@ public final class Brain {
     if (!isVolleyPlan(plan)) {
       return planned;
     }
-    return volleyRole(planned, volleyCycle.phaseAt(ageTicks));
+    return volleyRole(planned, ageTicks);
   }
 
-  private static boolean isHeldInReserve(Plan plan, MobId mob, long ageTicks) {
+  private boolean isEngaged(Turn turn, MobSnapshot mob) {
+    double engageDistance = settings.get().pressure().engageDistanceBlocks();
+    return turn.snapshot()
+        .player(currentPlan(turn).target())
+        .map(player -> mob.position().minus(player.pose().position()).horizontal().length())
+        .filter(distance -> distance <= engageDistance)
+        .isPresent();
+  }
+
+  // The recipe's delay still orders its reserves, scaled down so that none of them idles for long.
+  private boolean isHeldInReserve(Plan plan, MobId mob, long ageTicks) {
+    double fraction = settings.get().pressure().reserveDelayFraction();
     return plan.recipe()
         .filter(play -> play.reserve().contains(mob))
-        .filter(play -> ageTicks < play.recipe().reserveDelayTicks())
+        .filter(play -> ageTicks < play.recipe().reserveDelayTicks() * fraction)
         .isPresent();
   }
 
@@ -496,14 +511,24 @@ public final class Brain {
     return plan.strategy().equals(VolleyStrategy.ID) || isVolleyRecipe;
   }
 
-  private static Role volleyRole(Role planned, VolleyPhase phase) {
+  private Role volleyRole(Role planned, long ageTicks) {
     if (planned == Role.PRESS) {
-      return phase == VolleyPhase.PRESSING ? Role.PRESS : Role.FALL_BACK;
+      return volleyCycle.phaseAt(ageTicks) == VolleyPhase.PRESSING ? Role.PRESS : Role.FALL_BACK;
     }
     if (planned == Role.SHOOT) {
-      return phase == VolleyPhase.FIRING ? Role.VOLLEY : Role.HOLD_FIRE;
+      return volleyShooterRole(ageTicks);
     }
     return planned;
+  }
+
+  // Shooters keep firing between volleys; only an arrow about to coincide with one is held back.
+  private Role volleyShooterRole(long ageTicks) {
+    long ticksUntilFiring = volleyCycle.ticksUntilFiring(ageTicks);
+    if (ticksUntilFiring == 0) {
+      return Role.VOLLEY;
+    }
+    boolean isAboutToFire = ticksUntilFiring <= settings.get().pressure().volleySyncHoldTicks();
+    return isAboutToFire ? Role.HOLD_FIRE : Role.SHOOT;
   }
 
   private RoleAssignment fighterOrder(Turn turn, MobSnapshot mob, Role role) {

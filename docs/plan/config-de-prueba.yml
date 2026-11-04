@@ -54,7 +54,7 @@ plan:
 attack:
   projectile-timeout-ticks: 60
   patient-strike-max-wait-ticks: 60
-  opportunistic-shot-max-wait-ticks: 60
+  opportunistic-shot-max-wait-ticks: 10
   shoot-min-distance-blocks: 20.0
   shoot-max-distance-blocks: 30.0
   flank-margin-blocks: 1.0
@@ -105,6 +105,12 @@ volley:
   fire-ticks: 30
   # Cuánto más allá del alcance del jugador se abren los cuerpo a cuerpo.
   fall-back-margin-blocks: 1.5
+
+pressure:
+  engage-distance-blocks: 6.0
+  reserve-delay-fraction: 0.25
+  volley-sync-hold-ticks: 10
+  blocked-lane-wait-ticks: 15
 
 success:
   # Éxito de un plan (CT-27): el ataque (daño hecho y rapidez, con sus pesos) multiplicado por cuánto

@@ -144,6 +144,18 @@ class SettingsValidationTest {
             "VolleySettings.fallBackMarginBlocks must be zero or positive, got -1.0",
             (Runnable) () -> new VolleySettings(60, 20, 30, -1.0)),
         org.junit.jupiter.params.provider.Arguments.of(
+            "PressureSettings.engageDistanceBlocks must be a positive number, got 0.0",
+            (Runnable) () -> new PressureSettings(0.0, 0.25, 10, 15)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "PressureSettings.reserveDelayFraction must be between 0.0 and 1.0, got 1.5",
+            (Runnable) () -> new PressureSettings(6.0, 1.5, 10, 15)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "PressureSettings.volleySyncHoldTicks must be at least 0, got -1",
+            (Runnable) () -> new PressureSettings(6.0, 0.25, -1, 15)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "PressureSettings.blockedLaneWaitTicks must be at least 0, got -1",
+            (Runnable) () -> new PressureSettings(6.0, 0.25, 10, -1)),
+        org.junit.jupiter.params.provider.Arguments.of(
             "RetreatSettings.rallyDistanceBlocks must be a positive number, got 0.0",
             (Runnable) () -> new RetreatSettings(0.6, 12.0, 600, 200, 1200, 50, 0.0, 3.0)),
         org.junit.jupiter.params.provider.Arguments.of(
@@ -240,6 +252,7 @@ class SettingsValidationTest {
         defaults.debug(),
         defaults.retreat(),
         defaults.volley(),
+        defaults.pressure(),
         defaults.success(),
         learning,
         new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));
@@ -331,6 +344,7 @@ class SettingsValidationTest {
                     defaults.debug(),
                     defaults.retreat(),
                     defaults.volley(),
+                    defaults.pressure(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
                     new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0)))
@@ -356,6 +370,7 @@ class SettingsValidationTest {
                     defaults.debug(),
                     new RetreatSettings(0.3, 12.0, 600, 200, 1200, 50, 12.0, 3.0),
                     defaults.volley(),
+                    defaults.pressure(),
                     new SuccessSettings(0.4, 0.4, 0.2, 600, 0.6, 2.0, 8.0, 10.0),
                     defaults.learning(),
                     new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0)))

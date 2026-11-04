@@ -35,7 +35,7 @@ public final class GoalInstaller {
     if (kind.get().isMelee()) {
       goals.addGoal(mob, GOAL_PRIORITY, new PressGoal(mob, kind.get(), context));
       goals.addGoal(mob, GOAL_PRIORITY, new FlankGoal(mob, kind.get(), context));
-      goals.addGoal(mob, GOAL_PRIORITY, new FallBackGoal(mob, context));
+      goals.addGoal(mob, GOAL_PRIORITY, new FallBackGoal(mob, kind.get(), context));
       goals.addGoal(mob, GOAL_PRIORITY, new GatherGoal(mob, context));
     } else {
       goals.addGoal(mob, GOAL_PRIORITY, new ShootGoal(mob, context));

@@ -24,4 +24,12 @@ public final class VolleyCycle {
     }
     return VolleyPhase.FIRING;
   }
+
+  /** Zero while firing. */
+  public long ticksUntilFiring(long planAgeTicks) {
+    VolleySettings volley = settings.get();
+    long cycle = volley.pressTicks() + volley.fallBackTicks() + volley.fireTicks();
+    long firingStart = volley.pressTicks() + volley.fallBackTicks();
+    return Math.max(0, firingStart - planAgeTicks % cycle);
+  }
 }

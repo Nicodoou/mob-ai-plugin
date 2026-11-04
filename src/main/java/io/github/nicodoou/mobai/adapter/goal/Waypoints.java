@@ -1,5 +1,6 @@
 package io.github.nicodoou.mobai.adapter.goal;
 
+import io.github.nicodoou.mobai.domain.attack.FallBackStrike;
 import io.github.nicodoou.mobai.domain.geometry.CombatGeometry;
 import io.github.nicodoou.mobai.domain.geometry.FlankManeuver;
 import io.github.nicodoou.mobai.domain.geometry.FlankQuery;
@@ -9,8 +10,10 @@ import io.github.nicodoou.mobai.domain.geometry.ShooterFormation;
 import io.github.nicodoou.mobai.domain.geometry.ShooterQuery;
 import io.github.nicodoou.mobai.domain.geometry.SideStep;
 import io.github.nicodoou.mobai.domain.settings.AttackSettings;
+import io.github.nicodoou.mobai.domain.shared.Attack;
 import io.github.nicodoou.mobai.domain.shared.MinecraftConstants;
 import io.github.nicodoou.mobai.domain.shared.MobId;
+import io.github.nicodoou.mobai.domain.shared.MobKind;
 import io.github.nicodoou.mobai.domain.shared.Vec3;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +88,21 @@ public final class Waypoints {
       return Optional.empty();
     }
     return Optional.of(geometry.retreatPoint(mobPosition, dangerPosition, missing));
+  }
+
+  /** Empty once the mob is already within that distance, horizontally. */
+  public Optional<Vec3> approachPoint(
+      Vec3 mobPosition, Vec3 targetPosition, double distanceBlocks) {
+    double missing = horizontalDistance(mobPosition, targetPosition) - distanceBlocks;
+    if (missing <= 0) {
+      return Optional.empty();
+    }
+    Vec3 towards = targetPosition.minus(mobPosition).horizontal().normalized();
+    return Optional.of(mobPosition.plus(towards.times(missing)));
+  }
+
+  public Attack fallBackStrike(MobKind kind, PlayerPose pose, Vec3 mobPosition) {
+    return new FallBackStrike(geometry).attackOf(kind, pose, mobPosition);
   }
 
   public Vec3 shooterSlot(Vec3 center, MobId self, Map<MobId, Vec3> shooters) {

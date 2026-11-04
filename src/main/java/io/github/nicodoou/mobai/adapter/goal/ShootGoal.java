@@ -33,8 +33,8 @@ public final class ShootGoal implements Goal<Mob> {
   // A multiplier over the mob's normal pathfinder speed, not blocks per tick.
   private static final double WALK_SPEED = 1.0;
 
-  // SHOOT, and the two volley orders (CT-23): HOLD_FIRE positions without shooting, VOLLEY shoots
-  // at once.
+  // SHOOT, and the two volley orders (CT-23): HOLD_FIRE keeps a full draw for an instant so it
+  // leaves with the joint shot, VOLLEY shoots at once.
   private static final Set<Role> SHOOTER_ROLES = Set.of(Role.SHOOT, Role.HOLD_FIRE, Role.VOLLEY);
 
   // Paper's attack cooldown is 1 once the player's weapon has fully recharged.
@@ -54,11 +54,10 @@ public final class ShootGoal implements Goal<Mob> {
   private final OpportunisticWait opportunism = new OpportunisticWait();
   private final HighGroundFinder highGround;
   private final BowDraw draw;
+  private final BlockedLaneWait laneWait = new BlockedLaneWait();
   // The higher spot the shooter is heading for; empty when it has none.
   private Optional<Vec3> perch = Optional.empty();
   private long nextPerchSearchTick = Long.MIN_VALUE;
-  // Whether the last positioning left it within reach of its place.
-  private boolean inPlace;
   // Its lane was blocked at release: it walks to a new spot before drawing again.
   private boolean needsNewSpot;
 
@@ -124,7 +123,7 @@ public final class ShootGoal implements Goal<Mob> {
       return;
     }
     keepPositionIfDue(target);
-    startDrawIfReady(order, target);
+    startDrawIfReady(target);
   }
 
   private void keepPositionIfDue(Player target) {
@@ -136,7 +135,6 @@ public final class ShootGoal implements Goal<Mob> {
       walkToFiringSpot(target);
     } else {
       dropPerch();
-      inPlace = false;
       mob.getPathfinder().moveTo(target, WALK_SPEED);
     }
     rhythm.markRepath();
@@ -147,11 +145,9 @@ public final class ShootGoal implements Goal<Mob> {
     searchPerchIfDue(target, spot);
     Vec3 destination = currentPerch(target).orElse(spot);
     if (mobPosition().minus(destination).horizontal().length() <= SLOT_TOLERANCE_BLOCKS) {
-      inPlace = true;
       mob.getPathfinder().stopPathfinding();
       return;
     }
-    inPlace = false;
     mob.getPathfinder()
         .moveTo(
             new Location(mob.getWorld(), destination.x(), destination.y(), destination.z()),
@@ -255,11 +251,8 @@ public final class ShootGoal implements Goal<Mob> {
     return mob.hasLineOfSight(target) && distanceTo(target) <= attack().shootMaxDistanceBlocks();
   }
 
-  private void startDrawIfReady(RoleAssignment order, Player target) {
-    if (needsNewSpot
-        || !shots.canDraw()
-        || !canAim(target)
-        || (order.role() == Role.HOLD_FIRE && !inPlace)) {
+  private void startDrawIfReady(Player target) {
+    if (needsNewSpot || !shots.canDraw() || !canAim(target)) {
       opportunism.reset();
       return;
     }
@@ -290,13 +283,25 @@ public final class ShootGoal implements Goal<Mob> {
     if (isLaneClear(target, attack)) {
       bow().shoot(mob, target, attack);
       shots.markShot();
-    } else {
-      needsNewSpot = true;
+      lowerBow();
+      return;
     }
-    lowerBow();
+    if (!isStillWaitingForLane()) {
+      needsNewSpot = true;
+      lowerBow();
+    }
+  }
+
+  // Fighters keep crossing the lane now that they stay on the target: dropping a full draw and
+  // walking off for each of them would lose more arrows than the wait does.
+  private boolean isStillWaitingForLane() {
+    return laneWait.isStillWaiting(
+        context.tools().timing().clock().currentTick(),
+        context.tools().timing().pressure().get().blockedLaneWaitTicks());
   }
 
   private void lowerBow() {
+    laneWait.reset();
     if (draw.isDrawing()) {
       bow().lower(mob);
       draw.release();

@@ -423,6 +423,7 @@ class RecipePlannerTest {
             settings.debug(),
             settings.retreat(),
             settings.volley(),
+            settings.pressure(),
             settings.success(),
             changed,
             new PackSettings(8.0, 4.0, 0.25, 1.0, 8.0, 32.0));

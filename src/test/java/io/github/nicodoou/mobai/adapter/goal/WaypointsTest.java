@@ -111,6 +111,24 @@ class WaypointsTest {
   }
 
   @Test
+  void approachPointWalksInToTheDistance() {
+    Vec3 point =
+        waypoints.approachPoint(new Vec3(0, 64, 10), new Vec3(0, 60, 0), 4.5).orElseThrow();
+
+    assertThat(point.x()).isCloseTo(0, within(TOLERANCE));
+    assertThat(point.y()).isCloseTo(64, within(TOLERANCE));
+    assertThat(point.z()).isCloseTo(4.5, within(TOLERANCE));
+  }
+
+  @Test
+  void approachPointIsEmptyWhenAlreadyThatClose() {
+    Vec3 target = new Vec3(0, 64, 0);
+
+    assertThat(waypoints.approachPoint(new Vec3(0, 64, 4.5), target, 4.5)).isEmpty();
+    assertThat(waypoints.approachPoint(new Vec3(0, 64, 2), target, 4.5)).isEmpty();
+  }
+
+  @Test
   void keepAwayPointIsEmptyWhenAlreadyThatFar() {
     Vec3 danger = new Vec3(0, 64, 0);
 

@@ -258,7 +258,8 @@ public record AdapterServices(
             core.clock(),
             core.settings().section(MobAiSettings::attack),
             core.settings().section(MobAiSettings::volley),
-            core.settings().section(MobAiSettings::pack)),
+            core.settings().section(MobAiSettings::pack),
+            core.settings().section(MobAiSettings::pressure)),
         waypoints(core, geometry),
         new RallyRoute(
             new RallyDetour(geometry),
