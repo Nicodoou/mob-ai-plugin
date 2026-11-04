@@ -81,6 +81,9 @@ debug:
   # OFF, DECISIONS o FULL (entre comillas: sin comillas, YAML lee OFF como false).
   default-trace-level: "OFF"
   flight-recorder-events: 200
+  # Con el nivel "full", cada cuántos ticks se graba cada mob, grupo y jugador en el trace (CT-36).
+  # Sin límite de tamaño: una sesión larga puede pesar mucho.
+  recording-interval-ticks: 5
 
 retreat:
   # Vida (fracción) a la que un mob vuelve a pelear; tiene que ser mayor que retreat-health-fraction.

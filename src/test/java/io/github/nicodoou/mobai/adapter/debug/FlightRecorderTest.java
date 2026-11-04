@@ -22,7 +22,7 @@ class FlightRecorderTest {
   private static final GroupId SECOND = new GroupId(new UUID(0, 2));
 
   private final FlightRecorder recorder =
-      new FlightRecorder(() -> new DebugSettings(TraceLevel.OFF, CAPACITY));
+      new FlightRecorder(() -> new DebugSettings(TraceLevel.OFF, CAPACITY, 5));
 
   @Test
   void keepsTheLastEventsOfEachGroup() {

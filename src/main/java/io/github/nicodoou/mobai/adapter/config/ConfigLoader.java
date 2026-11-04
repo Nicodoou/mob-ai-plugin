@@ -118,7 +118,8 @@ public final class ConfigLoader {
   private DebugSettings debug(ConfigurationSection root) {
     return new DebugSettings(
         choice(root, "debug.default-trace-level", TraceLevel.class),
-        Math.toIntExact(wholeNumber(root, "debug.flight-recorder-events")));
+        Math.toIntExact(wholeNumber(root, "debug.flight-recorder-events")),
+        Math.toIntExact(wholeNumber(root, "debug.recording-interval-ticks")));
   }
 
   private RetreatSettings retreat(ConfigurationSection root) {

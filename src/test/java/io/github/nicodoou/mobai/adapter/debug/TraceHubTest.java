@@ -49,9 +49,9 @@ class TraceHubTest {
   private final MobAiSettings settings = TestSettings.defaults();
   private final ActiveGroups activeGroups = new ActiveGroups();
   private final FlightRecorder recorder =
-      new FlightRecorder(() -> new DebugSettings(TraceLevel.OFF, RECORDER_EVENTS));
+      new FlightRecorder(() -> new DebugSettings(TraceLevel.OFF, RECORDER_EVENTS, 5));
   private final TraceLevels levels =
-      new TraceLevels(() -> new DebugSettings(TraceLevel.OFF, RECORDER_EVENTS));
+      new TraceLevels(() -> new DebugSettings(TraceLevel.OFF, RECORDER_EVENTS, 5));
 
   private TraceWriter traceWriter;
   private DebugLog debugLog;

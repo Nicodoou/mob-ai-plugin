@@ -133,7 +133,10 @@ class SettingsValidationTest {
             (Runnable) () -> new PersistenceSettings(0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "DebugSettings.flightRecorderEvents must be at least 1, got 0",
-            (Runnable) () -> new DebugSettings(TraceLevel.OFF, 0)),
+            (Runnable) () -> new DebugSettings(TraceLevel.OFF, 0, 5)),
+        org.junit.jupiter.params.provider.Arguments.of(
+            "DebugSettings.recordingIntervalTicks must be at least 1, got 0",
+            (Runnable) () -> new DebugSettings(TraceLevel.OFF, 200, 0)),
         org.junit.jupiter.params.provider.Arguments.of(
             "VolleySettings.pressTicks must be at least 1, got 0",
             (Runnable) () -> new VolleySettings(0, 20, 30, 1.5)),

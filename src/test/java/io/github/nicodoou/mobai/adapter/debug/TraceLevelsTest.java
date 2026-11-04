@@ -28,7 +28,7 @@ class TraceLevelsTest {
 
   private final AtomicReference<TraceLevel> configured = new AtomicReference<>(TraceLevel.OFF);
   private final TraceLevels levels =
-      new TraceLevels(() -> new DebugSettings(configured.get(), RECORDER_EVENTS));
+      new TraceLevels(() -> new DebugSettings(configured.get(), RECORDER_EVENTS, 5));
 
   @Test
   void defaultComesFromTheSettings() {
