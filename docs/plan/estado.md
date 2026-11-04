@@ -2,13 +2,13 @@
 
 Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de estado. Una sesión nueva retoma desde acá (ver `orquestacion.md`).
 
-**Última actualización:** 3 de noviembre de 2026 (WP-36A y 36B mergeados; falta verificar la grabación completa con un bot).
+**Última actualización:** 3 de noviembre de 2026 (WP-36A y 36B mergeados y verificados con un bot).
 
 ## Próximo paso
 
 **Orquesta la sesión local** (la nube se quedó sin créditos el 10 oct; ver `docs/plan/traspaso-nube.md`). El buzón `docs/plan/buzon.md` queda por si la nube vuelve.
 
-1. **Ahora:** CT-36 aprobado por Nico el 3 nov. WP-36A (#79) y WP-36B (#80) mergeados. Falta reiniciar `run-bots` y verificar el daño, las muertes y las acciones con un bot. Medido: unos 217 MB por hora con un grupo de 9 mobs. Después, con logs, se analiza qué hacen bien y mal, y recién ahí se sigue con el bot (decisión de Nico). Se graba con `/mobai debug all full`, sin límite de tamaño. Al mergear cada uno, Opus lo verifica en el server con un bot y mide el tamaño por hora.
+1. **Ahora:** CT-36 aprobado por Nico el 3 nov. WP-36A (#79) y WP-36B (#80) mergeados. Verificado el 3 nov con un bot: daño con causa y autor, muertes con su grupo, golpes y disparos. Sin comprobar todavía: el daño entre aliados, porque no ocurrió en la prueba. Medido: unos 217 MB por hora con un grupo de 9 mobs peleando. Se graba con `/mobai debug all full` y se apaga con `off`. Después, con logs, se analiza qué hacen bien y mal, y recién ahí se sigue con el bot (decisión de Nico). Se graba con `/mobai debug all full`, sin límite de tamaño. Al mergear cada uno, Opus lo verifica en el server con un bot y mide el tamaño por hora.
    - **Versión:** CT-35: el plugin queda en Paper 26.1.2, en `run-bots/`, hasta terminar con los bots; después se vuelve a 26.3 y se repite la verificación de los goals.
    - **Bots:** prueba hecha el 3 nov: un bot con Mineflayer entra, camina, usa escudo y arco, y MobAI ve sus rasgos. El bot de prueba está en el scratchpad de la sesión; se lleva al repo con un WP.
    - **Arenas de entrenamiento:** de noche fija, porque zombies y esqueletos se queman al sol.
@@ -32,6 +32,7 @@ Tablero del orquestador. Se actualiza y se commitea cada vez que un WP cambia de
    - los nits de los WP-33K y 24H;
    - una pieza común de rumbos (`bearingOf`/`directionOf` repetidos en `ShooterFormation` y `SurroundFormation`);
    - `training-data.jsonl` sin límite de tamaño.
+   - `RecordingListener.recordedVictim` devuelve un `Optional<Optional<GroupId>>`: un record chico sería más claro.
    - el comentario de `Role.java` describe `GATHER` solo por el bloque (CT-32), no por la correa (CT-33).
 6. **Versión:** el README dice 1.0 MVP; el build dice `0.1.0-SNAPSHOT`. Le pregunté a Nico si pasar a 1.0.0 ya o después de la puerta E6, y no respondió.
 7. **Preferencias:** después de cada compactación, releer `orquestacion.md` y este tablero. No bajar la calidad para ahorrar contexto. Antes de lanzar cada WP, presentarlo con qué hace, arquitectura y decisiones, y esperar el sí. Al mergear, actualizar `config.yml`, `messages.yml` y `config-de-prueba.yml` de prueba con las claves nuevas.
