@@ -71,11 +71,11 @@ public final class PluginRuntime {
     adapters.movementSampler().sampleOnlinePlayers();
     adapters.projectileResolver().tick(now);
     adapters.decisionScheduler().tick(now);
-    adapters.combatSampler().tick(now);
     adapters.recoveryHealer().tick(now);
     adapters
         .persistenceScheduler()
         .tick(now, core.settings().current().persistence().saveIntervalTicks());
+    adapters.combatSampler().tick(now);
   }
 
   private static MobAiSettings loadSettings(JavaPlugin plugin) {
